@@ -1,0 +1,110 @@
+<div class="w-full h-full relative">
+    <div
+        id="map"
+        class="w-full rounded absolute"
+        style="height: 80vh; position: relative; z-index: 1"
+    ></div>
+
+    <p-card
+        class="absolute top-0 left-0 m-4 grid p-fluid"
+        header="Select Zone"
+        [style.z-index]="999"
+    >
+        <p>Select Dzongkhag</p>
+        <p-dropdown
+            [options]="dzongkhags"
+            [(ngModel)]="selectedDzongkhag"
+            optionLabel="name"
+            [showClear]="false"
+            placeholder="Select a Dzongkhag"
+            [filter]="true"
+            optionLabel="name"
+            filterBy="name"
+            (ngModelChange)="onDzongkahgChange($event)"
+        >
+            <ng-template pTemplate="selectedItem">
+                <div
+                    class="flex align-items-center gap-2 w-full"
+                    *ngIf="selectedDzongkhag"
+                >
+                    <p>{{ selectedDzongkhag.name }}</p>
+                </div>
+            </ng-template>
+            <ng-template let-dzongkhag pTemplate="item">
+                <div class="flex align-items-center gap-2">
+                    <div>{{ dzongkhag.name }}</div>
+                </div>
+            </ng-template>
+        </p-dropdown>
+
+        <p>Select Administrative Zone</p>
+        <p-dropdown
+            [options]="administrativeZones"
+            [(ngModel)]="selectedAdministrativeZone"
+            optionLabel="name"
+            [showClear]="false"
+            placeholder="Select a Administrative Zone"
+            [filter]="true"
+            optionLabel="name"
+            filterBy="name"
+            (ngModelChange)="onAdministrativeZoneChange($event)"
+        >
+            <ng-template pTemplate="selectedItem">
+                <div
+                    class="flex align-items-center gap-2"
+                    *ngIf="selectedAdministrativeZone"
+                >
+                    <div>{{ selectedAdministrativeZone.name }}</div>
+                </div>
+            </ng-template>
+            <ng-template let-admzone pTemplate="item">
+                <div class="flex align-items-center gap-2">
+                    <div>{{ admzone.name }}</div>
+                </div>
+            </ng-template>
+        </p-dropdown>
+        <p>Select Sub Administrative Zone</p>
+        <p-dropdown
+            [options]="subadministrativeZones"
+            [(ngModel)]="selectedSubAdministrativeZone"
+            optionLabel="name"
+            [showClear]="false"
+            placeholder="Select a Sub Administrative Zone"
+            [filter]="true"
+            optionLabel="name"
+            filterBy="name"
+        >
+            <ng-template pTemplate="selectedItem">
+                <div
+                    class="flex align-items-center gap-2"
+                    *ngIf="selectedSubAdministrativeZone"
+                >
+                    <div>{{ selectedSubAdministrativeZone.name }}</div>
+                </div>
+            </ng-template>
+            <ng-template let-subadmzone pTemplate="item">
+                <div class="flex align-items-center gap-2">
+                    <div>{{ subadmzone.name }}</div>
+                </div>
+            </ng-template>
+        </p-dropdown>
+
+        <p-divider type="dotted"></p-divider>
+
+        <p-button
+            *ngIf="selectedAdministrativeZone?.id"
+            label="Load Buildings"
+            pRipple
+            (onClick)="loadAdministrativeData()"
+        ></p-button>
+
+        <div class="mt-4 flex gap-2">
+            <p-button [outlined]="true" severity="secondary" size="small">
+                Download Building footprint shapefile
+            </p-button>
+            <p-button [outlined]="true" severity="secondary" size="small">
+                Download Building data as csv
+            </p-button>
+        </div>
+    </p-card>
+</div>
