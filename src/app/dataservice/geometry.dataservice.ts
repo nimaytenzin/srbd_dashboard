@@ -10,6 +10,19 @@ export class GeometryDataService {
 
     constructor(private http: HttpClient) {}
 
+    GetDzongkhagsGeom() {
+        return this.http.get(`${this.apiUrl}/dzongkhag/geom/all`);
+    }
+    GetAdministrativeZonesGeom() {
+        return this.http.get(`${this.apiUrl}/administrative-zone/geom/all`);
+    }
+
+    GetSubAdminsitrativeZonesGeom() {
+        return this.http.get(
+            `${this.apiUrl}/sub-administrative-zone/geom/all/all`
+        );
+    }
+
     GetAdministrativeBoundary(administrativeZoneId: number) {
         return this.http.get(
             `${this.apiUrl}/administrative-zone/geom/${administrativeZoneId}`
