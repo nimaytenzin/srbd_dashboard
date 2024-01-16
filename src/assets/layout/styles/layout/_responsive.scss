@@ -1,10 +1,10 @@
 @media screen and (min-width: 1960px) {
-    .layout-main, .landing-wrapper {
-        width: 1504px;
+    .layout-main,
+    .landing-wrapper {
+        width: 100%;
         margin-left: auto !important;
         margin-right: auto !important;
     }
-
 }
 
 @media (min-width: 992px) {

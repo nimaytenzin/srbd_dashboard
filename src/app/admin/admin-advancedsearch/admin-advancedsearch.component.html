@@ -1,30 +1,101 @@
-<div class="grid p-fluid col-12">
-    <p-inputGroup class="col-6">
-        <input
-            type="text"
-            pInputText
-            [(ngModel)]="plotId"
-            placeholder="Search by Plot ID"
-        />
-        <p-button icon="pi pi-search" (click)="searchByPlotId()"></p-button>
-    </p-inputGroup>
-    <p-inputGroup class="col-6">
-        <p-inputNumber
-            placeholder="Search By BuildingID"
-            [(ngModel)]="buildingId"
-        ></p-inputNumber>
-        <p-button icon="pi pi-search" (click)="searchByBuildingId()"></p-button>
-    </p-inputGroup>
-</div>
+<div class="p-4">
+    <h1>Search Building</h1>
+    <div class="grid col-6">
+        <p-inputGroup class="col-6">
+            <input
+                type="text"
+                pInputText
+                [(ngModel)]="plotId"
+                placeholder="Search by Plot ID"
+            />
+            <p-button icon="pi pi-search" (click)="searchByPlotId()"></p-button>
+        </p-inputGroup>
+        <p-inputGroup class="col-6">
+            <p-inputNumber
+                placeholder="Search By BuildingID"
+                [(ngModel)]="buildingId"
+            ></p-inputNumber>
+            <p-button
+                icon="pi pi-search"
+                (click)="searchByBuildingId()"
+            ></p-button>
+        </p-inputGroup>
+    </div>
+    <p-toast></p-toast>
 
-<div *ngIf="building">
-    Building
-    <p>BuildingID : {{ building.id }}</p>
-    <p>QRUUID: {{ building?.qrUuid }}</p>
-    <p>Latitude: {{ building.lat }}</p>
-    <p>Longitude: {{ building.lng }}</p>
+    <div class="flex gap-4">
+        <p-card *ngIf="building" header="Building" class="w-4">
+            <p>Building Id: {{ building.id }}</p>
 
-    <div *ngIf="buildingDetails">
-        <p>Building Name : {{ buildingDetails.name }}</p>
+            <p>Latitude: {{ building.lat }}</p>
+            <p>Longitude: {{ building.lng }}</p>
+            <p>QRUUID: {{ building.qrUuid }}</p>
+        </p-card>
+
+        <p-card
+            *ngIf="buildingDetails"
+            header="Building Details"
+            class="text-sm w-4"
+        >
+            <p>Building Name : {{ buildingDetails.name }}</p>
+            <p *ngFor="let item of getArrFromObject(buildingDetails)">
+                {{ item[0] }} : {{ item[1] }}
+            </p>
+        </p-card>
+
+        <p-card header="Units" class="w-4" *ngIf="units">
+            <p-table
+                [value]="units"
+                [scrollable]="true"
+                rowGroupMode="subheader"
+                groupRowsBy="unitNumberPrefix"
+            >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Unit Number</th>
+                        <th>Use</th>
+                        <th>Rent</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="groupheader" let-unit>
+                    <tr pRowGroupHeader>
+                        <td colspan="5" class="surface-200 text-center">
+                            Floor: {{ unit.unitNumberPrefix }}
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-unit let-rowIndex="rowIndex">
+                    <tr>
+                        <td>
+                            <div class="flex align-items-center">
+                                <h2 class="font-bold m-0">
+                                    {{ unit.unitNumberPrefix }}-{{
+                                        unit.unitNumber
+                                    }}
+                                </h2>
+                                <qrcode
+                                    [qrdata]="getQr(unit.qrUuid)"
+                                    [errorCorrectionLevel]="'M'"
+                                    [allowEmptyString]="true"
+                                    [cssClass]="'center'"
+                                    [errorCorrectionLevel]="'high'"
+                                    [colorDark]="'#111827'"
+                                    [colorLight]="'#FFFFFF00'"
+                                    [elementType]="'svg'"
+                                    [errorCorrectionLevel]="'H'"
+                                    [scale]="1"
+                                    [title]="'BuildingQr'"
+                                    [width]="30"
+                                ></qrcode>
+                            </div>
+                        </td>
+                        <td>{{ unit.unitDetail?.use }}</td>
+                        <td>{{ unit.unitDetail?.rent }}</td>
+                        <td></td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
     </div>
 </div>
