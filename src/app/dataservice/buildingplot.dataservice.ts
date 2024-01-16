@@ -17,4 +17,7 @@ export class BuildingPlotDataService {
             `${this.apiUrl}/building-plots/building/${buildingId}`
         );
     }
+    GetBuildingsOfPlot(plotId: string) {
+        return this.http.get(`${this.apiUrl}/building-plots/plot/${plotId}`);
+    }
 }

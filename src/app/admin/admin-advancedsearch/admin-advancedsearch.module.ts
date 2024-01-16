@@ -3,12 +3,8 @@ import { CommonModule } from '@angular/common';
 
 import { AdminAdvancedsearchRoutingModule } from './admin-advancedsearch-routing.module';
 
-
 @NgModule({
-  declarations: [],
-  imports: [
-    CommonModule,
-    AdminAdvancedsearchRoutingModule
-  ]
+    declarations: [],
+    imports: [CommonModule, AdminAdvancedsearchRoutingModule],
 })
-export class AdminAdvancedsearchModule { }
+export class AdminAdvancedsearchModule {}

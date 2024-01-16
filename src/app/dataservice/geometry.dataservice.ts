@@ -54,4 +54,12 @@ export class GeometryDataService {
             `${this.apiUrl}/sub-administrative-zone/buildings/geom/${subAdministrativeZoneId}`
         );
     }
+
+    GetBuildingFootprintById(buildingId: number) {
+        return this.http.get(`${this.apiUrl}/building/footprint/${buildingId}`);
+    }
+
+    GetPlotsGeomByPlotIdCsv(plotIds: string) {
+        return this.http.get(`${this.apiUrl}/dzongkhag/plots/${plotIds}`);
+    }
 }
