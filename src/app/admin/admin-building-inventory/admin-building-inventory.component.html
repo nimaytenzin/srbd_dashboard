@@ -6,6 +6,37 @@
     ></div>
 
     <p-card
+        class="absolute top-0 right-0 m-4 grid p-fluid"
+        header="Legend"
+        [style.z-index]="999"
+    >
+        <div>
+            <div class="flex flex-column">
+                <div class="flex gap-2 align-items-center">
+                    <div
+                        style="
+                            border: 1px solid #fa0000;
+                            height: 1rem;
+                            width: 1rem;
+                        "
+                    ></div>
+                    <p>Plot Boundary</p>
+                </div>
+                <div class="flex gap-2 align-items-center">
+                    <div
+                        style="
+                            border: 1px solid #787473;
+                            height: 1rem;
+                            width: 1rem;
+                        "
+                    ></div>
+                    <p>Buildings</p>
+                </div>
+            </div>
+        </div>
+    </p-card>
+
+    <p-card
         class="absolute top-0 left-0 m-4 grid p-fluid"
         header="Select Zone"
         [style.z-index]="999"
@@ -98,13 +129,13 @@
             (onClick)="loadAdministrativeData()"
         ></p-button>
 
-        <div class="mt-4 flex gap-2">
+        <!-- <div class="mt-4 flex gap-2">
             <p-button [outlined]="true" severity="secondary" size="small">
                 Download Building footprint shapefile
             </p-button>
             <p-button [outlined]="true" severity="secondary" size="small">
                 Download Building data as csv
             </p-button>
-        </div>
+        </div> -->
     </p-card>
 </div>

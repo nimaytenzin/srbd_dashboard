@@ -1,106 +1,60 @@
-<div class="p-4">
-    <div>
-        <h4>Plot Details</h4>
-        <p>Plot Id: CORE-424</p>
-        <p>Owner : Tashi Dorji Tangbi</p>
+<div>
+    <div class="flex gap-4 w-full">
+        <div class="flex flex-column">
+            <qrcode
+                [qrdata]="getQr(building?.qrUuid)"
+                [errorCorrectionLevel]="'M'"
+                [allowEmptyString]="true"
+                [cssClass]="'center'"
+                [errorCorrectionLevel]="'high'"
+                [colorDark]="'#111827'"
+                [colorLight]="'#FFFFFF00'"
+                [elementType]="'svg'"
+                [errorCorrectionLevel]="'H'"
+                [scale]="1"
+                [title]="'BuildingQr'"
+                [width]="150"
+            ></qrcode>
+            <p class="text-center">{{ building?.qrUuid }}</p>
+
+            <p *ngFor="let plot of buildingPlots">
+                Plot: {{ plot.plotId }}
+                <br />
+                overlapt Percentage:
+                {{ round(plot.overlapPercentage) }} %
+            </p>
+        </div>
+        <div>
+            <p *ngIf="buildingDetails?.buildingName">
+                Building name: {{ buildingDetails?.buildingName }}
+            </p>
+            <h6>Existancy Status: {{ buildingDetails?.existancyStatus }}</h6>
+            <h6>
+                Associative Position: {{ buildingDetails?.associativePosition }}
+            </h6>
+            <h6>Use: {{ buildingDetails?.use }}</h6>
+
+            <h6>Total Floors: {{ buildingDetails?.floorCount }}</h6>
+        </div>
     </div>
-    <hr class="mt-2 mb-2>" />
-    <div>
-        <h4>Building Details</h4>
-
-        <qrcode
-            [qrdata]="'Your data string'"
-            [errorCorrectionLevel]="'M'"
-            [allowEmptyString]="true"
-            [cssClass]="'center'"
-            [errorCorrectionLevel]="'high'"
-            [colorDark]="'#7AADA6'"
-            [colorLight]="'#FFFFFF00'"
-            [elementType]="'svg'"
-            [errorCorrectionLevel]="'H'"
-            [scale]="1"
-            [title]="'BuildingQr'"
-            [width]="150"
-        ></qrcode>
-
-        <p *ngIf="buildingDetails?.buildingName">
-            Building name: {{ buildingDetails.buildingName }}
-        </p>
-        <h6>Existancy Status: {{ buildingDetails?.existancyStatus }}</h6>
-        <h6>
-            Associative Position: {{ buildingDetails?.associativePosition }}
-        </h6>
-        <h6>Use: {{ buildingDetails?.use }}</h6>
-
-        <h6>Total Floors: {{ buildingDetails?.floorCount }}</h6>
-        <h6>Basements: {{ buildingDetails?.basementCount }}</h6>
-        <h6>Stils: {{ buildingDetails?.stiltCount }}</h6>
-        <h6>Attic: {{ buildingDetails?.atticCount }}</h6>
-        <h6>Jamthog: {{ buildingDetails?.jamthogCount }}</h6>
-    </div>
-    <div>
-        <h4>Unit Details</h4>
-        <p-table
-            [value]="units"
-            [scrollable]="true"
-            rowGroupMode="subheader"
-            groupRowsBy="unitNumberPrefix"
-        >
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>Floor Level</th>
-                    <th>Unit Number</th>
-                    <th>Use</th>
-                    <th>Rent</th>
-                    <th>QR</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="groupheader" let-unit>
-                <tr pRowGroupHeader>
-                    <td colspan="5" class="surface-200">
-                        {{ unit.unitNumberPrefix }}
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="groupfooter" let-unit>
-                <tr>
-                    <td colspan="5" class="text-right font-bold pr-6">
-                        Total Unit: 2
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-unit let-rowIndex="rowIndex">
-                <tr>
-                    <td>{{ unit.unitNumberPrefix }}</td>
-                    <td>{{ unit.unitNumberPrefix }} - {{ unit.unitNumber }}</td>
-                    <td>{{ unit.unitDetail?.use }}</td>
-                    <td>{{ unit.unitDetail?.rent }}</td>
-                    <td>
-                        <qrcode
-                            [qrdata]="getQr(unit.qrUuid)"
-                            [errorCorrectionLevel]="'M'"
-                            [allowEmptyString]="true"
-                            [cssClass]="'center'"
-                            [errorCorrectionLevel]="'high'"
-                            [colorDark]="'#7AADA6'"
-                            [colorLight]="'#FFFFFF00'"
-                            [elementType]="'svg'"
-                            [errorCorrectionLevel]="'H'"
-                            [scale]="1"
-                            [title]="'BuildingQr'"
-                            [width]="50"
-                        ></qrcode>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
-
     <p-divider type="dotted"></p-divider>
 
-    <p-button
-        label="Update Details"
-        [outlined]="true"
-        severity="secondary"
-    ></p-button>
+    <div class="flex justify-content-end">
+        <p-toast></p-toast>
+        <p-confirmDialog></p-confirmDialog>
+        <div class="">
+            <p-button
+                label="Delete"
+                severity="danger"
+                icon="pi pi-trash"
+                class="mr-4"
+                (click)="confirm2($event)"
+            ></p-button>
+            <p-button
+                label="View Details"
+                (click)="goToBuildingDetailedView(buildingId)"
+                icon="pi pi-eye"
+            ></p-button>
+        </div>
+    </div>
 </div>

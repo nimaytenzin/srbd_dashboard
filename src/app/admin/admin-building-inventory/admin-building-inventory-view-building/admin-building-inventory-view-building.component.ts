@@ -15,6 +15,13 @@ import { BuildingDetailService } from 'src/app/dataservice/building-detail.datas
 import { DividerModule } from 'primeng/divider';
 import { FieldsetModule } from 'primeng/fieldset';
 import { UnitDataService } from 'src/app/dataservice/unit.dataservice';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { BuildingDataService } from 'src/app/dataservice/building.dataservice';
+import { InputTextModule } from 'primeng/inputtext';
+import { BuildingPlotDataService } from 'src/app/dataservice/buildingplot.dataservice';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-admin-building-inventory-view-building',
@@ -28,7 +35,11 @@ import { UnitDataService } from 'src/app/dataservice/unit.dataservice';
         FieldsetModule,
         TableModule,
         QRCodeModule,
+        ToastModule,
+        ConfirmDialogModule,
+        InputTextModule,
     ],
+    providers: [MessageService, ConfirmationService],
     styleUrls: ['./admin-building-inventory-view-building.component.css'],
 })
 export class AdminBuildingInventoryViewBuildingComponent
@@ -36,94 +47,31 @@ export class AdminBuildingInventoryViewBuildingComponent
 {
     instance: DynamicDialogComponent | undefined;
     buildingId: number;
+
     buildingDetails: any;
+    building: any;
+    buildingPlots: any[];
+
     units: any[];
-    products = [
-        {
-            id: '1000',
-            code: 'f230fh0g3',
-            name: 'Bamboo Watch',
-            description: 'Product Description',
-            image: 'bamboo-watch.jpg',
-            price: 65,
-            category: 'Accessories',
-            quantity: 24,
-            inventoryStatus: 'INSTOCK',
-            rating: 5,
-        },
-        {
-            id: '1001',
-            code: 'nvklal433',
-            name: 'Black Watch',
-            description: 'Product Description',
-            image: 'black-watch.jpg',
-            price: 72,
-            category: 'Accessories',
-            quantity: 61,
-            inventoryStatus: 'OUTOFSTOCK',
-            rating: 4,
-        },
-        {
-            id: '1002',
-            code: 'zz21cz3c1',
-            name: 'Blue Band',
-            description: 'Product Description',
-            image: 'blue-band.jpg',
-            price: 79,
-            category: 'Fitness',
-            quantity: 2,
-            inventoryStatus: 'LOWSTOCK',
-            rating: 3,
-        },
-        {
-            id: '1003',
-            code: '244wgerg2',
-            name: 'Blue T-Shirt',
-            description: 'Product Description',
-            image: 'blue-t-shirt.jpg',
-            price: 29,
-            category: 'Clothing',
-            quantity: 25,
-            inventoryStatus: 'INSTOCK',
-            rating: 5,
-        },
-        {
-            id: '1004',
-            code: 'h456wer53',
-            name: 'Bracelet',
-            description: 'Product Description',
-            image: 'bracelet.jpg',
-            price: 15,
-            category: 'Accessories',
-            quantity: 73,
-            inventoryStatus: 'INSTOCK',
-            rating: 4,
-        },
-        {
-            id: '1005',
-            code: 'av2231fwg',
-            name: 'Brown Purse',
-            description: 'Product Description',
-            image: 'brown-purse.jpg',
-            price: 120,
-            category: 'Accessories',
-            quantity: 0,
-            inventoryStatus: 'OUTOFSTOCK',
-            rating: 4,
-        },
-    ];
 
     constructor(
         public ref: DynamicDialogRef,
         private dialogService: DialogService,
         private buildingDetailService: BuildingDetailService,
-        private unitDataService: UnitDataService
+        private unitDataService: UnitDataService,
+        private confirmationService: ConfirmationService,
+        private messageService: MessageService,
+        private buildingDataService: BuildingDataService,
+        private buildingPlotDataService: BuildingPlotDataService,
+        private router: Router
     ) {
         this.instance = this.dialogService.getInstance(this.ref);
         if (this.instance && this.instance.data) {
             this.buildingId = this.instance.data.buildingId;
             this.getBuildingDetails(this.buildingId);
             this.getUnitsByBuildingId(this.buildingId);
+            this.getBuilding(this.buildingId);
+            this.getBuildingPlots(this.buildingId);
         }
     }
 
@@ -133,9 +81,31 @@ export class AdminBuildingInventoryViewBuildingComponent
         this.ref.destroy();
     }
 
+    goToBuildingDetailedView(buildingId) {
+        this.router.navigate(['/admin/building-detailed', buildingId]);
+        this.ref.close();
+    }
+    round(number) {
+        return Math.round(number);
+    }
+
+    getBuilding(buildingId) {
+        this.buildingDataService.GetBuildingById(10499).subscribe((res) => {
+            this.building = res;
+        });
+    }
+
+    getBuildingPlots(buildingId) {
+        this.buildingPlotDataService
+            .GetPlotsOfBuilding(buildingId)
+            .subscribe((res: any) => {
+                this.buildingPlots = res;
+                console.log('BUIDLING PLOTS', res);
+            });
+    }
     getBuildingDetails(buildingId) {
         this.buildingDetailService
-            .GetBuildingDetailsByBuildingId(10499)
+            .GetBuildingDetailsByBuildingId(buildingId)
             .subscribe((res) => {
                 console.log(res);
                 this.buildingDetails = res;
@@ -148,10 +118,38 @@ export class AdminBuildingInventoryViewBuildingComponent
 
     getUnitsByBuildingId(buildingId) {
         this.unitDataService
-            .GetAllUnitsByBuilding(10499)
+            .GetAllUnitsByBuilding(buildingId)
             .subscribe((res: any[]) => {
                 this.units = res;
                 console.log(this.units);
             });
+    }
+    confirm2(event: Event) {
+        this.confirmationService.confirm({
+            target: event.target as EventTarget,
+            message: 'Do you want to delete this record?',
+            header: 'Delete Confirmation',
+            icon: 'pi pi-info-circle',
+            acceptButtonStyleClass: 'p-button-danger p-button-text',
+            rejectButtonStyleClass: 'p-button-text p-button-text',
+            acceptIcon: 'none',
+            rejectIcon: 'none',
+
+            accept: () => {
+                this.buildingDataService
+                    .DeleteBuilding(this.buildingId)
+                    .subscribe((res) => {
+                        this.messageService.add({
+                            severity: 'info',
+                            summary: 'Confirmed',
+                            detail: 'Record deleted',
+                        });
+                        this.ref.close({
+                            delete: true,
+                        });
+                    });
+            },
+            reject: () => {},
+        });
     }
 }

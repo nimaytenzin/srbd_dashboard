@@ -12,13 +12,11 @@ import { BadgeModule } from 'primeng/badge';
 import { RippleModule } from 'primeng/ripple';
 import { RouterModule } from '@angular/router';
 import { InputSwitchModule } from 'primeng/inputswitch';
-import { AppConfigModule } from '../config/config.module';
 import { AdminFooterComponent } from './admin-footer/admin-footer.component';
 import { AdminMenuitemComponent } from './admin-menuitem/admin-menuitem.component';
 import { AdminSidebarComponent } from './admin-sidebar/admin-sidebar.component';
 import { AdminTopbarComponent } from './admin-topbar/admin-topbar.component';
 import { AdminMenuComponent } from './admin-menu/admin-menu.component';
-import { AppLayoutModule } from '../app.layout.module';
 
 @NgModule({
     imports: [
@@ -33,7 +31,6 @@ import { AppLayoutModule } from '../app.layout.module';
         InputSwitchModule,
         RippleModule,
         RouterModule,
-        AppConfigModule,
     ],
     declarations: [
         AdminLayoutComponent,

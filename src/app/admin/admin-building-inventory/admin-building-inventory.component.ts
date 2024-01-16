@@ -15,6 +15,7 @@ import {
     DynamicDialogRef,
 } from 'primeng/dynamicdialog';
 import { AdminBuildingInventoryViewBuildingComponent } from './admin-building-inventory-view-building/admin-building-inventory-view-building.component';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-admin-building-inventory',
@@ -36,7 +37,8 @@ export class AdminBuildingInventoryComponent implements OnInit {
     constructor(
         private locationDataService: LocationDataService,
         private geometryDataService: GeometryDataService,
-        public dialogService: DialogService
+        public dialogService: DialogService,
+        private router: Router
     ) {}
 
     ref: DynamicDialogRef | undefined;
@@ -55,6 +57,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
     selectedAdministrativeZone: any;
     selectedSubAdministrativeZone: any;
     selected = false;
+    mapStateStored = localStorage.getItem('mapState');
 
     ngOnInit(): void {
         this.renderMap();
@@ -104,7 +107,6 @@ export class AdminBuildingInventoryComponent implements OnInit {
     }
 
     onAdministrativeZoneChange(event) {
-        console.log(event);
         this.loadSubadministrativeZonesByAdministrativeZone(event.id);
     }
 
@@ -112,16 +114,45 @@ export class AdminBuildingInventoryComponent implements OnInit {
         this.ref = this.dialogService.open(
             AdminBuildingInventoryViewBuildingComponent,
             {
-                header: 'Building Details',
+                header: 'Building ID: ' + buildingId,
                 data: {
                     buildingId: buildingId,
                 },
-                width: '50vw',
+                width: 'max-content',
             }
         );
+        this.ref.onClose.subscribe((res) => {
+            if (res.delete) {
+                this.loadBuildings();
+            }
+        });
+    }
+
+    saveMapState() {
+        const mapState = {
+            zoom: this.map.getZoom(),
+            center: this.map.getCenter(),
+        };
+        localStorage.setItem('mapState', JSON.stringify(mapState));
+    }
+
+    restoreMapState() {}
+
+    clearMapState() {
+        localStorage.removeItem('mapState');
+        if (this.plotsGeojson) {
+            this.map.removeLayer(this.plotsGeojson);
+        }
+        if (this.boundary) {
+            this.map.removeLayer(this.boundary);
+        }
+        if (this.buildingGeojson) {
+            this.map.removeLayer(this.buildingGeojson);
+        }
     }
 
     loadAdministrativeData() {
+        this.clearMapState();
         this.geometryDataService
             .GetAdministrativeBoundary(this.selectedAdministrativeZone.id)
             .subscribe((res: any) => {
@@ -135,17 +166,12 @@ export class AdminBuildingInventoryComponent implements OnInit {
                         };
                     },
                 });
-                this.map.addLayer(this.boundary);
-                this.map.fitBounds(this.boundary.getBounds());
-                this.boundary.bringToBack();
 
                 this.geometryDataService
                     .GetPlotsGeomByAdministrativeBoundary(
                         this.selectedAdministrativeZone.id
                     )
                     .subscribe((res: any) => {
-                        console.log('ADDING PLOTS TO MAP');
-                        console.log(res);
                         this.plotsGeojson = L.geoJSON(res, {
                             style: function (feature) {
                                 return {
@@ -172,19 +198,61 @@ export class AdminBuildingInventoryComponent implements OnInit {
                                         };
                                     },
                                     onEachFeature: (feature, layer) => {
-                                        // console.log(feature);
-
                                         layer.on({
                                             click: (e: any) => {
+                                                console.log(feature, 'CLICKED');
+                                                this.saveMapState();
                                                 this.showBuilding(
-                                                    feature.properties.id
+                                                    feature.properties
+                                                        .buildingid
                                                 );
                                             },
                                         });
                                     },
                                 }).addTo(this.map);
                             });
+
+                        this.fitMapBounds();
                     });
+            });
+    }
+
+    fitMapBounds() {
+        this.map.fitBounds(this.boundary.getBounds());
+        this.boundary.bringToBack();
+    }
+
+    loadBuildings() {
+        if (this.buildingGeojson) {
+            this.map.removeLayer(this.buildingGeojson);
+        }
+        this.geometryDataService
+            .GetBuildingFootprintsByAdministrativeBoundary(
+                this.selectedAdministrativeZone.id
+            )
+            .subscribe((res: any) => {
+                this.buildingGeojson = L.geoJSON(res, {
+                    style: function (feature) {
+                        return {
+                            fillColor: 'transparent',
+                            weight: 3,
+                            opacity: 1,
+                            color: 'white',
+                        };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        // console.log(feature);
+                        layer.on({
+                            click: (e: any) => {
+                                console.log(feature, 'CLICKED');
+                                this.saveMapState();
+                                this.showBuilding(
+                                    feature.properties.buildingid
+                                );
+                            },
+                        });
+                    },
+                }).addTo(this.map);
             });
     }
 }

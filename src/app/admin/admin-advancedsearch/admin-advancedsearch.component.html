@@ -1,0 +1,30 @@
+<div class="grid p-fluid col-12">
+    <p-inputGroup class="col-6">
+        <input
+            type="text"
+            pInputText
+            [(ngModel)]="plotId"
+            placeholder="Search by Plot ID"
+        />
+        <p-button icon="pi pi-search" (click)="searchByPlotId()"></p-button>
+    </p-inputGroup>
+    <p-inputGroup class="col-6">
+        <p-inputNumber
+            placeholder="Search By BuildingID"
+            [(ngModel)]="buildingId"
+        ></p-inputNumber>
+        <p-button icon="pi pi-search" (click)="searchByBuildingId()"></p-button>
+    </p-inputGroup>
+</div>
+
+<div *ngIf="building">
+    Building
+    <p>BuildingID : {{ building.id }}</p>
+    <p>QRUUID: {{ building?.qrUuid }}</p>
+    <p>Latitude: {{ building.lat }}</p>
+    <p>Longitude: {{ building.lng }}</p>
+
+    <div *ngIf="buildingDetails">
+        <p>Building Name : {{ buildingDetails.name }}</p>
+    </div>
+</div>

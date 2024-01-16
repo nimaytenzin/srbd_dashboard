@@ -7,16 +7,14 @@ import { API_URL } from './constants';
 @Injectable({
     providedIn: 'root',
 })
-export class BuildingDataService {
+export class BuildingPlotDataService {
     apiUrl = API_URL;
 
     constructor(private http: HttpClient) {}
 
-    GetBuildingById(buildingId: number) {
-        return this.http.get(`${this.apiUrl}/building/${buildingId}`);
-    }
-
-    DeleteBuilding(buildingId: number) {
-        return this.http.delete(`${this.apiUrl}/building/${buildingId}`);
+    GetPlotsOfBuilding(buildingId: number) {
+        return this.http.get(
+            `${this.apiUrl}/building-plots/building/${buildingId}`
+        );
     }
 }
