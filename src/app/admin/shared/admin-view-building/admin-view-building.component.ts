@@ -170,7 +170,7 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
             });
     }
 
-    getPlotGeom(plotsCsv: string) {
+    getPlotGeom(plotsCsv: string, buildingId: number) {
         if (this.plotsGeojson) {
             this.map.removeLayer(this.plotsGeojson);
         }
@@ -195,6 +195,8 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
                     summary: 'Plot Geometry Found',
                     detail: 'Successfully added to the map',
                 });
+
+                this.getBuildingFootprint(buildingId);
             });
     }
 
@@ -204,7 +206,7 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
             .subscribe((res: any) => {
                 this.plots = res;
                 this.plotIdsCsv = this.plots.map((obj) => obj.plotId).join(',');
-                this.getPlotGeom(this.plotIdsCsv);
+                this.getPlotGeom(this.plotIdsCsv, buildngId);
             });
     }
 
