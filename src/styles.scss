@@ -3,6 +3,7 @@
 $gutter: 1rem; //for primeflex grid system
 @import "assets/layout/styles/layout/layout.scss";
 @import "~leaflet/dist/leaflet.css";
+@import "../node_modules/leaflet-draw/dist/leaflet.draw.css";
 
 /* PrimeNG */
 @import "../node_modules/primeng/resources/primeng.min.css";

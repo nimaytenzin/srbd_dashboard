@@ -10,6 +10,22 @@ export class GeometryDataService {
 
     constructor(private http: HttpClient) {}
 
+    postBuildingPoint(data){
+        return this.http.post(`${this.apiUrl}/building`,data)
+    }
+
+    postBuildingGeom(data){
+        return this.http.post(`${this.apiUrl}/building-footprint`,data)
+    }
+
+    postBuildingPlot(data){
+        return this.http.post(`${this.apiUrl}/building-plots`,data)
+    }
+
+    GetPlotGeom(plotId){
+        return this.http.get(`${this.apiUrl}/administrative-zone/plots/${plotId}`);
+    }
+
     GetDzongkhagsGeom() {
         return this.http.get(`${this.apiUrl}/dzongkhag/geom/all`);
     }
