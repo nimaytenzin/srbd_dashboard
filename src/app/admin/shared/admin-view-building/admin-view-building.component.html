@@ -117,35 +117,19 @@
             <div class="text-sm ml-2">
                 <p>
                     <strong>Jamthog:</strong>
-                    {{
-                        buildingDetails.jamthogCount
-                            ? "No Jamthogs"
-                            : buildingDetails.jamthogCount
-                    }}
+                    {{ buildingDetails.jamthogCount }}
                 </p>
                 <p>
                     <strong>Attic:</strong>
-                    {{
-                        buildingDetails.atticCount
-                            ? "No Attics"
-                            : buildingDetails.atticCount
-                    }}
+                    {{ buildingDetails.atticCount }}
                 </p>
                 <p>
                     <strong>Stilt:</strong>
-                    {{
-                        buildingDetails.stiltCount
-                            ? "No Stilts"
-                            : buildingDetails.stiltCount
-                    }}
+                    {{ buildingDetails.stiltCount }}
                 </p>
                 <p>
                     <strong>Basements:</strong>
-                    {{
-                        buildingDetails.basementCount
-                            ? "No Basements"
-                            : buildingDetails.basementCount
-                    }}
+                    {{ buildingDetails.basementCount }}
                 </p>
             </div>
         </p-card>
@@ -158,9 +142,10 @@
                     <p class="text-gray-700 text-xl font-semibold">
                         Building Details <br />
                     </p>
-                    <p>Not Added</p>
                 </div>
             </ng-template>
+
+            <div>Building Details not added</div>
         </p-card>
     </div>
     <p-card class="w-4" *ngIf="units">
@@ -238,6 +223,7 @@
                                 [outlined]="false"
                                 icon="pi pi-pencil"
                                 severity="danger"
+                                (click)="openEditUnitModal(unit.id)"
                             ></p-button>
                             <p-button
                                 size="small"
@@ -252,5 +238,19 @@
                 </tr>
             </ng-template>
         </p-table>
+    </p-card>
+    <p-card class="w-4" *ngIf="!units">
+        <ng-template pTemplate="header">
+            <div class="flex justify-content-between align-item-end p-4">
+                <p class="text-gray-700 text-xl font-semibold">Units</p>
+                <p-button
+                    icon="pi pi-plus"
+                    size="small"
+                    severity="success"
+                ></p-button>
+            </div>
+        </ng-template>
+
+        <div>No Unit Details</div>
     </p-card>
 </div>

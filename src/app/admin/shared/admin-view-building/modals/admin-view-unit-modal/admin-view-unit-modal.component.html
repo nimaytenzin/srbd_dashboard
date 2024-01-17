@@ -1,0 +1,46 @@
+<form [formGroup]="myForm" class="grid" style="width: 40vw">
+    <div class="col-6">
+        <label for="rent">Rent:</label>
+        <input id="rent" formControlName="rent" pInputText />
+    </div>
+
+    <div class="col-6">
+        <label for="occupancyStatus">Occupancy Status:</label>
+        <p-dropdown
+            id="occupancyStatus"
+            formControlName="occupancyStatus"
+            [options]="unitOccupancyStatus"
+        >
+        </p-dropdown>
+    </div>
+
+    <div class="col-6">
+        <label for="use">Use:</label>
+        <p-dropdown
+            id="occupancyStatus"
+            formControlName="use"
+            [options]="unitUse"
+        >
+        </p-dropdown>
+    </div>
+    <div class="col-6">
+        <label for="numberOfBedrooms">Number of Bedrooms:</label>
+        <p-inputNumber
+            id="numberOfBedrooms"
+            formControlName="numberOfBedrooms"
+        ></p-inputNumber>
+    </div>
+    <div class="col-6">
+        <label for="numberOfBedrooms">Contact: </label>
+        <p-inputNumber
+            id="numberOfBedrooms"
+            formControlName="contact"
+        ></p-inputNumber>
+    </div>
+
+    <p-button
+        class="col-12"
+        label="Update Details"
+        (click)="updateDetails()"
+    ></p-button>
+</form>

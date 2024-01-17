@@ -1,41 +1,30 @@
 <div>
-    <div class="flex gap-4 w-full">
-        <div class="flex flex-column">
-            <qrcode
-                [qrdata]="getQr(building?.qrUuid)"
-                [errorCorrectionLevel]="'M'"
-                [allowEmptyString]="true"
-                [cssClass]="'center'"
-                [errorCorrectionLevel]="'high'"
-                [colorDark]="'#111827'"
-                [colorLight]="'#FFFFFF00'"
-                [elementType]="'svg'"
-                [errorCorrectionLevel]="'H'"
-                [scale]="1"
-                [title]="'BuildingQr'"
-                [width]="150"
-            ></qrcode>
-            <p class="text-center">{{ building?.qrUuid }}</p>
+    <div class="flex flex-column align-items-center w-full">
+        <qrcode
+            *ngIf="building?.qrUuid"
+            [qrdata]="getQr(building?.qrUuid)"
+            [errorCorrectionLevel]="'M'"
+            [allowEmptyString]="true"
+            [cssClass]="'center'"
+            [errorCorrectionLevel]="'high'"
+            [colorDark]="'#111827'"
+            [colorLight]="'#FFFFFF00'"
+            [elementType]="'svg'"
+            [errorCorrectionLevel]="'H'"
+            [scale]="1"
+            [title]="'BuildingQr'"
+            [width]="150"
+        ></qrcode>
+        <p class="text-center" *ngIf="building?.qrUuid">
+            {{ building?.qrUuid }}
+        </p>
 
-            <p *ngFor="let plot of buildingPlots">
-                Plot: {{ plot.plotId }}
-                <br />
-                overlapt Percentage:
-                {{ round(plot.overlapPercentage) }} %
-            </p>
-        </div>
-        <div>
-            <p *ngIf="buildingDetails?.buildingName">
-                Building name: {{ buildingDetails?.buildingName }}
-            </p>
-            <h6>Existancy Status: {{ buildingDetails?.existancyStatus }}</h6>
-            <h6>
-                Associative Position: {{ buildingDetails?.associativePosition }}
-            </h6>
-            <h6>Use: {{ buildingDetails?.use }}</h6>
-
-            <h6>Total Floors: {{ buildingDetails?.floorCount }}</h6>
-        </div>
+        <p *ngFor="let plot of buildingPlots">
+            Plot: {{ plot.plotId }}
+            <br />
+            overlapt Percentage:
+            {{ round(plot.overlapPercentage) }} %
+        </p>
     </div>
     <p-divider type="dotted"></p-divider>
 

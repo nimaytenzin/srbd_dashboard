@@ -56,10 +56,14 @@ export class GeometryDataService {
     }
 
     GetBuildingFootprintById(buildingId: number) {
-        return this.http.get(`${this.apiUrl}/building/footprint/${buildingId}`);
+        return this.http.get(
+            `${this.apiUrl}/building-footprint/bid/${buildingId}`
+        );
     }
 
     GetPlotsGeomByPlotIdCsv(plotIds: string) {
-        return this.http.get(`${this.apiUrl}/dzongkhag/plots/${plotIds}`);
+        return this.http.get(
+            `${this.apiUrl}/administrative-zone/plots/${plotIds}`
+        );
     }
 }

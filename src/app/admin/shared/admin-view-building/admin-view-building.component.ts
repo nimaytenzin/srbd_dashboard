@@ -12,9 +12,10 @@ import {
 import { FormsModule } from '@angular/forms';
 import { QRCodeModule } from 'angularx-qrcode';
 import * as L from 'leaflet';
-import { Message, MessageService } from 'primeng/api';
+import { ConfirmationService, Message, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -28,6 +29,7 @@ import { BuildingDataService } from 'src/app/dataservice/building.dataservice';
 import { BuildingPlotDataService } from 'src/app/dataservice/buildingplot.dataservice';
 import { GeometryDataService } from 'src/app/dataservice/geometry.dataservice';
 import { UnitDataService } from 'src/app/dataservice/unit.dataservice';
+import { AdminViewUnitModalComponent } from './modals/admin-view-unit-modal/admin-view-unit-modal.component';
 
 @Component({
     selector: 'app-admin-view-building',
@@ -50,6 +52,7 @@ import { UnitDataService } from 'src/app/dataservice/unit.dataservice';
     templateUrl: './admin-view-building.component.html',
     styleUrl: './admin-view-building.component.scss',
     changeDetection: ChangeDetectionStrategy.Default,
+    providers: [DialogService, ConfirmationService],
 })
 export class AdminViewBuildingComponent implements OnInit, OnChanges {
     constructor(
@@ -58,9 +61,11 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
         private buildingDetailService: BuildingDetailService,
         private messageService: MessageService,
         private unitDataService: UnitDataService,
-        private geometryDataService: GeometryDataService
+        private geometryDataService: GeometryDataService,
+        private dialogService: DialogService
     ) {}
     @Input() buildingId: number;
+    ref: DynamicDialogRef | undefined;
 
     building: any;
     buildingDetails: any;
@@ -112,6 +117,7 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
         this.getBuildingDetails(Number(this.buildingId));
         this.getBuildingPlots(Number(this.buildingId));
         this.getBuildingUnits(Number(this.buildingId));
+        this.getBuildingFootprint(this.buildingId);
     }
 
     getBuilding(buildingId: number) {
@@ -206,7 +212,7 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
             .subscribe((res: any) => {
                 this.plots = res;
                 this.plotIdsCsv = this.plots.map((obj) => obj.plotId).join(',');
-                this.getPlotGeom(this.plotIdsCsv, buildngId);
+                // this.getPlotGeom(this.plotIdsCsv, buildngId);
             });
     }
 
@@ -214,5 +220,18 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
         return Object.entries(obj);
     }
 
-    get;
+    openEditUnitModal(unitId: number) {
+        this.ref = this.dialogService.open(AdminViewUnitModalComponent, {
+            header: 'unit: ' + unitId,
+            data: {
+                unitId: unitId,
+            },
+            width: 'max-content',
+        });
+        this.ref.onClose.subscribe((res) => {
+            if (res.updated) {
+                this.getBuildingUnits(this.buildingId);
+            }
+        });
+    }
 }

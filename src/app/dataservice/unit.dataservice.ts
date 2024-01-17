@@ -13,4 +13,18 @@ export class UnitDataService {
     GetAllUnitsByBuilding(buildingId: number) {
         return this.http.get(`${this.apiUrl}/unit/bid/${buildingId}`);
     }
+
+    GetUnitById(unitId: number) {
+        return this.http.get(`${this.apiUrl}/unit/${unitId}`);
+    }
+    GetUnitDetails(unitId: number) {
+        return this.http.get(`${this.apiUrl}/unit-detail/uid/${unitId}`);
+    }
+
+    UpdateUnitDetails(unitId: number, data) {
+        return this.http.patch(
+            `${this.apiUrl}/unit-detail/uid/${unitId}`,
+            data
+        );
+    }
 }
