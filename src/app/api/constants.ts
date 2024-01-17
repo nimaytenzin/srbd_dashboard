@@ -25,3 +25,10 @@ export enum UnitPrimaryUses {
     HEALTH = 'Health',
     INDUSTRIAL = 'Industrial',
 }
+
+export enum UserRoles {
+    'ADMIN' = 'admin',
+    'ENUMERATORS' = 'enumerator',
+    'SUPERVISOR' = 'supervisor',
+    'LG_FOCAL' = 'lg_focal',
+}

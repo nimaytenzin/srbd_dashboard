@@ -76,8 +76,16 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout.component';
                 // { path: '**', redirectTo: '/notfound' },
                 {
                     path: '',
-                    redirectTo: '/admin',
+                    redirectTo: 'login',
                     pathMatch: 'full',
+                },
+
+                {
+                    path: 'login',
+                    loadChildren: () =>
+                        import('./auth/login/login.module').then(
+                            (m) => m.LoginModule
+                        ),
                 },
             ],
 

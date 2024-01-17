@@ -12,7 +12,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { QRCodeModule } from 'angularx-qrcode';
 import * as L from 'leaflet';
-import { Message, MessageService } from 'primeng/api';
+import { ConfirmationService, Message, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -24,12 +24,8 @@ import { MessagesModule } from 'primeng/messages';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { PARSEDATE } from 'src/app/api/helper-function';
-import { BuildingDetailService } from 'src/app/dataservice/building-detail.dataservice';
-import { BuildingDataService } from 'src/app/dataservice/building.dataservice';
 import { BuildingPlotDataService } from 'src/app/dataservice/buildingplot.dataservice';
 import { GeometryDataService } from 'src/app/dataservice/geometry.dataservice';
-import { UnitDataService } from 'src/app/dataservice/unit.dataservice';
-import { AdminViewBuildingComponent } from '../admin-view-building/admin-view-building.component';
 import { ViewIndividualBuildingModalComponent } from './view-individual-building-modal/view-individual-building-modal.component';
 import { AdminBuildingInventoryViewBuildingComponent } from '../../admin-building-inventory/admin-building-inventory-view-building/admin-building-inventory-view-building.component';
 
@@ -51,10 +47,9 @@ import { AdminBuildingInventoryViewBuildingComponent } from '../../admin-buildin
         ToastModule,
         QRCodeModule,
     ],
-    providers: [DialogService],
+    providers: [DialogService, ConfirmationService],
     templateUrl: './admin-view-plot-buildings.component.html',
     styleUrl: './admin-view-plot-buildings.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     constructor(
@@ -85,9 +80,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
 
     plotIdsCsv: string;
 
-    ngOnInit(): void {
-        this.renderMap();
-    }
+    ngOnInit(): void {}
 
     ngOnChanges(changes: SimpleChanges) {
         this.getPlotGeom(this.plotId);
@@ -191,27 +184,39 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
         if (this.plotsGeojson) {
             this.plotMap.removeLayer(this.plotsGeojson);
         }
+        if (this.buildingGeojson) {
+            this.plotMap.removeLayer(this.buildingGeojson);
+        }
         this.geometryDataService
             .GetPlotsGeomByPlotIdCsv(plotsCsv)
             .subscribe((res: any) => {
-                this.plotsGeojson = L.geoJSON(res, {
-                    style: (feature) => {
-                        return {
-                            fillColor: 'transparent',
-                            weight: 1,
-                            opacity: 1,
-                            color: 'red',
-                        };
-                    },
-                }).addTo(this.plotMap);
-                this.plotMap.fitBounds(this.plotsGeojson.getBounds());
-                this.messageService.add({
-                    key: 'maptoast',
-                    severity: 'success',
-                    summary: 'Plot Geometry Found',
-                    detail: 'Successfully added to the map',
-                });
-                this.getBuildingsInPlot(this.plotId);
+                if (res[0].features !== null) {
+                    this.renderMap();
+                    this.plotsGeojson = L.geoJSON(res, {
+                        style: (feature) => {
+                            return {
+                                fillColor: 'transparent',
+                                weight: 1,
+                                opacity: 1,
+                                color: 'red',
+                            };
+                        },
+                    }).addTo(this.plotMap);
+                    this.plotMap.fitBounds(this.plotsGeojson.getBounds());
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Plot Details Found',
+                        detail: 'Plot added to the map',
+                    });
+                    this.getBuildingsInPlot(this.plotId);
+                } else {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Plot Details  Not Found',
+                        detail: 'Please check the plotId',
+                    });
+                    this.plotMap.remove();
+                }
             });
     }
 

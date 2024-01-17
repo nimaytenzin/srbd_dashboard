@@ -93,7 +93,7 @@ export class AdminBuildingInventoryViewBuildingComponent
                 data: {
                     buildingId: buildingId,
                 },
-                width: '70vw',
+                width: '80vw',
             }
         );
     }

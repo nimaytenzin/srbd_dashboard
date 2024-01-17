@@ -83,12 +83,9 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
 
     plotIdsCsv: string;
 
-    ngOnInit(): void {
-        this.renderMap();
-    }
+    ngOnInit(): void {}
 
     ngOnChanges(changes: SimpleChanges) {
-        console.log(changes);
         this.search();
     }
 
@@ -150,6 +147,7 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
     }
 
     getBuildingFootprint(buildingId) {
+        this.renderMap();
         if (this.buildingGeojson) {
             this.map.removeLayer(this.buildingGeojson);
         }
