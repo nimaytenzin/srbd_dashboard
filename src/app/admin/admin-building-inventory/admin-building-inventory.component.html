@@ -41,6 +41,11 @@
         header="Select Zone"
         [style.z-index]="999"
     >
+        <p-button
+            label="Load Plot"
+            pRipple
+            (onClick)="showAddBuilding('BA1-444')"
+        ></p-button>
         <p>Select Dzongkhag</p>
         <p-dropdown
             [options]="dzongkhags"

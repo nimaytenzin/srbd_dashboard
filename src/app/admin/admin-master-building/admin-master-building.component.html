@@ -1,0 +1,29 @@
+<div class="w-full h-full relative mb-5">
+    <p-toast position="top-center"></p-toast>
+    <div class="flex">
+        <div id="mapview" class="w-full rounded " style="height:75vh; position: relative; z-index: 1"> </div>
+        <p-card class="absolute top-0 right-0 m-4 grid p-fluid" header="Legend" [style.z-index]="999">
+            <div>
+                <div class="flex flex-column">
+                    <div class="flex gap-2 align-items-center">
+                        <div style="
+                            border: 1px solid #fa0000;
+                            height: 1rem;
+                            width: 1rem;
+                        "></div>
+                        <p>Plot Boundary</p>
+                    </div>
+                    <div class="flex gap-2 align-items-center">
+                        <div style="
+                            border: 1px solid #787473;
+                            height: 1rem;
+                            width: 1rem;
+                        "></div>
+                        <p>Buildings</p>
+                    </div>
+                </div>
+            </div>
+        </p-card>
+    </div>
+
+</div>

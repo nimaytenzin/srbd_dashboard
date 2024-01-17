@@ -16,6 +16,7 @@ import {
 } from 'primeng/dynamicdialog';
 import { AdminBuildingInventoryViewBuildingComponent } from './admin-building-inventory-view-building/admin-building-inventory-view-building.component';
 import { Router } from '@angular/router';
+import { AdminMasterBuildingComponent } from '../admin-master-building/admin-master-building.component';
 
 @Component({
     selector: 'app-admin-building-inventory',
@@ -39,7 +40,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
         private geometryDataService: GeometryDataService,
         public dialogService: DialogService,
         private router: Router
-    ) {}
+    ) { }
 
     ref: DynamicDialogRef | undefined;
 
@@ -110,6 +111,19 @@ export class AdminBuildingInventoryComponent implements OnInit {
         this.loadSubadministrativeZonesByAdministrativeZone(event.id);
     }
 
+    showAddBuilding(plotId) {
+        this.ref = this.dialogService.open(
+            AdminMasterBuildingComponent,
+            {
+                data: {
+                    plotId: plotId,
+                },
+                width: '90%',
+                height: '90%'
+            }
+        )
+    }
+
     showBuilding(buildingId: number) {
         this.ref = this.dialogService.open(
             AdminBuildingInventoryViewBuildingComponent,
@@ -136,7 +150,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
         localStorage.setItem('mapState', JSON.stringify(mapState));
     }
 
-    restoreMapState() {}
+    restoreMapState() { }
 
     clearMapState() {
         localStorage.removeItem('mapState');

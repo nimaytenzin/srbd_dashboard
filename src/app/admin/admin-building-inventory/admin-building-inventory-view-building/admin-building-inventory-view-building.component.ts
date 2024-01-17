@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { AccordionModule } from 'primeng/accordion';
 import { TableModule } from 'primeng/table';
 import { QRCodeModule } from 'angularx-qrcode';
@@ -42,9 +41,7 @@ import { Router } from '@angular/router';
     providers: [MessageService, ConfirmationService],
     styleUrls: ['./admin-building-inventory-view-building.component.css'],
 })
-export class AdminBuildingInventoryViewBuildingComponent
-    implements OnInit, OnDestroy
-{
+export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDestroy {
     instance: DynamicDialogComponent | undefined;
     buildingId: number;
 

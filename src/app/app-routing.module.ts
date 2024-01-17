@@ -17,7 +17,6 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout.component';
                                     './admin/admin-advancedsearch/admin-advancedsearch.module'
                                 ).then((m) => m.AdminAdvancedsearchModule),
                         },
-
                         {
                             path: 'building-inventory',
                             loadChildren: () =>
@@ -52,13 +51,13 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout.component';
                                 ),
                         },
                         {
-                            path: 'master-subadmzones',
+                            path: 'master-building',
                             loadChildren: () =>
                                 import(
-                                    './admin/admin-master-sub-administrativezones/admin-master-sub-administrativezones.module'
+                                    './admin/admin-master-building/admin-master-building.module'
                                 ).then(
                                     (m) =>
-                                        m.AdminMasterSubAdministrativezonesModule
+                                        m.AdminMasterBuildingModule
                                 ),
                         },
                         {
