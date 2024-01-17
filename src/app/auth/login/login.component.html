@@ -27,14 +27,12 @@
                         class="mb-3"
                     />
                     <div class="text-900 text-3xl font-medium mb-3">
-                        Welcome to Zhichar
+                        Welcome to Zhichar v2.0
                     </div>
-                    <span class="text-600 font-medium"
-                        >Sign in to continue</span
-                    >
+                    <p>Planned Human Settlements Powered by Zhichar</p>
                 </div>
 
-                <div>
+                <div *ngIf="!this.token">
                     <label
                         for="email1"
                         class="block text-900 text-xl font-medium mb-2"
@@ -86,6 +84,28 @@
                         class="w-full p-3 text-xl"
                         [routerLink]="['/']"
                     ></button>
+                </div>
+
+                <div *ngIf="this.token" class="text-center">
+                    <p>Welcome back {{ decodedToken.fullName }}</p>
+                    <p class="text-600 font-medium">you have already logged</p>
+                    <p-button
+                        size="small"
+                        (click)="tokenExistsContinue()"
+                        label="Sign In"
+                        class="w-full"
+                        [routerLink]="['/']"
+                    ></p-button>
+
+                    <p>
+                        Not {{ decodedToken.fullName }} ?
+                        <span
+                            (click)="removeToken()"
+                            class="text-primary cursor-pointer"
+                        >
+                            Click here
+                        </span>
+                    </p>
                 </div>
             </div>
         </div>

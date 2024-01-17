@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { API_URL } from './constants';
 import { Router } from '@angular/router';
+import * as jwt_decode from 'jwt-decode';
 
 @Injectable({
     providedIn: 'root',
@@ -26,17 +27,16 @@ export class AuthService {
         localStorage.removeItem('token');
     }
 
-    getRole(): string | null {
+    decodeToken() {
         const token = this.getToken();
-        // if (token) {
-        //     const decoded: any = jwt_decode(token);
-        //     return decoded.role;
-        // }
+        if (token) {
+            return jwt_decode.jwtDecode(token);
+        }
         return null;
     }
 
     handleLoginRouting() {
-        const role = this.getRole();
+        // const role = this.getRole();
         console.log('USER ROLE');
         this.router.navigate(['/enum/select-zone']);
     }

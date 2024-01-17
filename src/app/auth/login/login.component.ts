@@ -8,6 +8,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from 'src/app/dataservice/auth.data.service';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-login',
@@ -20,6 +21,7 @@ import { MessageService } from 'primeng/api';
         PasswordModule,
         RouterModule,
         ToastModule,
+        CommonModule,
     ],
     templateUrl: './login.component.html',
     styleUrl: './login.component.scss',
@@ -34,6 +36,8 @@ export class LoginComponent implements OnInit {
 
     token!: string;
 
+    decodedToken: any;
+
     constructor(
         private authDataService: AuthService,
         private messageService: MessageService,
@@ -43,21 +47,23 @@ export class LoginComponent implements OnInit {
         this.token = this.authDataService.getToken();
 
         if (this.token) {
-            setTimeout(() => {
-                this.messageService.add({
-                    severity: 'info',
-                    summary: 'Checking for saved User Credentials',
-                });
-            }, 0);
-            setTimeout(() => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Credentials saved for this session',
-                });
-            }, 1000);
-            setTimeout(() => {
-                this.router.navigate(['/admin']);
-            }, 2000);
+            console.log(this.authDataService.decodeToken());
+            this.decodedToken = this.authDataService.decodeToken();
+            // setTimeout(() => {
+            //     this.messageService.add({
+            //         severity: 'info',
+            //         summary: 'Checking for saved User Credentials',
+            //     });
+            // }, 0);
+            // setTimeout(() => {
+            //     this.messageService.add({
+            //         severity: 'success',
+            //         summary: 'Credentials saved for this session',
+            //     });
+            // }, 1000);
+            // setTimeout(() => {
+            //     this.router.navigate(['/admin']);
+            // }, 2000);
         }
     }
 
@@ -86,7 +92,15 @@ export class LoginComponent implements OnInit {
             });
     }
 
+    tokenExistsContinue() {
+        this.navigate();
+    }
     navigate() {
         this.router.navigate(['/admin']);
+    }
+
+    removeToken() {
+        this.authDataService.removeToken();
+        this.token = null;
     }
 }
