@@ -9,6 +9,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { AdminViewBuildingComponent } from '../shared/admin-view-building/admin-view-building.component';
 import { AdminViewPlotBuildingsComponent } from '../shared/admin-view-plot-buildings/admin-view-plot-buildings.component';
+import { DialogService, DynamicDialogModule, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { AdminMasterBuildingComponent } from '../admin-master-building/admin-master-building.component';
 
 @Component({
     selector: 'app-admin-advancedsearch',
@@ -22,9 +24,10 @@ import { AdminViewPlotBuildingsComponent } from '../shared/admin-view-plot-build
         InputNumberModule,
         FormsModule,
         AdminViewBuildingComponent,
+        DynamicDialogModule,
         AdminViewPlotBuildingsComponent,
     ],
-    providers: [MessageService],
+    providers: [MessageService,DialogService],
     templateUrl: './admin-advancedsearch.component.html',
     styleUrl: './admin-advancedsearch.component.scss',
 })
@@ -38,6 +41,11 @@ export class AdminAdvancedsearchComponent {
 
     plotSearched = false;
     buildingSearched = false;
+    ref: DynamicDialogRef | undefined;
+
+    constructor(
+        public dialogService:DialogService
+    ){}
 
     searchBuilding() {
         this.buildingSearched = true;
@@ -53,5 +61,18 @@ export class AdminAdvancedsearchComponent {
     onInputChange(): void {
         // Capitalize the input text
         this.plotId = this.plotId.toUpperCase();
+    }
+
+    showAddBuilding(plotId) {
+        this.ref = this.dialogService.open(
+            AdminMasterBuildingComponent,
+            {
+                data: {
+                    plotId: plotId,
+                },
+                width: '90%',
+                height: '90%'
+            }
+        )
     }
 }

@@ -71,6 +71,8 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
   instance: DynamicDialogComponent | undefined;
   plotId: string;
   plotGeoJson: L.GeoJSON;
+  
+  existingBuildingGeoJson: L.GeoJSON;
 
   buildingPoint: BuildingPoint = {
     lat: 0,

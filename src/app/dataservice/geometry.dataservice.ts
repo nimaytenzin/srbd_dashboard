@@ -6,7 +6,8 @@ import { environment } from 'src/environments/environment';
     providedIn: 'root',
 })
 export class GeometryDataService {
-    apiUrl = 'http://localhost:4322';
+    // apiUrl = 'http://localhost:4322';
+    apiUrl = 'https://zhichar.bt/dev';
 
     constructor(private http: HttpClient) {}
 
