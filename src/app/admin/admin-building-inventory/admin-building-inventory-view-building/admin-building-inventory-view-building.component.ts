@@ -21,6 +21,7 @@ import { BuildingDataService } from 'src/app/dataservice/building.dataservice';
 import { InputTextModule } from 'primeng/inputtext';
 import { BuildingPlotDataService } from 'src/app/dataservice/buildingplot.dataservice';
 import { Router } from '@angular/router';
+import { ViewIndividualBuildingModalComponent } from '../../shared/admin-view-plot-buildings/view-individual-building-modal/view-individual-building-modal.component';
 
 @Component({
     selector: 'app-admin-building-inventory-view-building',
@@ -79,17 +80,30 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
     }
 
     goToBuildingDetailedView(buildingId) {
-        this.router.navigate(['/admin/building-detailed', buildingId]);
-        this.ref.close();
+        // this.router.navigate(['/admin/building-detailed', buildingId]);
+        // this.ref.close();
+
+        this.ref = this.dialogService.open(
+            ViewIndividualBuildingModalComponent,
+            {
+                header: 'Building ID: ' + buildingId,
+                data: {
+                    buildingId: buildingId,
+                },
+                width: '80vw',
+            }
+        );
     }
     round(number) {
         return Math.round(number);
     }
 
     getBuilding(buildingId) {
-        this.buildingDataService.GetBuildingById(10499).subscribe((res) => {
-            this.building = res;
-        });
+        this.buildingDataService
+            .GetBuildingById(buildingId)
+            .subscribe((res) => {
+                this.building = res;
+            });
     }
 
     getBuildingPlots(buildingId) {

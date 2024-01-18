@@ -1,20 +1,23 @@
 <div class="p-4">
+    <p-toast></p-toast>
     <h1>Search Building</h1>
-    <div class="grid col-6">
-        <p-inputGroup class="col-6">
+    <div class="grid">
+        <p-inputGroup class="col-12 md:col-5">
             <input
                 type="text"
                 pInputText
                 [(ngModel)]="plotId"
+                (keyup)="searchPlotOnEnter($event)"
                 (input)="onInputChange()"
                 placeholder="Search by Plot ID"
             />
             <p-button icon="pi pi-search" (click)="searchPlot()"></p-button>
         </p-inputGroup>
-        <p-inputGroup class="col-6">
+        <p-inputGroup class="col-12 md:col-5">
             <p-inputNumber
                 placeholder="Search By BuildingID"
                 [(ngModel)]="buildingId"
+                (keyup)="searchBuildingOnEnter($event)"
             ></p-inputNumber>
             <p-button icon="pi pi-search" (click)="searchBuilding()"></p-button>
         </p-inputGroup>

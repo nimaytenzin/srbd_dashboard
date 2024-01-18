@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: 'https://zhichar.bt/dev',
+    apiUrl: 'http://localhost:4322',
 };

@@ -12,7 +12,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { QRCodeModule } from 'angularx-qrcode';
 import * as L from 'leaflet';
-import { Message, MessageService } from 'primeng/api';
+import { ConfirmationService, Message, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -24,13 +24,10 @@ import { MessagesModule } from 'primeng/messages';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { PARSEDATE } from 'src/app/api/helper-function';
-import { BuildingDetailService } from 'src/app/dataservice/building-detail.dataservice';
-import { BuildingDataService } from 'src/app/dataservice/building.dataservice';
 import { BuildingPlotDataService } from 'src/app/dataservice/buildingplot.dataservice';
 import { GeometryDataService } from 'src/app/dataservice/geometry.dataservice';
-import { UnitDataService } from 'src/app/dataservice/unit.dataservice';
-import { AdminViewBuildingComponent } from '../admin-view-building/admin-view-building.component';
 import { ViewIndividualBuildingModalComponent } from './view-individual-building-modal/view-individual-building-modal.component';
+import { AdminBuildingInventoryViewBuildingComponent } from '../../admin-building-inventory/admin-building-inventory-view-building/admin-building-inventory-view-building.component';
 
 @Component({
     selector: 'app-admin-view-plot-buildings',
@@ -50,18 +47,14 @@ import { ViewIndividualBuildingModalComponent } from './view-individual-building
         ToastModule,
         QRCodeModule,
     ],
-    providers: [DialogService],
+    providers: [DialogService, ConfirmationService],
     templateUrl: './admin-view-plot-buildings.component.html',
     styleUrl: './admin-view-plot-buildings.component.scss',
-    changeDetection: ChangeDetectionStrategy.Default,
 })
 export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     constructor(
         private buildingPlotDataService: BuildingPlotDataService,
-        private buildingDataService: BuildingDataService,
-        private buildingDetailService: BuildingDetailService,
         private messageService: MessageService,
-        private unitDataService: UnitDataService,
         private geometryDataService: GeometryDataService,
         private dialogService: DialogService
     ) {}
@@ -81,40 +74,24 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     messages: Message[] | undefined;
 
     googleSatUrl = 'https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}';
-    map!: L.Map;
+    plotMap!: L.Map;
     buildingGeojson!: L.GeoJSON;
     plotsGeojson!: L.GeoJSON;
 
     plotIdsCsv: string;
 
-    ngOnInit(): void {
-        this.renderMap();
-    }
+    ngOnInit(): void {}
 
     ngOnChanges(changes: SimpleChanges) {
-        this.search();
-    }
-    search() {
-        this.getBuildingsInPlot(this.plotId);
-
-        console.log('BUIDLING IDS', this.buildingIds);
-        // this.getBuilding(Number(this.buildingId));
-        // this.getBuildingDetails(Number(this.buildingId));
-        // this.getBuildingUnits(Number(this.buildingId));
+        this.getPlotGeom(this.plotId);
     }
 
-    roundDecimal(number: number) {
-        return Math.round(number);
-    }
-    getQr(value) {
-        return value;
-    }
     renderMap() {
         var satelliteMap = L.tileLayer(this.googleSatUrl, {
             maxNativeZoom: 21,
             maxZoom: 21,
         });
-        this.map = L.map('plotMap', {
+        this.plotMap = L.map('plotMap', {
             layers: [satelliteMap],
             zoomControl: false,
             attributionControl: false,
@@ -128,6 +105,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
             .GetBuildingsOfPlot(plotId)
             .subscribe((res: any) => {
                 this.buildingPlots = res;
+                this.buildingIds = [];
                 for (
                     let index = 0;
                     index < this.buildingPlots.length;
@@ -136,6 +114,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
                     const element = this.buildingPlots[index];
                     this.buildingIds.push(element.buildingId);
                 }
+                this.getBuildingsGeom(this.buildingIds);
             });
     }
 
@@ -151,93 +130,104 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
         );
     }
 
-    getBuilding(buildingId: number) {
-        this.buildingDataService
-            .GetBuildingById(buildingId)
-            .subscribe((res) => {
-                this.building = res;
-                this.messageService.add({
-                    key: 'global',
-                    severity: 'success',
-                    summary: 'Building Found',
-                    detail: 'details loaded for Building ID: ' + buildingId,
-                });
-            });
+    openDeleteInterface(buildingId: number) {
+        this.ref = this.dialogService.open(
+            AdminBuildingInventoryViewBuildingComponent,
+            {
+                header: 'Building ID: ' + buildingId,
+                data: {
+                    buildingId: buildingId,
+                },
+                width: 'max-content',
+            }
+        );
+        this.ref.onClose.subscribe((res) => {});
     }
 
-    getBuildingDetails(buildingId: number) {
-        this.buildingDetailService
-            .GetBuildingDetailsByBuildingId(buildingId)
-            .subscribe((res) => {
-                this.buildingDetails = res;
-            });
-    }
-
-    getBuildingUnits(buildingId) {
-        this.unitDataService
-            .GetAllUnitsByBuilding(buildingId)
-            .subscribe((res: any) => {
-                this.units = res;
-            });
-    }
-
-    getBuildingFootprint(buildingId) {
+    async getBuildingsGeom(buildingIds: any[]) {
         if (this.buildingGeojson) {
-            this.map.removeLayer(this.buildingGeojson);
+            this.plotMap.removeLayer(this.buildingGeojson);
         }
-        this.geometryDataService
-            .GetBuildingFootprintById(buildingId)
-            .subscribe((res: any) => {
-                this.buildingGeojson = L.geoJSON(res, {
-                    style: (feature) => {
-                        return {
-                            fillColor: 'white',
-                            weight: 1,
-                            fillOpacity: 0.3,
-                            opacity: 1,
-                            color: 'white',
-                        };
+        let buildingGeom = [];
+        for (var i = 0; i < buildingIds.length; i++) {
+            let geom = await this.geometryDataService
+                .GetBuildingFootprintById(buildingIds[i])
+                .toPromise();
+            buildingGeom.push(geom);
+        }
+        let buildingFeature: any = {
+            type: 'FeatureCollection',
+            features: buildingGeom,
+        };
+
+        this.buildingGeojson = L.geoJSON(buildingFeature, {
+            onEachFeature: (feature, layer) => {
+                layer.on({
+                    click: (e: any) => {
+                        this.openDeleteInterface(feature.properties.buildingid);
                     },
-                }).addTo(this.map);
-                this.map.fitBounds(this.buildingGeojson.getBounds());
-                this.messageService.add({
-                    key: 'maptoast',
-                    severity: 'success',
-                    summary: 'Building Footprint data found',
-                    detail: 'Footprint added to the map',
                 });
-            });
+            },
+            style: function (feature) {
+                return {
+                    fillColor: 'white',
+                    fillOpacity: 0.5,
+                    weight: 1,
+                    opacity: 6,
+                    color: 'black',
+                };
+            },
+        }).addTo(this.plotMap);
     }
 
     getPlotGeom(plotsCsv: string) {
         if (this.plotsGeojson) {
-            this.map.removeLayer(this.plotsGeojson);
+            this.plotMap.removeLayer(this.plotsGeojson);
+        }
+        if (this.buildingGeojson) {
+            this.plotMap.removeLayer(this.buildingGeojson);
         }
         this.geometryDataService
             .GetPlotsGeomByPlotIdCsv(plotsCsv)
             .subscribe((res: any) => {
-                this.plotsGeojson = L.geoJSON(res, {
-                    style: (feature) => {
-                        return {
-                            fillColor: 'transparent',
-                            weight: 1,
-                            opacity: 1,
-                            color: 'red',
-                        };
-                    },
-                }).addTo(this.map);
-                this.map.fitBounds(this.plotsGeojson.getBounds());
-
-                this.messageService.add({
-                    key: 'maptoast',
-                    severity: 'success',
-                    summary: 'Plot Geometry Found',
-                    detail: 'Successfully added to the map',
-                });
+                if (res[0].features !== null) {
+                    this.renderMap();
+                    this.plotsGeojson = L.geoJSON(res, {
+                        style: (feature) => {
+                            return {
+                                fillColor: 'transparent',
+                                weight: 1,
+                                opacity: 1,
+                                color: 'red',
+                            };
+                        },
+                    }).addTo(this.plotMap);
+                    this.plotMap.fitBounds(this.plotsGeojson.getBounds());
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Plot Details Found',
+                        detail: 'Plot added to the map',
+                    });
+                    this.getBuildingsInPlot(this.plotId);
+                } else {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Plot Details  Not Found',
+                        detail: 'Please check the plotId',
+                    });
+                    this.plotMap.remove();
+                }
             });
     }
 
     getArrFromObject(obj) {
         return Object.entries(obj);
+    }
+
+    roundDecimal(number: number) {
+        return Math.round(number);
+    }
+    getQr(value) {
+        return value;
     }
 }

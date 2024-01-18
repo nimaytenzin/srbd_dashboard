@@ -1,0 +1,113 @@
+<div
+    class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden"
+>
+    <p-toast></p-toast>
+
+    <div class="flex flex-column align-items-center justify-content-center">
+        <div
+            style="
+                border-radius: 56px;
+                padding: 0.3rem;
+                background: linear-gradient(
+                    180deg,
+                    var(--primary-color) 10%,
+                    rgba(33, 150, 243, 0) 30%
+                );
+            "
+        >
+            <div
+                class="w-full surface-card py-8 px-5 sm:px-8"
+                style="border-radius: 53px"
+            >
+                <div class="text-center mb-5">
+                    <img
+                        src="assets/logo/logo.png"
+                        alt="Image"
+                        height="50"
+                        class="mb-3"
+                    />
+                    <div class="text-900 text-3xl font-medium mb-3">
+                        Welcome to Zhichar v2.0
+                    </div>
+                    <p>Planned Human Settlements Powered by Zhichar</p>
+                </div>
+
+                <div *ngIf="!this.token">
+                    <label
+                        for="email1"
+                        class="block text-900 text-xl font-medium mb-2"
+                        >CID</label
+                    >
+                    <input
+                        id="email1"
+                        type="text"
+                        placeholder="cid/userId"
+                        pInputText
+                        [(ngModel)]="username"
+                        class="w-full md:w-30rem mb-5"
+                        style="padding: 1rem"
+                    />
+
+                    <label
+                        for="password1"
+                        class="block text-900 font-medium text-xl mb-2"
+                        >Password</label
+                    >
+                    <p-password
+                        id="password1"
+                        [(ngModel)]="password"
+                        placeholder="Password"
+                        [toggleMask]="true"
+                        [feedback]="false"
+                        styleClass="mb-5"
+                        inputStyleClass="w-full p-3 md:w-30rem"
+                    ></p-password>
+
+                    <div
+                        class="flex align-items-center justify-content-between mb-5 gap-5"
+                    >
+                        <div class="flex align-items-center">
+                            <p-checkbox
+                                id="rememberme1"
+                                [binary]="true"
+                                [(ngModel)]="remember"
+                                styleClass="mr-2"
+                            ></p-checkbox>
+                            <label for="rememberme1">Remember me</label>
+                        </div>
+                    </div>
+                    <button
+                        pButton
+                        pRipple
+                        (click)="login()"
+                        label="Sign In"
+                        class="w-full p-3 text-xl"
+                        [routerLink]="['/']"
+                    ></button>
+                </div>
+
+                <div *ngIf="this.token" class="text-center">
+                    <p>Welcome back {{ decodedToken.fullName }}</p>
+                    <p class="text-600 font-medium">you have already logged</p>
+                    <p-button
+                        size="small"
+                        (click)="tokenExistsContinue()"
+                        label="Sign In"
+                        class="w-full"
+                        [routerLink]="['/']"
+                    ></p-button>
+
+                    <p>
+                        Not {{ decodedToken.fullName }} ?
+                        <span
+                            (click)="removeToken()"
+                            class="text-primary cursor-pointer"
+                        >
+                            Click here
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
