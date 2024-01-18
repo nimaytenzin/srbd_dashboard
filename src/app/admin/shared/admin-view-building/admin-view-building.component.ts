@@ -63,7 +63,7 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
         private unitDataService: UnitDataService,
         private geometryDataService: GeometryDataService,
         private dialogService: DialogService
-    ) {}
+    ) { }
     @Input() buildingId: number;
     ref: DynamicDialogRef | undefined;
 
@@ -83,7 +83,9 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
 
     plotIdsCsv: string;
 
-    ngOnInit(): void {}
+    ngOnInit(): void {
+        this.renderMap();
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         this.search();
@@ -147,30 +149,39 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
     }
 
     getBuildingFootprint(buildingId) {
-        this.renderMap();
         if (this.buildingGeojson) {
             this.map.removeLayer(this.buildingGeojson);
         }
         this.geometryDataService
             .GetBuildingFootprintById(buildingId)
             .subscribe((res: any) => {
-                this.buildingGeojson = L.geoJSON(res, {
-                    style: (feature) => {
-                        return {
-                            fillColor: 'white',
-                            weight: 1,
-                            fillOpacity: 0.3,
-                            opacity: 1,
-                            color: 'white',
-                        };
-                    },
-                }).addTo(this.map);
-                this.map.fitBounds(this.buildingGeojson.getBounds());
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Building Footprint data found',
-                    detail: 'Footprint added to the map',
-                });
+                console.log(res['features'])
+                if (res['features'] !== null) {
+                    this.buildingGeojson = L.geoJSON(res, {
+                        style: (feature) => {
+                            return {
+                                fillColor: 'white',
+                                weight: 1,
+                                fillOpacity: 0.3,
+                                opacity: 1,
+                                color: 'white',
+                            };
+                        },
+                    }).addTo(this.map);
+                    this.map.fitBounds(this.buildingGeojson.getBounds());
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Building Footprint data found',
+                        detail: 'Footprint added to the map',
+                    });
+                }else{
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'No Footprint Data Found for Building ID',
+                        detail: 'No Footprint Data Found for Building ID',
+                    });
+
+                }
             });
     }
 

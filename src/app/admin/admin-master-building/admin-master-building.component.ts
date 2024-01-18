@@ -22,6 +22,8 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { BuildingPlotDataService } from 'src/app/dataservice/buildingplot.dataservice';
+import { AdminBuildingInventoryViewBuildingComponent } from '../admin-building-inventory/admin-building-inventory-view-building/admin-building-inventory-view-building.component';
 
 interface BuildingPoint {
   lat: number,
@@ -71,7 +73,7 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
   instance: DynamicDialogComponent | undefined;
   plotId: string;
   plotGeoJson: L.GeoJSON;
-  
+
   existingBuildingGeoJson: L.GeoJSON;
 
   buildingPoint: BuildingPoint = {
@@ -95,11 +97,15 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
     overlapPercentage: 0
   }
 
+  buildingPlots: any;
+  buildingIds: any[];
+  buildingGeojson: any;
+
   constructor(
     public ref: DynamicDialogRef,
     private dialogService: DialogService,
-    private locationDataService: LocationDataService,
     private geometryDataService: GeometryDataService,
+    private buildingPlotDataService: BuildingPlotDataService,
     private messageService: MessageService
   ) {
     this.instance = this.dialogService.getInstance(this.ref)
@@ -158,6 +164,8 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
         },
       }).addTo(this.map);
       this.map.fitBounds(this.plotGeoJson.getBounds())
+
+      this.getBuildingsInPlot(this.plotId)
     })
 
     var editableLayers = L.featureGroup();
@@ -220,7 +228,7 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
         console.log("building id new ", res.id)
 
         this.buildingGeom.buildingid = res.id
-        
+
         //building plot data
         this.buildingPlot.buildingId = res.id
         this.buildingPlot.plotId = this.plotId
@@ -234,18 +242,16 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Building could not be added!!!' })
           }
         });
-        this.insertBuildingPlots(this.buildingPlot).then((result)=>{
-          if(result){
+        this.insertBuildingPlots(this.buildingPlot).then((result) => {
+          if (result) {
+            this.reloadBUildings()
             editableLayers.clearLayers()
             this.messageService.add({ severity: 'success', summary: 'Message', detail: 'Building Plot added Successfully!!!' })
-          }else {
+          } else {
             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Building could not be added!!!' })
           }
         })
-
-
-      })
-
+      });
     })
   }
 
@@ -259,5 +265,83 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
 
   async insertBuildingPlots(data) {
     return await this.geometryDataService.postBuildingPlot(data).toPromise()
+  }
+
+  async getBuildingsInPlot(plotId: string) {
+    this.buildingPlotDataService
+      .GetBuildingsOfPlot(plotId)
+      .subscribe((res: any) => {
+        this.buildingPlots = res;
+        this.buildingIds = [];
+        for (
+          let index = 0;
+          index < this.buildingPlots.length;
+          index++
+        ) {
+          const element = this.buildingPlots[index];
+          this.buildingIds.push(element.buildingId);
+        }
+        this.getBuildingsGeom(this.buildingIds);
+      });
+  }
+
+  async getBuildingsGeom(buildingIds: any[]) {
+    if (this.buildingGeojson) {
+      this.map.removeLayer(this.buildingGeojson);
+    }
+    let buildingGeom = [];
+    for (var i = 0; i < buildingIds.length; i++) {
+      let geom = await this.geometryDataService
+        .GetBuildingFootprintById(buildingIds[i])
+        .toPromise();
+      buildingGeom.push(geom);
+    }
+    let buildingFeature: any = {
+      type: 'FeatureCollection',
+      features: buildingGeom,
+    };
+
+    this.buildingGeojson = L.geoJSON(buildingFeature, {
+      onEachFeature: (feature, layer) => {
+        layer.on({
+          click: (e: any) => {
+            this.openDeleteInterface(feature.properties.buildingid);
+          },
+        });
+      },
+      style: function (feature) {
+        return {
+          fillColor: 'white',
+          fillOpacity: 0.5,
+          weight: 1,
+          opacity: 6,
+          color: 'black',
+        };
+      },
+    }).addTo(this.map);
+  }
+
+  openDeleteInterface(buildingId: number) {
+    this.ref = this.dialogService.open(
+      AdminBuildingInventoryViewBuildingComponent,
+      {
+        header: 'Building ID: ' + buildingId,
+        data: {
+          buildingId: buildingId,
+        },
+        width: 'max-content',
+      }
+    );
+    this.ref.onClose.subscribe((res) => {
+      if(res['delete']){
+        console.log("Reloading Building")
+        this.reloadBUildings()
+      }
+     });
+  }
+
+  reloadBUildings(){
+    this.map.removeLayer(this.buildingGeojson);
+    this.getBuildingsInPlot(this.plotId)
   }
 }

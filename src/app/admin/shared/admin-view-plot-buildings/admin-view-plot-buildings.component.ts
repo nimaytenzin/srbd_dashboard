@@ -28,6 +28,7 @@ import { BuildingPlotDataService } from 'src/app/dataservice/buildingplot.datase
 import { GeometryDataService } from 'src/app/dataservice/geometry.dataservice';
 import { ViewIndividualBuildingModalComponent } from './view-individual-building-modal/view-individual-building-modal.component';
 import { AdminBuildingInventoryViewBuildingComponent } from '../../admin-building-inventory/admin-building-inventory-view-building/admin-building-inventory-view-building.component';
+import { AdminMasterBuildingComponent } from '../../admin-master-building/admin-master-building.component';
 
 @Component({
     selector: 'app-admin-view-plot-buildings',
@@ -57,7 +58,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
         private messageService: MessageService,
         private geometryDataService: GeometryDataService,
         private dialogService: DialogService
-    ) {}
+    ) { }
     @Input() plotId: string;
     ref: DynamicDialogRef | undefined;
 
@@ -80,7 +81,9 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
 
     plotIdsCsv: string;
 
-    ngOnInit(): void {}
+    ngOnInit(): void {
+        this.renderMap();
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         this.getPlotGeom(this.plotId);
@@ -141,7 +144,11 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
                 width: 'max-content',
             }
         );
-        this.ref.onClose.subscribe((res) => {});
+        this.ref.onClose.subscribe((res) => {
+            if(res['delete']){
+                this.reloadBuildings()
+            }
+         });
     }
 
     async getBuildingsGeom(buildingIds: any[]) {
@@ -191,8 +198,14 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
             .GetPlotsGeomByPlotIdCsv(plotsCsv)
             .subscribe((res: any) => {
                 if (res[0].features !== null) {
-                    this.renderMap();
                     this.plotsGeojson = L.geoJSON(res, {
+                        onEachFeature: (feature, layer) => {
+                            layer.on({
+                                click: (e: any) => {
+                                    this.showAddBuilding(feature.properties['plotid'])
+                                },
+                            });
+                        },
                         style: (feature) => {
                             return {
                                 fillColor: 'transparent',
@@ -229,5 +242,29 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     }
     getQr(value) {
         return value;
+    }
+
+    showAddBuilding(plotId) {
+        this.ref = this.dialogService.open(
+            AdminMasterBuildingComponent,
+            {
+                header: 'Add building to PlotId: ' + plotId,
+                data: {
+                    plotId: plotId,
+                },
+                width: '90%',
+                height: '90%'
+            }
+        )
+        this.ref.onClose.subscribe((res)=>{
+            console.log("Add building dialog close",res);
+            this.reloadBuildings()
+
+        })
+    }
+
+    reloadBuildings(){
+        this.plotMap.removeLayer(this.buildingGeojson);
+        this.getBuildingsInPlot(this.plotId)
     }
 }

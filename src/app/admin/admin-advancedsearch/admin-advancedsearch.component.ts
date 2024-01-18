@@ -34,7 +34,7 @@ import { AdminMasterBuildingComponent } from '../admin-master-building/admin-mas
     styleUrl: './admin-advancedsearch.component.scss',
 })
 export class AdminAdvancedsearchComponent {
-    constructor(private messageService: MessageService) {}
+    constructor(private messageService: MessageService,public dialogService:DialogService) {}
     searched = false;
     buildingId: number;
     plotId: string;
@@ -45,10 +45,6 @@ export class AdminAdvancedsearchComponent {
     plotSearched = false;
     buildingSearched = false;
     ref: DynamicDialogRef | undefined;
-
-    constructor(
-        public dialogService:DialogService
-    ){}
 
     searchBuilding() {
         this.buildingSearched = true;
@@ -86,18 +82,7 @@ export class AdminAdvancedsearchComponent {
     onInputChange(): void {
         // Capitalize the input text
         this.plotId = this.plotId.toUpperCase();
+        this.plotId = this.plotId.replace(" ","")
     }
 
-    showAddBuilding(plotId) {
-        this.ref = this.dialogService.open(
-            AdminMasterBuildingComponent,
-            {
-                data: {
-                    plotId: plotId,
-                },
-                width: '90%',
-                height: '90%'
-            }
-        )
-    }
 }
