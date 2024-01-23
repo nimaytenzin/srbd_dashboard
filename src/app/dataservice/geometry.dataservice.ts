@@ -27,6 +27,10 @@ export class GeometryDataService {
         return this.http.get(`${this.apiUrl}/administrative-zone/plots/${plotId}`);
     }
 
+    GetBuildingPointNearHash(hash){
+        return this.http.get(`${this.apiUrl}/building/near?hash=${hash}`);
+    }
+
     GetDzongkhagsGeom() {
         return this.http.get(`${this.apiUrl}/dzongkhag/geom/all`);
     }

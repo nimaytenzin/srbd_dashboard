@@ -78,6 +78,10 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
     ngOnDestroy(): void {
         this.ref.destroy();
     }
+    redrawBuilding(buildingId){
+        //redraw the shape of the building
+
+    }
 
     goToBuildingDetailedView(buildingId) {
         // this.router.navigate(['/admin/building-detailed', buildingId]);

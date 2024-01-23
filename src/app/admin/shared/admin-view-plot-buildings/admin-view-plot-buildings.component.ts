@@ -29,6 +29,8 @@ import { GeometryDataService } from 'src/app/dataservice/geometry.dataservice';
 import { ViewIndividualBuildingModalComponent } from './view-individual-building-modal/view-individual-building-modal.component';
 import { AdminBuildingInventoryViewBuildingComponent } from '../../admin-building-inventory/admin-building-inventory-view-building/admin-building-inventory-view-building.component';
 import { AdminMasterBuildingComponent } from '../../admin-master-building/admin-master-building.component';
+import { AdminBuildingMenuComponent } from '../../admin-advancedsearch/admin-building-menu/admin-building-menu.component';
+import { BuildingPointStatus } from 'src/app/api/constants';
 
 @Component({
     selector: 'app-admin-view-plot-buildings',
@@ -52,6 +54,7 @@ import { AdminMasterBuildingComponent } from '../../admin-master-building/admin-
     templateUrl: './admin-view-plot-buildings.component.html',
     styleUrl: './admin-view-plot-buildings.component.scss',
 })
+
 export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     constructor(
         private buildingPlotDataService: BuildingPlotDataService,
@@ -70,6 +73,33 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     units: any[];
     plots: any[];
 
+    notStartedBuildingStyle = {
+        radius: 8,
+        color: 'red',
+        weight: 0,
+        opacity: 1,
+        fillColor: 'red',
+        fillOpacity: 1,
+    };
+    completeBuildingStyle = {
+        radius: 8,
+        color: 'green',
+        opacity: 1,
+        weight: 0,
+        fillColor: 'green',
+
+        fillOpacity: 0.8,
+    };
+    inProgressBuildingStyle = {
+        radius: 8,
+        color: 'yellow',
+        fillColor: 'yellow',
+
+        weight: 0,
+        opacity: 1,
+        fillOpacity: 0.8,
+    };
+
     parseDate = PARSEDATE;
 
     messages: Message[] | undefined;
@@ -77,6 +107,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     googleSatUrl = 'https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}';
     plotMap!: L.Map;
     buildingGeojson!: L.GeoJSON;
+    buildingPointGeojson!: L.GeoJSON;
     plotsGeojson!: L.GeoJSON;
 
     plotIdsCsv: string;
@@ -145,10 +176,10 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
             }
         );
         this.ref.onClose.subscribe((res) => {
-            if(res['delete']){
+            if (res['delete']) {
                 this.reloadBuildings()
             }
-         });
+        });
     }
 
     async getBuildingsGeom(buildingIds: any[]) {
@@ -246,9 +277,10 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
 
     showAddBuilding(plotId) {
         this.ref = this.dialogService.open(
-            AdminMasterBuildingComponent,
+            // AdminMasterBuildingComponent,
+            AdminBuildingMenuComponent,
             {
-                header: 'Add building to PlotId: ' + plotId,
+                header: 'Building Menu for plot: ' + plotId,
                 data: {
                     plotId: plotId,
                 },
@@ -256,14 +288,43 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
                 height: '90%'
             }
         )
-        this.ref.onClose.subscribe((res)=>{
-            console.log("Add building dialog close",res);
+        this.ref.onClose.subscribe((res) => {
+            console.log("Add building dialog close", res);
             this.reloadBuildings()
-
+            this.reloadBuildingPoint(res)
         })
     }
 
-    reloadBuildings(){
+    async reloadBuildingPoint(buildingPoint: any) {
+        this.plotMap.removeLayer(this.buildingPointGeojson);
+        this.buildingPointGeojson = L.geoJSON(buildingPoint['features'], {
+            pointToLayer: (feature, latlng) => {
+                const circleMarker = L.circleMarker(latlng);
+                circleMarker.on('click', () => {
+                    // this.plotMap.setView(circleMarker.getLatLng(), 20);
+                });
+                return circleMarker;
+            },
+            style: (feature: any) => {
+                return this.getBuildingPointStyle(feature.properties.status);
+            },
+            onEachFeature: (feature, layer) => {
+            },
+        }).addTo(this.plotMap);
+    }
+
+    getBuildingPointStyle(status: string) {
+        if (status === BuildingPointStatus.NOT_STARTED) {
+            return this.notStartedBuildingStyle;
+        } else if (status === BuildingPointStatus.IN_PROGRESS) {
+            return this.inProgressBuildingStyle;
+        } else if (status === BuildingPointStatus.COMPLETED) {
+            return this.completeBuildingStyle;
+        }
+        return this.notStartedBuildingStyle;
+    }
+
+    reloadBuildings() {
         this.plotMap.removeLayer(this.buildingGeojson);
         this.getBuildingsInPlot(this.plotId)
     }
