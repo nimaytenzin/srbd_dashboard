@@ -3,7 +3,7 @@ import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 
-import { AdminLayoutModule } from './layout/admin/admin-layout.module';
+import { AdminLayoutModule } from './presentation/layout/admin/admin-layout.module';
 
 @NgModule({
     declarations: [AppComponent],
