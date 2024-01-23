@@ -26,6 +26,17 @@ export class GeometryDataService {
         );
     }
 
+    updateBuildingGeomBuildingId(buildingId: number, polygonId:number) {
+        let data = {
+            polygonId:polygonId,
+            buildingId:buildingId
+        }
+        return this.http.patch(
+            `${this.apiUrl}/building-footprint/bid`,
+            data
+        );
+    }
+
     postBuildingPlot(data){
         return this.http.post(`${this.apiUrl}/building-plots`,data)
     }

@@ -1,13 +1,9 @@
-<div>
-    <div class="flex justify-content-end">
-            <p-button
-                label="Add Building"
-                (click)="showAddBuilding()"
-            ></p-button>
-            <p-button
-                label="Show Building Points near by"
-                (click)="showBuildingsNearBy()"
-                icon="pi pi-eye"
-            ></p-button>
+<div class="flex justify-content-center align-items-center min-h-full">
+    <p-confirmDialog></p-confirmDialog>
+    <p-toast></p-toast>
+    <div class="">
+        <p-button label="View Details" class="mr-4" (click)="goToBuildingDetailedView(buildingId)"></p-button>
+        <p-button label='Assign Point to highlighted Polygon: {{selectedBuildingId}}' class="mr-4"
+            (click)="assignToBuilding()"></p-button>
     </div>
 </div>

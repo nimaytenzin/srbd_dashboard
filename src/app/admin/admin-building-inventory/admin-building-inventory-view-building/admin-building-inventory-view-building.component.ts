@@ -4,7 +4,8 @@ import { ButtonModule } from 'primeng/button';
 import { AccordionModule } from 'primeng/accordion';
 import { TableModule } from 'primeng/table';
 import { QRCodeModule } from 'angularx-qrcode';
-
+import { encodeBase32 } from 'geohashing';
+import * as L from 'leaflet';
 import {
     DialogService,
     DynamicDialogComponent,
@@ -24,6 +25,7 @@ import { Router } from '@angular/router';
 import { ViewIndividualBuildingModalComponent } from '../../shared/admin-view-plot-buildings/view-individual-building-modal/view-individual-building-modal.component';
 import { AdminMasterBuildingComponent } from '../../admin-master-building/admin-master-building.component';
 import { GeomEditType } from 'src/app/api/constants';
+import { GeometryDataService } from 'src/app/dataservice/geometry.dataservice';
 
 @Component({
     selector: 'app-admin-building-inventory-view-building',
@@ -51,6 +53,10 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
     buildingDetails: any;
     building: any;
     buildingPlots: any[];
+    plotGeom: any;
+
+    buildingPointsGeom: any;
+    isBuildingPoint:boolean = false;
 
     units: any[];
 
@@ -64,11 +70,13 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
         private messageService: MessageService,
         private buildingDataService: BuildingDataService,
         private buildingPlotDataService: BuildingPlotDataService,
+        private geometryService: GeometryDataService,
         private router: Router
     ) {
         this.instance = this.dialogService.getInstance(this.ref);
         if (this.instance && this.instance.data) {
             this.buildingId = this.instance.data.buildingId;
+            this.isBuildingPoint = this.instance.data.isBuildingPoint;
             this.getBuildingDetails(this.buildingId);
             this.getUnitsByBuildingId(this.buildingId);
             this.getBuilding(this.buildingId);
@@ -81,7 +89,27 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
     ngOnDestroy(): void {
         this.ref.destroy();
     }
-    redrawBuilding(buildingId) {
+
+    async showBuildingsNearBy() {
+        let hash = await this.generateGoeHashFromPlotId()
+        this.buildingPointsGeom = await this.geometryService.GetBuildingPointNearHash(hash).toPromise()
+        this.ref.close({
+            delete: false,
+            type: "POINTS",
+            data: this.buildingPointsGeom
+        })
+    }
+
+    async generateGoeHashFromPlotId() {
+        let plotId = this.buildingPlots[0]['plotId']
+        let response = await this.geometryService.GetPlotGeom(plotId).toPromise()
+        this.plotGeom = L.geoJSON(response[0])
+        const center = this.plotGeom.getBounds().getCenter();
+        const hash = encodeBase32(center.lat, center.lng, 7)
+        return hash
+    }
+
+    async redrawBuilding(buildingId) {
         //redraw the shape of the building
         this.secondRef = this.dialogService.open(
             AdminMasterBuildingComponent,
@@ -107,9 +135,6 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
     }
 
     goToBuildingDetailedView(buildingId) {
-        // this.router.navigate(['/admin/building-detailed', buildingId]);
-        // this.ref.close();
-
         this.ref = this.dialogService.open(
             ViewIndividualBuildingModalComponent,
             {
@@ -191,5 +216,13 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
             },
             reject: () => { },
         });
+    }
+
+    clearBuildingNearBy(){
+        this.ref.close({
+            delete: false,
+            type: "NO_POINTS",
+            data: this.buildingPointsGeom
+        })
     }
 }

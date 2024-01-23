@@ -52,6 +52,9 @@ interface BuildingPlot {
   selector: 'app-admin-building-menu',
   standalone: true,
   imports: [
+    ToastModule,
+    DividerModule,
+    ConfirmDialogModule,
     ButtonModule,
   ],
   templateUrl: './admin-building-menu.component.html',
@@ -60,7 +63,7 @@ interface BuildingPlot {
 
 export class AdminBuildingMenuComponent implements OnInit, OnDestroy {
   instance: DynamicDialogComponent | undefined;
-  plotId: string;
+  buildingId: number;
 
   buildingDetails: any;
   building: any;
@@ -91,15 +94,22 @@ export class AdminBuildingMenuComponent implements OnInit, OnDestroy {
     overlapPercentage: 0
   }
 
+  selectedBuildingId: number = 0;
+  plotId: string;
+
   constructor(
     public ref: DynamicDialogRef,
     public secondRef: DynamicDialogRef,
     public messageService: MessageService,
     private dialogService: DialogService,
+    private confirmationService: ConfirmationService,
+    private buildingService: BuildingDataService,
     private geometryService: GeometryDataService,
   ) {
     this.instance = this.dialogService.getInstance(this.ref);
     if (this.instance && this.instance.data) {
+      this.buildingId = this.instance.data.buildingId;
+      this.selectedBuildingId = this.instance.data.selectedBuildingId;
       this.plotId = this.instance.data.plotId;
     }
   }
@@ -111,87 +121,75 @@ export class AdminBuildingMenuComponent implements OnInit, OnDestroy {
     this.ref.destroy();
   }
 
-  async showBuildingsNearBy(){
-    let hash = await this.generateGoeHashFromPlotId()
-    this.buildingPointsGeom = await this.geometryService.GetBuildingPointNearHash(hash).toPromise()
-    this.ref.close(this.buildingPointsGeom);
-
-  }
-
-  async generateGoeHashFromPlotId(){
-    let response = await this.geometryService.GetPlotGeom(this.plotId).toPromise()
-    this.plotGeom = L.geoJSON(response[0])
-    const center = this.plotGeom.getBounds().getCenter();
-    const hash = encodeBase32(center.lat,center.lng,7)
-    return hash
-  }
-
-  showAddBuilding() {
-    this.secondRef= this.dialogService.open(
-      AdminMasterBuildingComponent,
+  goToBuildingDetailedView(buildingId) {
+    this.ref = this.dialogService.open(
+      ViewIndividualBuildingModalComponent,
       {
-        header: 'Add building to PlotId: ' + this.plotId,
+        header: 'Building ID: ' + buildingId,
         data: {
-          type:GeomEditType.ADD,
-          plotId: this.plotId,
+          buildingId: buildingId,
         },
-        width: '90%',
-        height: '90%'
+        width: '80vw',
       }
     );
-    this.secondRef.onClose.subscribe((res)=>{
-      console.log(res)
+  }
 
-      this.buildingPoint.lat = res.lat
-      this.buildingPoint.lng = res.lng
-      this.buildingPoint.plotId = `New Building Added on ${this.plotId}`
+  async updateBuildingGeom() {
+    const result = await this.geometryService.updateBuildingGeomBuildingId(this.buildingId, this.selectedBuildingId).toPromise()
+    if (result[1]['rowCount']) {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Building Geom Transferred',
+        detail: 'Building Geom Transferred',
+      })
+    }
+  }
+
+  async updateBuildingPlotTable() {
+    //update buildingid from zhichar point to the plotId
+    const result = await this.buildingService.UpdateBuildingPlotByPlot(this.plotId, this.buildingId, this.selectedBuildingId).toPromise()
+    if (result['id'] !== null) {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Building Plot Transferred',
+        detail: 'Building Plot Transferred',
+      })
+    }
+
+  }
+
+  assignToBuilding() {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Do you want to assign this point?',
+      header: 'Assignment Confirmation',
+      icon: 'pi pi-info-circle',
+      acceptButtonStyleClass: 'p-button-danger p-button-text',
+      rejectButtonStyleClass: 'p-button-text p-button-text',
+      acceptIcon: 'none',
+      rejectIcon: 'none',
 
 
-      res.data['features'][0]['geometry']['type'] = "MultiPolygon"
-      res.data['features'][0]['geometry']['coordinates'] = [res.data['features'][0]['geometry']['coordinates']]
-      var jsonData = JSON.stringify(res.data['features'][0]['geometry'])
-      this.buildingGeom.geometry = jsonData
-
-      this.insertBuildingPoint(this.buildingPoint).then((res: any) => {
-        console.log("building id new ", res.id)
-
-        this.buildingGeom.buildingid = res.id
-
-        //building plot data
-        this.buildingPlot.buildingId = res.id
-        this.buildingPlot.plotId = this.plotId
-        this.buildingPlot.overlapPercentage = 100.0
-
-        this.insertBuildingGeom(this.buildingGeom).then((result) => {
-          if (result[1]) {
-            this.messageService.add({ severity: 'success', summary: 'Message', detail: 'Building added Successfully!!!' })
-          } else {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Building could not be added!!!' })
-          }
-        });
-        this.insertBuildingPlots(this.buildingPlot).then((result) => {
-          if (result) {
-            this.messageService.add({ severity: 'success', summary: 'Message', detail: 'Building Plot added Successfully!!!' })
-          } else {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Building could not be added!!!' })
-          }
+      accept: () => {
+        this.updateBuildingPlotTable().then((res) => {
+          this.updateBuildingGeom().then((res) => {
+            this.ref.close({
+              type: "CHANGED"
+            })
+          })
         })
-      });
-
-    })
+      },
+      reject: () => {
+        this.ref.close({
+          type: "NOT_CHANGED"
+        })
+      },
+    });
 
   }
 
-  async insertBuildingPoint(data) {
-    return await this.geometryService.postBuildingPoint(data).toPromise()
-  }
+  cancel() {
 
-  async insertBuildingGeom(data) {
-    return await this.geometryService.postBuildingGeom(data).toPromise()
-  }
-
-  async insertBuildingPlots(data) {
-    return await this.geometryService.postBuildingPlot(data).toPromise()
   }
 
 }

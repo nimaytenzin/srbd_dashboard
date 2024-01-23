@@ -93,6 +93,10 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
 
     @Input() plotId: string;
     ref: DynamicDialogRef | undefined;
+    buildingPointRef: DynamicDialogRef | undefined;
+
+
+    selectedBuildingId: number;
 
     buildingPlots: any[];
     buildingIds: number[] = [];
@@ -101,6 +105,22 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
     buildingDetails: any;
     units: any[];
     plots: any[];
+
+    buildingHighlightStyle = {
+        fillColor: 'blue',
+        fillOpacity: 0.7,
+        weight: 2,
+        opacity: 6,
+        color: 'black',
+    }
+
+    buildingDefaultStyle = {
+        fillColor: 'white',
+        fillOpacity: 0.5,
+        weight: 1,
+        opacity: 6,
+        color: 'black',
+    }
 
     buildingPoint: BuildingPoint = {
         lat: 0,
@@ -214,19 +234,23 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
         );
     }
 
-    openDeleteInterface(buildingId: number) {
+    openDeleteInterface(buildingId: number, isBuildingPoint: boolean) {
         this.ref = this.dialogService.open(
             AdminBuildingInventoryViewBuildingComponent,
             {
                 header: 'Building ID: ' + buildingId,
                 data: {
+                    isBuildingPoint: isBuildingPoint,
                     buildingId: buildingId,
                 },
                 width: 'max-content',
             }
         );
         this.ref.onClose.subscribe((res) => {
-            if (res['type'] == "REDRAW") {
+            if (res == null) {
+                this.buildingGeojson.resetStyle()
+                this.selectedBuildingId = null
+            } else if (res['type'] == "REDRAW") {
                 if (res['data'] !== null) {
 
                     let resp = res['data']
@@ -251,11 +275,23 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                         }
                     })
                 }
-            }
-            if (res['type'] == "DELETE") {
+                this.buildingGeojson.resetStyle()
+                this.selectedBuildingId = null
+            } else if (res['type'] == "NO_POINTS") {
+                if (this.buildingPointGeojson) {
+                    this.plotMap.removeLayer(this.buildingPointGeojson)
+                    //reset selected buildingID
+                }
+                this.buildingGeojson.resetStyle()
+                this.selectedBuildingId = null
+            } else if (res['type'] == "POINTS") {
+                this.reloadBuildingPoint(res.data)
+            } else {
                 if (res['delete']) {
                     this.reloadBuildings()
                 }
+                this.buildingGeojson.resetStyle()
+                this.selectedBuildingId = null
             }
         });
     }
@@ -263,6 +299,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
     async getBuildingsGeom(buildingIds: any[]) {
         if (this.buildingGeojson) {
             this.plotMap.removeLayer(this.buildingGeojson);
+            this.buildingGeojson = null
         }
         let buildingGeom = [];
         for (var i = 0; i < buildingIds.length; i++) {
@@ -280,19 +317,27 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
             onEachFeature: (feature, layer) => {
                 layer.on({
                     click: (e: any) => {
-                        this.openDeleteInterface(feature.properties.buildingid);
-                    },
+                        this.buildingGeojson.resetStyle()
+
+                        if (this.selectedBuildingId !== feature.properties.buildingid) {
+                            if (this.buildingPointGeojson) {
+                                this.plotMap.removeLayer(this.buildingPointGeojson)
+                                this.buildingPointGeojson = null
+                            }
+                        }
+                        if (this.buildingPointGeojson) {
+                            this.openDeleteInterface(feature.properties.buildingid, true);
+                        } else {
+                            this.openDeleteInterface(feature.properties.buildingid, false);
+                        }
+
+                        var ll = e.target
+                        ll.setStyle(this.buildingHighlightStyle)
+                        this.selectedBuildingId = feature.properties.buildingid
+                    }
                 });
             },
-            style: function (feature) {
-                return {
-                    fillColor: 'white',
-                    fillOpacity: 0.5,
-                    weight: 1,
-                    opacity: 6,
-                    color: 'black',
-                };
-            },
+            style: this.buildingDefaultStyle
         }).addTo(this.plotMap);
     }
 
@@ -407,14 +452,13 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                     }
                 })
             });
-
-            // this.reloadBuildings()
-            // this.reloadBuildingPoint(res)
         })
     }
 
     async reloadBuildingPoint(buildingPoint: any) {
-        this.plotMap.removeLayer(this.buildingPointGeojson);
+        if (this.buildingPointGeojson) {
+            this.plotMap.removeLayer(this.buildingPointGeojson);
+        }
         this.buildingPointGeojson = L.geoJSON(buildingPoint['features'], {
             pointToLayer: (feature, latlng) => {
                 const circleMarker = L.circleMarker(latlng);
@@ -427,6 +471,36 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                 return this.getBuildingPointStyle(feature.properties.status);
             },
             onEachFeature: (feature, layer) => {
+                layer.on({
+                    click: (e: any) => {
+                        this.buildingPointRef = this.dialogService.open(
+                            AdminBuildingMenuComponent,
+                            {
+                                header: 'Building ID: ' + feature.properties.id,
+                                data: {
+                                    buildingId: feature.properties.id,
+                                    selectedBuildingId: this.selectedBuildingId,
+                                    plotId: this.plotId
+                                },
+                                height: "30vh",
+                                width: "50vw"
+                            }
+                        )
+                        this.buildingPointRef.onClose.subscribe((res) => {
+                            if (res) {
+                                if (res['type'] == "CHANGED") {
+                                    console.log("yoooooooou building")
+                                    this.reloadBuildings()
+                                    if (this.buildingPointGeojson) {
+                                        this.plotMap.removeLayer(this.buildingPointGeojson)
+                                        this.buildingPointGeojson = null
+                                    }
+                                    this.selectedBuildingId = null;
+                                }
+                            }
+                        })
+                    },
+                });
             },
         }).addTo(this.plotMap);
     }

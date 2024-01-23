@@ -16,6 +16,13 @@ export class BuildingDataService {
         return this.http.get(`${this.apiUrl}/building/${buildingId}`);
     }
 
+    UpdateBuildingPlotByPlot(plotId:string,buildingId: number,polygonId:number) {
+        return this.http.patch(`${this.apiUrl}/building-plots/plotId/${plotId}`,{
+            buildingId:buildingId,
+            polygonId:polygonId
+        });
+    }
+
     DeleteBuilding(buildingId: number) {
         return this.http.delete(`${this.apiUrl}/building/${buildingId}`);
     }
