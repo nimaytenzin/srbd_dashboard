@@ -17,6 +17,7 @@ import {
 import { AdminBuildingInventoryViewBuildingComponent } from './admin-building-inventory-view-building/admin-building-inventory-view-building.component';
 import { Router } from '@angular/router';
 import { AdminMasterBuildingComponent } from '../admin-master-building/admin-master-building.component';
+import { GeomEditType } from 'src/app/api/constants';
 
 @Component({
     selector: 'app-admin-building-inventory',
@@ -116,6 +117,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
             AdminMasterBuildingComponent,
             {
                 data: {
+                    type:GeomEditType.ADD,
                     plotId: plotId,
                 },
                 width: '90%',

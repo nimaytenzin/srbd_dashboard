@@ -19,6 +19,13 @@ export class GeometryDataService {
         return this.http.post(`${this.apiUrl}/building-footprint`,data)
     }
 
+    updateBuildingGeom(buildingId: number, data) {
+        return this.http.patch(
+            `${this.apiUrl}/building-footprint/geometry/${buildingId}`,
+            data
+        );
+    }
+
     postBuildingPlot(data){
         return this.http.post(`${this.apiUrl}/building-plots`,data)
     }

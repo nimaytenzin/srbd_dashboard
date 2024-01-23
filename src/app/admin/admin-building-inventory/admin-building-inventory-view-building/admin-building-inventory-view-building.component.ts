@@ -22,6 +22,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { BuildingPlotDataService } from 'src/app/dataservice/buildingplot.dataservice';
 import { Router } from '@angular/router';
 import { ViewIndividualBuildingModalComponent } from '../../shared/admin-view-plot-buildings/view-individual-building-modal/view-individual-building-modal.component';
+import { AdminMasterBuildingComponent } from '../../admin-master-building/admin-master-building.component';
+import { GeomEditType } from 'src/app/api/constants';
 
 @Component({
     selector: 'app-admin-building-inventory-view-building',
@@ -54,6 +56,7 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
 
     constructor(
         public ref: DynamicDialogRef,
+        public secondRef: DynamicDialogRef,
         private dialogService: DialogService,
         private buildingDetailService: BuildingDetailService,
         private unitDataService: UnitDataService,
@@ -73,14 +76,34 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
         }
     }
 
-    ngOnInit(): void {}
+    ngOnInit(): void { }
 
     ngOnDestroy(): void {
         this.ref.destroy();
     }
-    redrawBuilding(buildingId){
+    redrawBuilding(buildingId) {
         //redraw the shape of the building
+        this.secondRef = this.dialogService.open(
+            AdminMasterBuildingComponent,
+            {
+                header: 'REshape Building for id: ' + buildingId,
+                data: {
+                    type: GeomEditType.EDIT,
+                    buildingId: buildingId
+                },
+                width: '90%',
+                height: '90%'
+            }
+        )
 
+        this.secondRef.onClose.subscribe((res) => {
+            console.log("in menu", res)
+            this.ref.close({
+                delete: false,
+                type: "REDRAW",
+                data: res
+            });
+        });
     }
 
     goToBuildingDetailedView(buildingId) {
@@ -161,10 +184,12 @@ export class AdminBuildingInventoryViewBuildingComponent implements OnInit, OnDe
                         });
                         this.ref.close({
                             delete: true,
+                            type: "DELETE",
+                            data: null
                         });
                     });
             },
-            reject: () => {},
+            reject: () => { },
         });
     }
 }

@@ -1,3 +1,8 @@
+export enum GeomEditType{
+  EDIT="EDIT",
+  ADD="ADD",
+}
+
 export enum BuildingPointStatus {
     NOT_STARTED = 'NOT_STARTED',
     IN_PROGRESS = 'IN_PROGRESS',

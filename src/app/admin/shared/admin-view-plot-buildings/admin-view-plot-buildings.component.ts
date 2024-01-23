@@ -6,6 +6,7 @@ import {
     Input,
     OnChanges,
     OnInit,
+    OnDestroy,
     Output,
     SimpleChanges,
 } from '@angular/core';
@@ -30,7 +31,30 @@ import { ViewIndividualBuildingModalComponent } from './view-individual-building
 import { AdminBuildingInventoryViewBuildingComponent } from '../../admin-building-inventory/admin-building-inventory-view-building/admin-building-inventory-view-building.component';
 import { AdminMasterBuildingComponent } from '../../admin-master-building/admin-master-building.component';
 import { AdminBuildingMenuComponent } from '../../admin-advancedsearch/admin-building-menu/admin-building-menu.component';
-import { BuildingPointStatus } from 'src/app/api/constants';
+import { BuildingPointStatus, GeomEditType } from 'src/app/api/constants';
+
+interface BuildingPoint {
+    lat: number,
+    lng: number,
+    plotId: string,
+    dzongkhagId: number,
+}
+
+interface BuildingGeom {
+    geometry: string,
+    dzoid: number,
+    admid: number,
+    subadmid: number,
+    buildingid: number
+    areaSqFt: number
+}
+
+interface BuildingPlot {
+    buildingId: number;
+    plotId: string;
+    overlapPercentage: number;
+}
+
 
 @Component({
     selector: 'app-admin-view-plot-buildings',
@@ -55,13 +79,18 @@ import { BuildingPointStatus } from 'src/app/api/constants';
     styleUrl: './admin-view-plot-buildings.component.scss',
 })
 
-export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
+export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDestroy {
     constructor(
         private buildingPlotDataService: BuildingPlotDataService,
         private messageService: MessageService,
         private geometryDataService: GeometryDataService,
         private dialogService: DialogService
     ) { }
+
+    ngOnDestroy(): void {
+        this.plotMap = null;
+    }
+
     @Input() plotId: string;
     ref: DynamicDialogRef | undefined;
 
@@ -72,6 +101,27 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     buildingDetails: any;
     units: any[];
     plots: any[];
+
+    buildingPoint: BuildingPoint = {
+        lat: 0,
+        lng: 0,
+        plotId: '',
+        dzongkhagId: 0
+    };
+    buildingGeom: BuildingGeom = {
+        geometry: '',
+        dzoid: 0,
+        admid: 0,
+        subadmid: 0,
+        buildingid: 0,
+        areaSqFt: 0
+    };
+
+    buildingPlot: BuildingPlot = {
+        buildingId: 0,
+        plotId: '',
+        overlapPercentage: 0
+    }
 
     notStartedBuildingStyle = {
         radius: 8,
@@ -176,8 +226,36 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
             }
         );
         this.ref.onClose.subscribe((res) => {
-            if (res['delete']) {
-                this.reloadBuildings()
+            if (res['type'] == "REDRAW") {
+                if (res['data'] !== null) {
+
+                    let resp = res['data']
+                    let data = {
+                        geometry: ''
+                    }
+                    //conversion to multipolygon for postgis
+                    resp.geom['features'][0]['geometry']['type'] = "MultiPolygon"
+                    resp.geom['features'][0]['geometry']['coordinates'] = [resp.geom['features'][0]['geometry']['coordinates']]
+                    var jsonData = JSON.stringify(resp.geom['features'][0]['geometry'])
+                    data.geometry = jsonData
+
+                    this.updateBuildingGeom(buildingId, data).then((res) => {
+                        console.log("update response", res[1]['rowCount'])
+                        if (res[1]['rowCount']) {
+                            this.reloadBuildings()
+                            this.messageService.add({
+                                severity: 'success',
+                                summary: 'Building Geom Updated',
+                                detail: 'Building Geom Updated',
+                            });
+                        }
+                    })
+                }
+            }
+            if (res['type'] == "DELETE") {
+                if (res['delete']) {
+                    this.reloadBuildings()
+                }
             }
         });
     }
@@ -228,12 +306,13 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
         this.geometryDataService
             .GetPlotsGeomByPlotIdCsv(plotsCsv)
             .subscribe((res: any) => {
+                console.log(res[0].features)
                 if (res[0].features !== null) {
                     this.plotsGeojson = L.geoJSON(res, {
                         onEachFeature: (feature, layer) => {
                             layer.on({
                                 click: (e: any) => {
-                                    this.showAddBuilding(feature.properties['plotid'])
+                                    this.showAddBuilding(feature.properties['plotid'], feature.properties['dzongkhagi'])
                                 },
                             });
                         },
@@ -259,7 +338,6 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
                         summary: 'Plot Details  Not Found',
                         detail: 'Please check the plotId',
                     });
-                    this.plotMap.remove();
                 }
             });
     }
@@ -275,23 +353,63 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
         return value;
     }
 
-    showAddBuilding(plotId) {
+    showAddBuilding(plotId, dzongkhagId) {
         this.ref = this.dialogService.open(
-            // AdminMasterBuildingComponent,
-            AdminBuildingMenuComponent,
+            AdminMasterBuildingComponent,
+            // AdminBuildingMenuComponent,
             {
                 header: 'Building Menu for plot: ' + plotId,
                 data: {
+                    type: GeomEditType.ADD,
                     plotId: plotId,
                 },
                 width: '90%',
                 height: '90%'
             }
         )
+
         this.ref.onClose.subscribe((res) => {
             console.log("Add building dialog close", res);
-            this.reloadBuildings()
-            this.reloadBuildingPoint(res)
+            this.buildingPoint.lat = res.lat
+            this.buildingPoint.lng = res.lng
+            this.buildingPoint.dzongkhagId = dzongkhagId
+            this.buildingPoint.plotId = `New Building Added on ${this.plotId}`
+
+
+            res.geom['features'][0]['geometry']['type'] = "MultiPolygon"
+            res.geom['features'][0]['geometry']['coordinates'] = [res.geom['features'][0]['geometry']['coordinates']]
+            var jsonData = JSON.stringify(res.geom['features'][0]['geometry'])
+            this.buildingGeom.geometry = jsonData
+
+            this.insertBuildingPoint(this.buildingPoint).then((res: any) => {
+                console.log("building id new ", res.id)
+
+                this.buildingGeom.buildingid = res.id
+
+                //building plot data
+                this.buildingPlot.buildingId = res.id
+                this.buildingPlot.plotId = this.plotId
+                this.buildingPlot.overlapPercentage = 100.0
+
+                this.insertBuildingGeom(this.buildingGeom).then((result) => {
+                    if (result[1]) {
+                        this.messageService.add({ severity: 'success', summary: 'Message', detail: 'Building added Successfully!!!' })
+                    } else {
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Building could not be added!!!' })
+                    }
+                });
+                this.insertBuildingPlots(this.buildingPlot).then((result) => {
+                    if (result) {
+                        this.reloadBuildings()
+                        this.messageService.add({ severity: 'success', summary: 'Message', detail: 'Building Plot added Successfully!!!' })
+                    } else {
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Building could not be added!!!' })
+                    }
+                })
+            });
+
+            // this.reloadBuildings()
+            // this.reloadBuildingPoint(res)
         })
     }
 
@@ -327,5 +445,21 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges {
     reloadBuildings() {
         this.plotMap.removeLayer(this.buildingGeojson);
         this.getBuildingsInPlot(this.plotId)
+    }
+
+    async updateBuildingGeom(buildingId, data) {
+        return await this.geometryDataService.updateBuildingGeom(buildingId, data).toPromise()
+    }
+
+    async insertBuildingPoint(data) {
+        return await this.geometryDataService.postBuildingPoint(data).toPromise()
+    }
+
+    async insertBuildingGeom(data) {
+        return await this.geometryDataService.postBuildingGeom(data).toPromise()
+    }
+
+    async insertBuildingPlots(data) {
+        return await this.geometryDataService.postBuildingPlot(data).toPromise()
     }
 }

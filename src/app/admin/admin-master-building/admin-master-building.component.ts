@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
+import { GeomEditType } from "../../api/constants";
 import { DropdownModule } from 'primeng/dropdown';
 import { LocationDataService } from 'src/app/dataservice/location.dataservice';
 import { CardModule } from 'primeng/card';
@@ -72,6 +73,7 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
 
   instance: DynamicDialogComponent | undefined;
   plotId: string;
+  buildingId: number;
   plotGeoJson: L.GeoJSON;
 
   existingBuildingGeoJson: L.GeoJSON;
@@ -101,8 +103,11 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
   buildingIds: any[];
   buildingGeojson: any;
 
+  editableLayers = L.featureGroup();
+
   constructor(
     public ref: DynamicDialogRef,
+    public secondRef: DynamicDialogRef,
     private dialogService: DialogService,
     private geometryDataService: GeometryDataService,
     private buildingPlotDataService: BuildingPlotDataService,
@@ -115,12 +120,18 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
   }
 
   async initialize() {
-    this.plotId = this.instance.data.plotId
+    if (this.instance.data.type == GeomEditType.ADD) {
+      this.plotId = this.instance.data.plotId
+    }
+    if (this.instance.data.type == GeomEditType.EDIT) {
+      this.buildingId = this.instance.data.buildingId
+    }
   }
 
   ngOnDestroy(): void {
     this.map = null;
     this.ref.destroy();
+    this.secondRef.destroy();
   }
 
 
@@ -129,21 +140,17 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.renderMap();
+    if (this.instance.data.type == GeomEditType.ADD) {
+      this.getPlotGeom(this.plotId)
+    }
+
+    if (this.instance.data.type == GeomEditType.EDIT) {
+      console.log("Editing building id: ", this.buildingId)
+      this.editBuildingGeom(this.buildingId)
+    }
   }
 
-  async renderMap() {
-    var satelliteMap = L.tileLayer(this.googleSatUrl, {
-      maxNativeZoom: 21,
-      maxZoom: 21,
-    });
-    this.map = L.map('mapview', {
-      layers: [satelliteMap],
-      zoomControl: false,
-      attributionControl: false,
-      maxZoom: 25,
-      renderer: L.canvas({ tolerance: 3 }),
-    }).setView([27.4712, 89.64191], 12);
-
+  async getPlotGeom(plotId) {
     this.geometryDataService.GetPlotGeom(this.plotId).subscribe((res: any) => {
       //adding for building points 
       this.buildingPoint.dzongkhagId = res[0].features[0]['properties']['dzongkhagi']
@@ -164,12 +171,24 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
         },
       }).addTo(this.map);
       this.map.fitBounds(this.plotGeoJson.getBounds())
-
       this.getBuildingsInPlot(this.plotId)
     })
+  }
 
-    var editableLayers = L.featureGroup();
-    this.map.addLayer(editableLayers);
+  async renderMap() {
+    var satelliteMap = L.tileLayer(this.googleSatUrl, {
+      maxNativeZoom: 21,
+      maxZoom: 21,
+    });
+    this.map = L.map('mapview', {
+      layers: [satelliteMap],
+      zoomControl: false,
+      attributionControl: false,
+      maxZoom: 25,
+      renderer: L.canvas({ tolerance: 3 }),
+    }).setView([27.4712, 89.64191], 12);
+
+    this.map.addLayer(this.editableLayers);
 
     var drawPluginOptions: L.Control.DrawConstructorOptions = {
       position: 'bottomright',
@@ -190,7 +209,7 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
         marker: false,
       },
       edit: {
-        featureGroup: editableLayers,
+        featureGroup: this.editableLayers,
         remove: true
       }
     }
@@ -202,8 +221,8 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
     this.map.on('draw:created', (e) => {
       var type = e.type
       var layer = e.layer
-      editableLayers.clearLayers()
-      editableLayers.addLayer(layer)
+      this.editableLayers.clearLayers()
+      this.editableLayers.addLayer(layer)
       var area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0])
       area = Number(area) * 10.7639
 
@@ -211,61 +230,17 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
     })
 
     this.map.on(L.Draw.Event.EDITSTOP, (e) => {
-      var data = editableLayers.toGeoJSON()
+      var centroid = this.editableLayers.getBounds().getCenter()
 
-      var centroid = editableLayers.getBounds().getCenter()
-      this.buildingPoint.lat = centroid.lat
-      this.buildingPoint.lng = centroid.lng
-      this.buildingPoint.plotId = `New Building Added on ${this.plotId}`
-
-
-      data['features'][0]['geometry']['type'] = "MultiPolygon"
-      data['features'][0]['geometry']['coordinates'] = [data['features'][0]['geometry']['coordinates']]
-      var jsonData = JSON.stringify(data['features'][0]['geometry'])
-      this.buildingGeom.geometry = jsonData
-
-      this.insertBuildingPoint(this.buildingPoint).then((res: any) => {
-        console.log("building id new ", res.id)
-
-        this.buildingGeom.buildingid = res.id
-
-        //building plot data
-        this.buildingPlot.buildingId = res.id
-        this.buildingPlot.plotId = this.plotId
-        this.buildingPlot.overlapPercentage = 100.0
-
-        this.insertBuildingGeom(this.buildingGeom).then((result) => {
-          if (result[1]) {
-            editableLayers.clearLayers()
-            this.messageService.add({ severity: 'success', summary: 'Message', detail: 'Building added Successfully!!!' })
-          } else {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Building could not be added!!!' })
-          }
-        });
-        this.insertBuildingPlots(this.buildingPlot).then((result) => {
-          if (result) {
-            this.reloadBUildings()
-            editableLayers.clearLayers()
-            this.messageService.add({ severity: 'success', summary: 'Message', detail: 'Building Plot added Successfully!!!' })
-          } else {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Building could not be added!!!' })
-          }
-        })
-      });
+      var data = {
+        geom: this.editableLayers.toGeoJSON(),
+        lat: centroid.lat,
+        lng: centroid.lng
+      }
+      this.ref.close(data)
     })
   }
 
-  async insertBuildingPoint(data) {
-    return await this.geometryDataService.postBuildingPoint(data).toPromise()
-  }
-
-  async insertBuildingGeom(data) {
-    return await this.geometryDataService.postBuildingGeom(data).toPromise()
-  }
-
-  async insertBuildingPlots(data) {
-    return await this.geometryDataService.postBuildingPlot(data).toPromise()
-  }
 
   async getBuildingsInPlot(plotId: string) {
     this.buildingPlotDataService
@@ -285,9 +260,25 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
       });
   }
 
+  async editBuildingGeom(buildingId: any) {
+    if (this.buildingGeojson) {
+      this.editableLayers.clearLayers();
+      this.map.removeLayer(this.buildingGeojson);
+    }
+    let geom :any = await this.geometryDataService.GetBuildingFootprintById(buildingId).toPromise();
+    let gg: any[] = geom['features'][0]['geometry']['coordinates'][0][0]
+    let geometry = gg.map((x)=>{
+      return [x[1],x[0]]
+    })
+    let poly = L.polygon(geometry)
+    this.editableLayers.addLayer(poly)
+    this.map.fitBounds(poly.getBounds())
+  }
+
   async getBuildingsGeom(buildingIds: any[]) {
     if (this.buildingGeojson) {
       this.map.removeLayer(this.buildingGeojson);
+      this.editableLayers.removeLayer(this.buildingGeojson);
     }
     let buildingGeom = [];
     for (var i = 0; i < buildingIds.length; i++) {
@@ -318,11 +309,13 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
           color: 'black',
         };
       },
-    }).addTo(this.map);
+    }).addTo(this.map)
+    this.map.fitBounds(this.buildingGeojson.getBounds());
+    this.editableLayers.addLayer(this.buildingGeojson);
   }
 
   openDeleteInterface(buildingId: number) {
-    this.ref = this.dialogService.open(
+    this.secondRef = this.dialogService.open(
       AdminBuildingInventoryViewBuildingComponent,
       {
         header: 'Building ID: ' + buildingId,
@@ -332,15 +325,15 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
         width: 'max-content',
       }
     );
-    this.ref.onClose.subscribe((res) => {
-      if(res['delete']){
+    this.secondRef.onClose.subscribe((res) => {
+      if (res['delete']) {
         console.log("Reloading Building")
         this.reloadBUildings()
       }
-     });
+    });
   }
 
-  reloadBUildings(){
+  reloadBUildings() {
     this.map.removeLayer(this.buildingGeojson);
     this.getBuildingsInPlot(this.plotId)
   }
