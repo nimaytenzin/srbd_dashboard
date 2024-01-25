@@ -19,11 +19,18 @@ export class BuildingDataService {
         );
     }
 
-    UpdateBuildingPlotByPlot(plotId:string,buildingId: number,polygonId:number) {
-        return this.http.patch(`${this.apiUrl}/building-plots/plotId/${plotId}`,{
-            buildingId:buildingId,
-            polygonId:polygonId
-        });
+    UpdateBuildingPlotByPlot(
+        plotId: string,
+        buildingId: number,
+        polygonId: number
+    ) {
+        return this.http.patch(
+            `${this.apiUrl}/building-plots/plotId/${plotId}`,
+            {
+                buildingId: buildingId,
+                polygonId: polygonId,
+            }
+        );
     }
 
     DeleteBuilding(buildingId: number) {

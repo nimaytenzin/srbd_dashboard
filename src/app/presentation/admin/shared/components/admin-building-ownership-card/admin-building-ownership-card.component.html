@@ -1,0 +1,77 @@
+<p-card *ngIf="buildingOwnerships?.length">
+    <p-toast key="admin-buildingownership"></p-toast>
+    <ng-template pTemplate="header" style="padding: 0; margin: 0">
+        <div
+            class="flex justify-content-between align-item-end pt-4 pb-0 mb-0 px-4"
+        >
+            <p class="text-gray-700 text-xl font-semibold">Ownership</p>
+            <p-button
+                icon="pi pi-plus"
+                [outlined]="false"
+                size="small"
+                (click)="openAddBuildingOwnershipModal()"
+            ></p-button>
+        </div>
+    </ng-template>
+
+    <p-table
+        [value]="buildingOwnerships"
+        [scrollable]="true"
+        rowGroupMode="subheader"
+        groupRowsBy="unitNumberPrefix"
+    >
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Owner Details</th>
+                <th>Type</th>
+                <th></th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-ownership let-rowIndex="rowIndex">
+            <tr>
+                <td>
+                    CID: {{ ownership.owner.cid }} <br />
+                    Name: {{ ownership.owner.name }} <br />
+                    Contact: {{ ownership.owner.contact }}
+                </td>
+                <td>
+                    {{ ownership.type }}
+                    <br />
+                    <span *ngIf="ownership.type !== 'STRATA'">
+                        {{ ownership.ownershipPercentage }} %
+                    </span>
+                </td>
+                <td>
+                    <div class="flex gap-2">
+                        <i
+                            (click)="openEditBuildingOwnershipModal(ownership)"
+                            class="pi pi-pencil cursor-pointer"
+                            style="font-size: 1.2rem"
+                        ></i>
+                        <i
+                            *ngIf="ownership.type === 'STRATA'"
+                            (click)="openAddStrataUnitOwnershipModal(ownership)"
+                            class="pi pi-eye cursor-pointer"
+                            style="font-size: 1.2rem"
+                        ></i>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-card>
+
+<p-card class="w-4" *ngIf="!buildingOwnerships?.length" header="Ownership">
+    <div class="flex flex-column justify-content-center align-items-center">
+        <img style="height: 100px; width: auto" src="assets/nodata2.png" />
+        <p>No Ownership Data (or) Soley owned by the plot owners</p>
+        <p-button
+            icon="pi pi-plus"
+            [rounded]="true"
+            [outlined]="false"
+            size="small"
+            (click)="openAddBuildingOwnershipModal()"
+        ></p-button>
+    </div>
+</p-card>

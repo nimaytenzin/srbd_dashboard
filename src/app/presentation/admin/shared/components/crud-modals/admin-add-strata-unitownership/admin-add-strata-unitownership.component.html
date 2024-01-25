@@ -1,0 +1,106 @@
+<div class="flex flex-column">
+    <p>
+        {{ buildingOwnership.owner.name }} , {{ buildingOwnership.owner.cid }}
+    </p>
+    <div class="mb-2">
+        <p *ngFor="let item of unitOwnerships" class="text-xs">
+            {{ item.unit.unitNumberPrefix }}-{{ item.unit.unitNumber }}
+            {{ item.ownershipPercentage }}% Ownership
+        </p>
+    </div>
+
+    <p-table
+        [value]="units"
+        [scrollable]="true"
+        rowGroupMode="subheader"
+        groupRowsBy="unitNumberPrefix"
+    >
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Unit Number</th>
+                <th>Use(Occupancy)</th>
+                <th>Rent</th>
+                <th>Select</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="groupheader" let-unit>
+            <tr pRowGroupHeader>
+                <td colspan="5" class="surface-200 text-center">
+                    Floor: {{ unit?.unitNumberPrefix }}
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-unit let-rowIndex="rowIndex">
+            <tr>
+                <td>
+                    <div class="flex flex-column align-items-center">
+                        <p class="font-bold m-0 underline cursor-pointer">
+                            {{ unit?.unitNumberPrefix }}-{{ unit?.unitNumber }}
+                        </p>
+                        {{ unit.id }}
+                    </div>
+                </td>
+                <td>
+                    {{ unit.unitDetail?.use }} <br />
+                    {{ unit.unitDetail?.occupancyStatus }}
+                </td>
+
+                <td>{{ unit.unitDetail?.rent }}</td>
+                <td>
+                    <p-button
+                        *ngIf="!checkIfSelected(unit)"
+                        icon="pi pi-plus"
+                        severity="success"
+                        (click)="selectUnit($event, unit)"
+                    ></p-button>
+
+                    <p-button
+                        *ngIf="checkIfSelected(unit)"
+                        icon="pi pi-times"
+                        severity="danger"
+                        (click)="unselectUnit(unit)"
+                    ></p-button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+    <p-confirmPopup #confirmPopupRef>
+        <ng-template pTemplate="headless">
+            <div
+                class="flex flex-column align-items-center p-5 surface-overlay border-round"
+            >
+                <div>
+                    <p>Ownership Percentage</p>
+                    <p-inputGroup>
+                        <p-inputNumber
+                            label="Price"
+                            [(ngModel)]="ownershipPercentage"
+                        />
+                        <p-inputGroupAddon>%</p-inputGroupAddon>
+                    </p-inputGroup>
+                </div>
+                <div class="flex align-items-center gap-2 mt-4">
+                    <button
+                        pButton
+                        label="Map Unit"
+                        (click)="accept()"
+                        class="w-8rem"
+                    ></button>
+                    <button
+                        pButton
+                        label="Cancel"
+                        (click)="reject()"
+                        class="p-button-outlined w-8rem"
+                    ></button>
+                </div>
+            </div>
+        </ng-template>
+    </p-confirmPopup>
+
+    <!-- <p-button
+        (click)="confirm1($event)"
+        icon="pi pi-check"
+        label="Confirm"
+    ></p-button> -->
+</div>

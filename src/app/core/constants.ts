@@ -1,6 +1,6 @@
-export enum GeomEditType{
-  EDIT="EDIT",
-  ADD="ADD",
+export enum GeomEditType {
+    EDIT = 'EDIT',
+    ADD = 'ADD',
 }
 
 export enum BuildingPointStatus {
@@ -24,6 +24,12 @@ export enum UnitOwnershipTypes {
     'OWNER_OWNED' = 'Owner Owned',
     'INDIVIDUAL_OWNERSHIP' = 'Individual Ownership',
     'JOINT_OWNERSHIP' = 'Joint Ownership',
+}
+
+export enum BuildingOwnershipTypes {
+    'SOLE' = 'SOLE',
+    'JOINT' = 'JOINT',
+    'STRATA' = 'STRATA',
 }
 
 export enum UnitPrimaryUses {
