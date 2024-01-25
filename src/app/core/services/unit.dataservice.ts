@@ -10,7 +10,19 @@ import { UnitDto } from '../models/units/unit.dto';
 })
 export class UnitDataService {
     apiUrl = API_URL;
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
+
+    CreateUnit(data: any) {
+        return this.http.post(`${this.apiUrl}/unit`, data);
+    }
+
+    CreateUnitDetail(data: any) {
+        return this.http.post(`${this.apiUrl}/unit-detail`, data);
+    }
+
+    UpdateUnitByUnitId(data:any, unitId: number) {
+        return this.http.patch(`${this.apiUrl}/unit/${unitId}`, data);
+    }
 
     GetAllUnitsByBuilding(buildingId: number): Observable<UnitDto[]> {
         return this.http.get<UnitDto[]>(

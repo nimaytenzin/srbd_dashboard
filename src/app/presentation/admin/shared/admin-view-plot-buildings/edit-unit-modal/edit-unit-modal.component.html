@@ -1,0 +1,54 @@
+<div class="flex gap-4">
+    <p-toast></p-toast>
+    <div class="w-full flex flex-column gap-4">
+        <div class="card flex-row gap-4 p-fluid overflow-auto">
+            <!-- Unit  -->
+            <div *ngIf="!isEditUnitDetails && !isCreateUnitDetails">
+                <div class="flex-auto mt-3">
+                    <label for="jamthog" class="mt-3">Floor Level</label>
+                    <p-dropdown [options]="floorLevelOption" [(ngModel)]="selectedFloorLevel" [showClear]="true"
+                        placeholder="select floor"></p-dropdown>
+                </div>
+                <div class="flex-auto mt-3">
+                    <label for="jamthog" class="mt-3">Unit Number</label>
+                    <p-dropdown [options]="unitNumberOption" [(ngModel)]="selectedUnitNumber" [showClear]="true"
+                        placeholder="Select Unit number"></p-dropdown>
+                </div>
+
+            </div>
+
+            <!-- Unit Details -->
+            <div *ngIf="!isEditUnit || isCreateUnitDetails">
+                <div class="flex-auto mt-3">
+                    <label for="jamthog" class="mt-3">Unit Occupancy</label>
+                    <p-dropdown [options]="unitOccupancyOption" [(ngModel)]="selectedUnitOccupancy" [showClear]="true"
+                        placeholder="Occupancy"></p-dropdown>
+                </div>
+                <div class="flex-auto mt-3">
+                    <label for="jamthog" class="mt-3">Unit Use</label>
+                    <p-dropdown [options]="unitUseOption" [(ngModel)]="selectedUnitUse" [showClear]="true"
+                        placeholder="Select unit use"></p-dropdown>
+                </div>
+                <div class="flex-auto mt-3">
+                    <label for="regular">No. of Bedrooms</label>
+                    <p-inputNumber [(ngModel)]="selectedNoBedroom" mode="decimal" inputId="regular"
+                        [useGrouping]="false">
+                    </p-inputNumber>
+                </div>
+                <div class="flex-auto mt-3">
+                    <label for="stilt">Rent</label>
+                    <p-inputNumber [(ngModel)]="selectedRent" mode="decimal" inputId="stilt">
+                    </p-inputNumber>
+                </div>
+
+            </div>
+            <div class="flex-auto mt-4">
+                <p-button *ngIf="!isEditUnit && !isEditUnitDetails && !isCreateUnitDetails" label="Create Unit and Detail" (onClick)="createUnitAndDetails()" [disabled]="isButtonPressed"></p-button>
+                <p-button *ngIf="isEditUnit" label="Update Unit" (onClick)="updateUnit()" [disabled]="isButtonPressed"></p-button>
+                <p-button *ngIf="isEditUnitDetails" label="Update Detail" (onClick)="updateUnitDetail()" [disabled]="isButtonPressed"></p-button>
+                <p-button *ngIf="isCreateUnitDetails" label="Create Unit Detail" (onClick)="createUnitDetail()" [disabled]="isButtonPressed"></p-button>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -124,6 +124,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
                 height: '90%'
             }
         )
+        
     }
 
     showBuilding(buildingId: number) {
