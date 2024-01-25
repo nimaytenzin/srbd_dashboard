@@ -1,3 +1,5 @@
+import { UnitOwnership } from '../ownership/owner.dto';
+
 export interface UnitDto {
     id?: number;
     buildingId: number;
@@ -5,6 +7,8 @@ export interface UnitDto {
     unitNumber: string;
     qrUuid?: string;
     isLocked?: boolean;
+
+    unitOwnerships?: UnitOwnership[];
 }
 
 export interface CreateUnitDto {

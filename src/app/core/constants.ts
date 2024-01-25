@@ -1,6 +1,6 @@
 export enum GeomEditType {
-    EDIT = "EDIT",
-    ADD = "ADD",
+    EDIT = 'EDIT',
+    ADD = 'ADD',
 }
 
 export enum BuildingPointStatus {
@@ -26,6 +26,11 @@ export enum UnitOwnershipTypes {
     'JOINT_OWNERSHIP' = 'Joint Ownership',
 }
 
+export enum BuildingOwnershipTypes {
+    'SOLE' = 'SOLE',
+    'JOINT' = 'JOINT',
+    'STRATA' = 'STRATA',
+}
 
 export enum UserRoles {
     'ADMIN' = 'admin',
@@ -43,11 +48,7 @@ export const BuildingExistancyStatus = [
     'Others',
 ];
 
-export const BuildingType = [
-    'Traditional',
-    'Contemporary',
-    'Temporary',
-];
+export const BuildingType = ['Traditional', 'Contemporary', 'Temporary'];
 
 export const BuildingAssociativePositions = ['Primary', 'Ancillary'];
 
@@ -170,11 +171,7 @@ export const UnitNumbers = [
     '100',
 ];
 
-export const UnitOccupancyOption = [
-    'Vacant',
-    'Owner Occupied',
-    'Rented'
-]
+export const UnitOccupancyOption = ['Vacant', 'Owner Occupied', 'Rented'];
 
 export const UnitPrimaryUses = [
     'Mixed Use',
@@ -183,5 +180,5 @@ export const UnitPrimaryUses = [
     'Institutional',
     'Religious',
     'Health',
-    'Industrial'
-]
+    'Industrial',
+];

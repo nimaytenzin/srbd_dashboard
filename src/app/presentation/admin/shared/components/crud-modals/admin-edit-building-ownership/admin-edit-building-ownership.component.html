@@ -1,0 +1,54 @@
+<form [formGroup]="myForm" class="grid p-4">
+    <div class="col-6 flex flex-column">
+        <label for="cid">Citizen Identity Card Numebr </label>
+        <p>press enter to search existing details</p>
+        <input
+            id="cid"
+            formControlName="cid"
+            pInputText
+            (keyup)="searchOwners($event)"
+        />
+    </div>
+    <div class="col-6 flex flex-column">
+        <label for="name">Full Name </label>
+        <input id="name" formControlName="name" pInputText />
+    </div>
+
+    <div class="col-6 flex flex-column">
+        <label for="contact">Phone Number </label>
+        <p-inputNumber
+            id="contact"
+            [useGrouping]="false"
+            formControlName="contact"
+        ></p-inputNumber>
+    </div>
+
+    <div class="col-6 flex flex-column">
+        <label for="type">Ownership Type</label>
+        <p-dropdown
+            id="type"
+            class="w-full"
+            formControlName="type"
+            [options]="ownershipTypes"
+        >
+        </p-dropdown>
+    </div>
+    <div class="col-6 flex flex-column">
+        <label for="ownershipPercentage">Ownership Percentage </label>
+        <p-inputNumber
+            id="ownershipPercentage"
+            mode="decimal"
+            [minFractionDigits]="2"
+            formControlName="ownershipPercentage"
+        ></p-inputNumber>
+    </div>
+
+    <div>
+        <p-button label="Update" (click)="updateOwnership()"></p-button>
+        <p-button
+            severity="danger"
+            label="Delete "
+            (click)="deleteOwnership()"
+        ></p-button>
+    </div>
+</form>
