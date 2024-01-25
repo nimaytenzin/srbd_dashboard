@@ -235,7 +235,8 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
       var data = {
         geom: this.editableLayers.toGeoJSON(),
         lat: centroid.lat,
-        lng: centroid.lng
+        lng: centroid.lng,
+        area:this.buildingGeom.areaSqFt
       }
       this.ref.close(data)
     })

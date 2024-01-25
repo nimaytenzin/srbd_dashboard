@@ -357,7 +357,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                         onEachFeature: (feature, layer) => {
                             layer.on({
                                 click: (e: any) => {
-                                    this.showAddBuilding(feature.properties['plotid'], feature.properties['dzongkhagi'])
+                                    this.showAddBuilding(feature.properties['plotid'], feature.properties['dzongkhagi'],feature.properties['subadmid'])
                                 },
                             });
                         },
@@ -398,7 +398,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
         return value;
     }
 
-    showAddBuilding(plotId, dzongkhagId) {
+    showAddBuilding(plotId, dzongkhagId,subadmId) {
         this.ref = this.dialogService.open(
             AdminMasterBuildingComponent,
             // AdminBuildingMenuComponent,
@@ -418,7 +418,9 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
             this.buildingPoint.lat = res.lat
             this.buildingPoint.lng = res.lng
             this.buildingPoint.dzongkhagId = dzongkhagId
+            this.buildingPoint.lat
             this.buildingPoint.plotId = `New Building Added on ${this.plotId}`
+            this.buildingGeom.areaSqFt = res.area
 
 
             res.geom['features'][0]['geometry']['type'] = "MultiPolygon"
@@ -430,6 +432,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                 console.log("building id new ", res.id)
 
                 this.buildingGeom.buildingid = res.id
+                this.buildingGeom.subadmid = subadmId
 
                 //building plot data
                 this.buildingPlot.buildingId = res.id
