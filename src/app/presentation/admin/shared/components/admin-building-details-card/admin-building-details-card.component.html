@@ -1,0 +1,66 @@
+<p-card *ngIf="buildingDetails">
+    <ng-template pTemplate="header" style="padding: 0; margin: 0">
+        <div
+            class="flex justify-content-between align-item-end pt-4 pb-0 mb-0 px-4"
+        >
+            <p class="text-gray-700 text-xl font-semibold">
+                Building Details <br />
+                <span class="text-sm font-light"
+                    >Last updated:
+                    {{ parseDate(buildingDetails.updatedAt) }}</span
+                >
+            </p>
+        </div>
+    </ng-template>
+
+    <p *ngIf="buildingDetails.buildingName">
+        <strong>Building Name:</strong>
+        {{ buildingDetails.buildingName }}
+    </p>
+    <p>
+        <strong>Existancy Status:</strong>
+        {{ buildingDetails.existancyStatus }}
+    </p>
+    <p>
+        <strong>Building Type: </strong>
+        {{ buildingDetails.type }}
+    </p>
+    <p>
+        <strong>Associative Position:</strong>
+        {{ buildingDetails.associativePosition }}
+    </p>
+    <p>
+        <strong>Use:</strong>
+        {{ buildingDetails.use }}
+    </p>
+
+    <h5>
+        <strong>Floor Configuration:</strong>
+        {{
+            parseBuildingFloorLabel(
+                buildingDetails.floorCount,
+                buildingDetails.basementCount,
+                buildingDetails.stiltCount,
+                buildingDetails.atticCount,
+                buildingDetails.jamthogCount
+            )
+        }}
+    </h5>
+</p-card>
+
+<p-card *ngIf="!buildingDetails">
+    <ng-template pTemplate="header" style="padding: 0; margin: 0">
+        <div
+            class="flex justify-content-between align-item-end pt-4 pb-0 mb-0 px-4"
+        >
+            <p class="text-gray-700 text-xl font-semibold">
+                Building Details <br />
+            </p>
+        </div>
+    </ng-template>
+
+    <div class="flex flex-column justify-content-center align-items-center">
+        <img style="height: 150px; width: auto" src="assets/notfound.png" />
+        <p>Building Details not found for BuildingID {{ buildingId }}</p>
+    </div>
+</p-card>

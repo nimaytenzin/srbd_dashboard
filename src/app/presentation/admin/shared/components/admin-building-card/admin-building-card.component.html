@@ -1,0 +1,52 @@
+<p-card header="Building" *ngIf="building">
+    <div class="flex">
+        <div class="flex justify-content-start gap-2">
+            <qrcode
+                *ngIf="building?.qrUuid"
+                [qrdata]="getQr(building?.qrUuid)"
+                [errorCorrectionLevel]="'M'"
+                [allowEmptyString]="true"
+                [cssClass]="'center'"
+                [errorCorrectionLevel]="'high'"
+                [colorDark]="'#111827'"
+                [colorLight]="'#FFFFFF00'"
+                [elementType]="'svg'"
+                [errorCorrectionLevel]="'H'"
+                [scale]="1"
+                [title]="'BuildingQr'"
+                [width]="200"
+                class="m-0 p-0"
+            ></qrcode>
+            <div
+                *ngIf="!building.qrUuid"
+                style="width: 150px; height: 150px"
+                class="surface-300 p-3 flex justify-content-center align-items-center border-round"
+            >
+                <p>No Building QR</p>
+            </div>
+            <div class="flex flex-column justify-content-center">
+                <p><strong>Building Id:</strong> {{ building?.id }}</p>
+                <p><strong>Latitude:</strong> {{ building?.lat }}</p>
+                <p><strong>Longitude:</strong> {{ building?.lng }}</p>
+                <p>
+                    <strong>Address:</strong>
+                    {{
+                        building.address
+                            ? building.address
+                            : "Adress not assigned"
+                    }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <p class="text-center w-full font-bold text-sm" *ngIf="building?.qrUuid">
+        <strong>QRUUID:</strong> {{ building?.qrUuid }}
+    </p>
+</p-card>
+
+<p-card header="Building" *ngIf="!building">
+    <div class="flex flex-column justify-content-center align-items-center">
+        <img style="height: 150px; width: auto" src="assets/nodata.png" />
+        <p>Building Details not found for BuildingID {{ buildingId }}</p>
+    </div>
+</p-card>

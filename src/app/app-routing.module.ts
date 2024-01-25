@@ -1,6 +1,6 @@
 import { RouterModule } from '@angular/router';
 import { NgModule } from '@angular/core';
-import { AdminLayoutComponent } from './layout/admin/admin-layout.component';
+import { AdminLayoutComponent } from './presentation/layout/admin/admin-layout.component';
 
 @NgModule({
     imports: [
@@ -14,21 +14,21 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout.component';
                             path: '',
                             loadChildren: () =>
                                 import(
-                                    './admin/admin-advancedsearch/admin-advancedsearch.module'
+                                    './presentation/admin/admin-advancedsearch/admin-advancedsearch.module'
                                 ).then((m) => m.AdminAdvancedsearchModule),
                         },
                         {
                             path: 'building-inventory',
                             loadChildren: () =>
                                 import(
-                                    './admin/admin-building-inventory/admin-building-inventory.module'
+                                    './presentation/admin/admin-building-inventory/admin-building-inventory.module'
                                 ).then((m) => m.AdminBuildingInventoryModule),
                         },
                         {
                             path: 'master-medianrents',
                             loadChildren: () =>
                                 import(
-                                    './admin/admin-master-medianrent/admin-master-medianrent-routing.module'
+                                    './presentation/admin/admin-master-medianrent/admin-master-medianrent-routing.module'
                                 ).then(
                                     (m) => m.AdminMasterMedianrentRoutingModule
                                 ),
@@ -37,14 +37,14 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout.component';
                             path: 'master-dzongkhags',
                             loadChildren: () =>
                                 import(
-                                    './admin/admin-master-dzongkhags/admin-master-dzongkhags.module'
+                                    './presentation/admin/admin-master-dzongkhags/admin-master-dzongkhags.module'
                                 ).then((m) => m.AdminMasterDzongkhagsModule),
                         },
                         {
                             path: 'master-admzones',
                             loadChildren: () =>
                                 import(
-                                    './admin/admin-master-administrativezones/admin-master-administrativezones.module'
+                                    './presentation/admin/admin-master-administrativezones/admin-master-administrativezones.module'
                                 ).then(
                                     (m) =>
                                         m.AdminMasterAdministrativezonesModule
@@ -54,17 +54,14 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout.component';
                             path: 'master-building',
                             loadChildren: () =>
                                 import(
-                                    './admin/admin-master-building/admin-master-building.module'
-                                ).then(
-                                    (m) =>
-                                        m.AdminMasterBuildingModule
-                                ),
+                                    './presentation/admin/admin-master-building/admin-master-building.module'
+                                ).then((m) => m.AdminMasterBuildingModule),
                         },
                         {
                             path: 'building-detailed/:buildingId',
                             loadChildren: () =>
                                 import(
-                                    './admin/admin-building-detailed-view/admin-building-detailed-view.module'
+                                    './presentation/admin/admin-building-detailed-view/admin-building-detailed-view.module'
                                 ).then(
                                     (m) => m.AdminBuildingDetailedViewModule
                                 ),
@@ -82,7 +79,7 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout.component';
                 {
                     path: 'login',
                     loadChildren: () =>
-                        import('./auth/login/login.module').then(
+                        import('./presentation/auth/login/login.module').then(
                             (m) => m.LoginModule
                         ),
                 },

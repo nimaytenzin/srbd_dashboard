@@ -1,0 +1,29 @@
+<div class="flex gap-4">
+    <p-toast></p-toast>
+
+    <div class="w-4 flex flex-column gap-4">
+        <div
+            style="height: 300px; width: 100%"
+            class="border-round"
+            id="buildingMap"
+        ></div>
+        <app-admin-building-card
+            [buildingId]="buildingId"
+        ></app-admin-building-card>
+    </div>
+
+    <div class="text-sm w-4 flex flex-column gap-4">
+        <p-card *ngIf="plots" header="Plot Details">
+            <p *ngFor="let plot of plots">
+                PlotID : {{ plot.plotId }}, overlap:
+                {{ roundDecimal(plot.overlapPercentage) }}%
+            </p>
+        </p-card>
+
+        <app-admin-building-details-card
+            [buildingId]="buildingId"
+        ></app-admin-building-details-card>
+    </div>
+
+    <app-admin-units-card [buildingId]="buildingId"></app-admin-units-card>
+</div>
