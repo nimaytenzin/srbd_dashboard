@@ -112,19 +112,87 @@ export class AdminBuildingInventoryComponent implements OnInit {
         this.loadSubadministrativeZonesByAdministrativeZone(event.id);
     }
 
+    loadPlotsAndBuildings() {
+        this.clearMapState();
+        this.geometryDataService
+            .GetSubAdministrativeBoundary(this.selectedSubAdministrativeZone.id)
+            .subscribe((res: any) => {
+                this.boundary = L.geoJSON(res, {
+                    style: function (feature) {
+                        return {
+                            fillColor: 'transparent',
+                            weight: 3,
+                            opacity: 1,
+                            color: 'yellow',
+                        };
+                    },
+                });
+
+                this.geometryDataService
+                    .GetPlotsGeomBySubAdministrativeBoundary(
+                        this.selectedSubAdministrativeZone.id
+                    )
+                    .subscribe((res: any) => {
+                        this.plotsGeojson = L.geoJSON(res, {
+                            style: function (feature) {
+                                return {
+                                    fillColor: 'transparent',
+                                    weight: 1,
+                                    opacity: 1,
+                                    color: 'red',
+                                };
+                            },
+                            onEachFeature: (feature, layer) => {
+                                layer.on({
+                                    click: (e: any) => {
+                                        alert(feature.properties.plotId);
+                                    },
+                                });
+                            },
+                        }).addTo(this.map);
+
+                        this.geometryDataService
+                            .GetBuildingFootprintsBySubAdministrativeBoundary(
+                                this.selectedSubAdministrativeZone.id
+                            )
+                            .subscribe((res: any) => {
+                                this.buildingGeojson = L.geoJSON(res, {
+                                    style: function (feature) {
+                                        return {
+                                            fillColor: 'transparent',
+                                            weight: 3,
+                                            opacity: 1,
+                                            color: 'white',
+                                        };
+                                    },
+                                    onEachFeature: (feature, layer) => {
+                                        layer.on({
+                                            click: (e: any) => {
+                                                console.log(feature, 'CLICKED');
+                                                this.saveMapState();
+                                                this.showBuilding(
+                                                    feature.properties
+                                                        .buildingid
+                                                );
+                                            },
+                                        });
+                                    },
+                                }).addTo(this.map);
+                            });
+
+                        this.fitMapBounds();
+                    });
+            });
+    }
     showAddBuilding(plotId) {
-        this.ref = this.dialogService.open(
-            AdminMasterBuildingComponent,
-            {
-                data: {
-                    type:GeomEditType.ADD,
-                    plotId: plotId,
-                },
-                width: '90%',
-                height: '90%'
-            }
-        )
-        
+        this.ref = this.dialogService.open(AdminMasterBuildingComponent, {
+            data: {
+                type: GeomEditType.ADD,
+                plotId: plotId,
+            },
+            width: '90%',
+            height: '90%',
+        });
     }
 
     showBuilding(buildingId: number) {

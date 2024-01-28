@@ -22,7 +22,6 @@ import { EditBuildingModalComponent } from '../../admin-view-plot-buildings/edit
     selector: 'app-admin-building-details-card',
     standalone: true,
     imports: [CardModule, CommonModule, ButtonModule, DynamicDialogModule],
-    providers: [DialogService],
     templateUrl: './admin-building-details-card.component.html',
 
     providers: [DialogService],

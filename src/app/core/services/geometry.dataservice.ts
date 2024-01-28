@@ -26,19 +26,16 @@ export class GeometryDataService {
         );
     }
 
-    updateBuildingGeomBuildingId(buildingId: number, polygonId:number) {
+    updateBuildingGeomBuildingId(buildingId: number, polygonId: number) {
         let data = {
-            polygonId:polygonId,
-            buildingId:buildingId
-        }
-        return this.http.patch(
-            `${this.apiUrl}/building-footprint/bid`,
-            data
-        );
+            polygonId: polygonId,
+            buildingId: buildingId,
+        };
+        return this.http.patch(`${this.apiUrl}/building-footprint/bid`, data);
     }
 
-    postBuildingPlot(data){
-        return this.http.post(`${this.apiUrl}/building-plots`,data)
+    postBuildingPlot(data) {
+        return this.http.post(`${this.apiUrl}/building-plots`, data);
     }
 
     GetPlotGeom(plotId) {
@@ -47,7 +44,7 @@ export class GeometryDataService {
         );
     }
 
-    GetBuildingPointNearHash(hash){
+    GetBuildingPointNearHash(hash) {
         return this.http.get(`${this.apiUrl}/building/near?hash=${hash}`);
     }
 
@@ -70,7 +67,9 @@ export class GeometryDataService {
         );
     }
 
-    GetBuildingFootprintsByAdministrativeBoundary( administrativeZoneId: number) {
+    GetBuildingFootprintsByAdministrativeBoundary(
+        administrativeZoneId: number
+    ) {
         return this.http.get(
             `${this.apiUrl}/administrative-zone/buildings/geom/${administrativeZoneId}`
         );
@@ -78,7 +77,7 @@ export class GeometryDataService {
 
     GetPlotsGeomBySubAdministrativeBoundary(subadmId: number) {
         return this.http.get(
-            `${this.apiUrl}/administrative-zone/sub/plots/geom/${subadmId}`
+            `${this.apiUrl}/sub-administrative-zone/plots/geom/${subadmId}`
         );
     }
 
