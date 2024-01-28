@@ -11,6 +11,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import {
     DialogService,
     DynamicDialogComponent,
+    DynamicDialogModule,
     DynamicDialogRef,
 } from 'primeng/dynamicdialog';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -27,6 +28,7 @@ import { UnitDataService } from 'src/app/core/services/unit.dataservice';
         InputNumberModule,
         DropdownModule,
         ButtonModule,
+        DynamicDialogModule,
     ],
     templateUrl: './admin-view-unit-modal.component.html',
     styleUrl: './admin-view-unit-modal.component.scss',

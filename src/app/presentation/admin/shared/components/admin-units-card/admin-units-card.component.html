@@ -5,7 +5,6 @@
             <p-button
                 icon="pi pi-plus"
                 size="small"
-                severity="success"
                 (onClick)="addUnit()"
             ></p-button>
         </div>
@@ -19,11 +18,12 @@
     >
         <ng-template pTemplate="header">
             <tr>
-                <th>Unit Number</th>
-                <th>Use(Occupancy)</th>
-                <th>Rent</th>
+                <th>Unit</th>
+                <th>Use(occupancy)</th>
+
+                <th>Rent (Nu)</th>
                 <th>Ownership</th>
-                <th>Action</th>
+                <th></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="groupheader" let-unit>
@@ -39,8 +39,8 @@
                 <td>
                     <div class="flex flex-column align-items-center">
                         <p
-                            class="font-bold m-0 underline cursor-pointer"
-                            (click)="openEditUnitModal(unit.id)"
+                            class="font-bold m-0 cursor-pointer"
+                            (click)="editUnit(unit)"
                         >
                             {{ unit?.unitNumberPrefix }}-{{ unit?.unitNumber }}
                         </p>
@@ -62,30 +62,36 @@
                     </div>
                 </td>
                 <td>
-                    {{ unit.unitDetail?.use }} <br />
+                    {{ unit.unitDetail?.use }}
+                    <br />
                     {{ unit.unitDetail?.occupancyStatus }}
                 </td>
+                <td class="line-height-1">
+                    {{ unit.unitDetail?.rent }}
+                </td>
 
-                <td>{{ unit.unitDetail?.rent }}</td>
                 <td>
                     <div *ngIf="unit.unitOwnerships?.length">
                         <p
-                            *ngFor="let ownership of unit.unitOwnerships"
-                            class="text-xs"
+                            *ngFor="
+                                let ownership of unit.unitOwnerships;
+                                index as i
+                            "
                         >
-                            ownercid:
-                            {{ ownership.buildingOwnership?.owner?.cid }} <br />
-                            ownerName:
-                            {{ ownership.builldingOwnership?.owner?.name }}
+                            1. {{ ownership.buildingOwnership?.owner?.cid }}
                             <br />
-                            Percentage:
-                            {{ ownership.ownershipPercentage }} %
+                            {{ ownership.buildingOwnership?.owner?.name }}
+                            <br />
+                            Percentage: {{ ownership.ownershipPercentage }}%
                         </p>
                     </div>
                 </td>
                 <td>
-                    <p-button class="text-xs" (onClick)="editUnit(unit)">Edit Unit</p-button>
-                    <p-button class="text-xs" (onClick)="editUnitDetail(unit)">Edit Detail</p-button>
+                    <i
+                        (click)="editUnitDetail(unit)"
+                        class="pi pi-pencil cursor-pointer"
+                        style="font-size: 0.9rem"
+                    ></i>
                 </td>
             </tr>
         </ng-template>

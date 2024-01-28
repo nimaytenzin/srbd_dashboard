@@ -15,7 +15,11 @@ import * as L from 'leaflet';
 import { ConfirmationService, Message, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import {
+    DialogService,
+    DynamicDialogModule,
+    DynamicDialogRef,
+} from 'primeng/dynamicdialog';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -68,7 +72,6 @@ import { AdminBuildingOwnershipCardComponent } from '../components/admin-buildin
 export class AdminViewBuildingComponent implements OnInit, OnChanges {
     constructor(
         private buildingPlotDataService: BuildingPlotDataService,
-        private buildingDataService: BuildingDataService,
         private buildingDetailService: BuildingDetailDataService,
         private messageService: MessageService,
         private unitDataService: UnitDataService,

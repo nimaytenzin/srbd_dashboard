@@ -44,7 +44,7 @@ export class AdminUnitsCardComponent implements OnChanges {
     constructor(
         private unitDataService: UnitDataService,
         private dialogService: DialogService
-    ) { }
+    ) {}
     ngOnChanges(changes: SimpleChanges): void {
         this.getUnitDetails();
     }
@@ -62,81 +62,65 @@ export class AdminUnitsCardComponent implements OnChanges {
     }
 
     addUnit() {
-        this.ref = this.dialogService.open(
-            EditUnitModalComponent,
-            {
-                data: {
-                    buildingId: this.buildingId,
-                    isEditUnit: false,
-                    isEditUnitDetails: false,
-                },
-                width: '70vw',
-                height: '70vh'
-            }
-        )
+        this.ref = this.dialogService.open(EditUnitModalComponent, {
+            data: {
+                buildingId: this.buildingId,
+                isEditUnit: false,
+                isEditUnitDetails: false,
+            },
+            width: '70vw',
+            height: '70vh',
+        });
         this.ref.onClose.subscribe((res) => {
             this.getUnitDetails();
-        })
+        });
     }
 
     editUnit(unit) {
-        this.ref = this.dialogService.open(
-            EditUnitModalComponent,
-            {
-                data: {
-                    buildingId: this.buildingId,
-                    unit: unit,
-                    isEditUnit: true,
-                    isEditUnitDetails: false,
-                    isCreateUnitDetails: false,
-                },
-                width: '70vw',
-                height: '70vh'
-            }
-        )
+        this.ref = this.dialogService.open(EditUnitModalComponent, {
+            data: {
+                buildingId: this.buildingId,
+                unit: unit,
+                isEditUnit: true,
+                isEditUnitDetails: false,
+                isCreateUnitDetails: false,
+            },
+            width: '70vw',
+            height: '70vh',
+        });
         this.ref.onClose.subscribe((res) => {
             this.getUnitDetails();
-        })
-
+        });
     }
 
     editUnitDetail(unit) {
         if (unit.unitDetail == null) {
-            this.ref = this.dialogService.open(
-                EditUnitModalComponent,
-                {
-                    data: {
-                        buildingId: this.buildingId,
-                        unit: unit,
-                        isEditUnit: false,
-                        isEditUnitDetails: false,
-                        isCreateUnitDetails: true,
-                    },
-                    width: '70vw',
-                    height: '70vh'
-                }
-            )
+            this.ref = this.dialogService.open(EditUnitModalComponent, {
+                data: {
+                    buildingId: this.buildingId,
+                    unit: unit,
+                    isEditUnit: false,
+                    isEditUnitDetails: false,
+                    isCreateUnitDetails: true,
+                },
+                width: 'max-content',
+                height: '70vh',
+            });
         } else {
-            this.ref = this.dialogService.open(
-                EditUnitModalComponent,
-                {
-                    data: {
-                        buildingId: this.buildingId,
-                        unit: unit,
-                        isEditUnit: false,
-                        isEditUnitDetails: true,
-                        isCreateUnitDetails: false,
-                    },
-                    width: '70vw',
-                    height: '70vh'
-                }
-            )
-
+            this.ref = this.dialogService.open(EditUnitModalComponent, {
+                data: {
+                    buildingId: this.buildingId,
+                    unit: unit,
+                    isEditUnit: false,
+                    isEditUnitDetails: true,
+                    isCreateUnitDetails: false,
+                },
+                width: 'max-content',
+                height: '70vh',
+            });
         }
         this.ref.onClose.subscribe((res) => {
             this.getUnitDetails();
-        })
-
-
+        });
     }
 }

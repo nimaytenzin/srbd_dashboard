@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import {
     DialogService,
+    DynamicDialogModule,
     DynamicDialogRef,
 } from 'primeng/dynamicdialog';
 import { CardModule } from 'primeng/card';
@@ -20,8 +21,10 @@ import { EditBuildingModalComponent } from '../../admin-view-plot-buildings/edit
 @Component({
     selector: 'app-admin-building-details-card',
     standalone: true,
-    imports: [CardModule, CommonModule, ButtonModule],
+    imports: [CardModule, CommonModule, ButtonModule, DynamicDialogModule],
     templateUrl: './admin-building-details-card.component.html',
+
+    providers: [DialogService],
     styleUrls: ['./admin-building-details-card.component.css'],
 })
 export class AdminBuildingDetailsCardComponent implements OnChanges {
@@ -29,11 +32,12 @@ export class AdminBuildingDetailsCardComponent implements OnChanges {
     buildingDetails: BuildingDetailDto;
     parseDate = PARSEDATE;
     parseBuildingFloorLabel = PARSEBUILDINGFLOORS;
+    ref: DynamicDialogRef | undefined;
+
     constructor(
         private buildingDetailDataService: BuildingDetailDataService,
-        private dialogService: DialogService,
-        public ref: DynamicDialogRef,
-    ) { }
+        private dialogService: DialogService
+    ) {}
 
     ngOnChanges(changes: SimpleChanges): void {
         this.getBuildingDetails();
@@ -50,33 +54,27 @@ export class AdminBuildingDetailsCardComponent implements OnChanges {
 
     addBuildingDetail() {
         if (this.buildingDetails) {
-            this.ref = this.dialogService.open(
-                EditBuildingModalComponent,
-                {
-                    header: 'Editing Building Details',
-                    data: {
-                        buildingId: this.buildingId,
-                        buildingDetails: this.buildingDetails,
-                        isEdit:true
+            this.ref = this.dialogService.open(EditBuildingModalComponent, {
+                header: 'Editing Building Details',
+                data: {
+                    buildingId: this.buildingId,
+                    buildingDetails: this.buildingDetails,
+                    isEdit: true,
                 },
-                    width: '50vw',
-                }
-            );
-        }else{
-            this.ref = this.dialogService.open(
-                EditBuildingModalComponent,
-                {
-                    header: 'Adding Building Details',
-                    data: {
-                        buildingId: this.buildingId,
-                        isEdit:false
+                width: '50vw',
+            });
+        } else {
+            this.ref = this.dialogService.open(EditBuildingModalComponent, {
+                header: 'Adding Building Details',
+                data: {
+                    buildingId: this.buildingId,
+                    isEdit: false,
                 },
-                    width: '50vw',
-                }
-            );
+                width: '50vw',
+            });
         }
-        this.ref.onClose.subscribe((res)=>{
-            this.getBuildingDetails()
-        })
+        this.ref.onClose.subscribe((res) => {
+            this.getBuildingDetails();
+        });
     }
 }
