@@ -171,7 +171,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
     loadAdministrativeData() {
         this.clearMapState();
         this.geometryDataService
-            .GetAdministrativeBoundary(this.selectedAdministrativeZone.id)
+            .GetSubAdministrativeBoundary(this.selectedSubAdministrativeZone.id)
             .subscribe((res: any) => {
                 this.boundary = L.geoJSON(res, {
                     style: function (feature) {
@@ -185,8 +185,8 @@ export class AdminBuildingInventoryComponent implements OnInit {
                 });
 
                 this.geometryDataService
-                    .GetPlotsGeomByAdministrativeBoundary(
-                        this.selectedAdministrativeZone.id
+                    .GetPlotsGeomBySubAdministrativeBoundary(
+                        this.selectedSubAdministrativeZone.id
                     )
                     .subscribe((res: any) => {
                         this.plotsGeojson = L.geoJSON(res, {
@@ -208,8 +208,8 @@ export class AdminBuildingInventoryComponent implements OnInit {
                         }).addTo(this.map);
 
                         this.geometryDataService
-                            .GetBuildingFootprintsByAdministrativeBoundary(
-                                this.selectedAdministrativeZone.id
+                            .GetBuildingFootprintsBySubAdministrativeBoundary(
+                                this.selectedSubAdministrativeZone.id
                             )
                             .subscribe((res: any) => {
                                 this.buildingGeojson = L.geoJSON(res, {
@@ -242,7 +242,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
     }
 
     fitMapBounds() {
-        this.map.fitBounds(this.boundary.getBounds());
+        this.map.fitBounds(this.plotsGeojson.getBounds());
         this.boundary.bringToBack();
     }
 

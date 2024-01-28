@@ -58,9 +58,9 @@ export class GeometryDataService {
         return this.http.get(`${this.apiUrl}/administrative-zone/geom/all`);
     }
 
-    GetSubAdminsitrativeZonesGeom() {
+    GetSubAdminsitrativeZonesGeom(id) {
         return this.http.get(
-            `${this.apiUrl}/sub-administrative-zone/geom/all/all`
+            `${this.apiUrl}/sub-administrative-zone/geom/${id}`
         );
     }
 
@@ -70,11 +70,15 @@ export class GeometryDataService {
         );
     }
 
-    GetBuildingFootprintsByAdministrativeBoundary(
-        administrativeZoneId: number
-    ) {
+    GetBuildingFootprintsByAdministrativeBoundary( administrativeZoneId: number) {
         return this.http.get(
             `${this.apiUrl}/administrative-zone/buildings/geom/${administrativeZoneId}`
+        );
+    }
+
+    GetPlotsGeomBySubAdministrativeBoundary(subadmId: number) {
+        return this.http.get(
+            `${this.apiUrl}/administrative-zone/sub/plots/geom/${subadmId}`
         );
     }
 
