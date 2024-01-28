@@ -49,18 +49,41 @@
                 <td>{{ unit.unitDetail?.rent }}</td>
                 <td>
                     <p-button
-                        *ngIf="!checkIfSelected(unit)"
+                        label="Map Ownership"
                         icon="pi pi-plus"
-                        severity="success"
+                        size="small"
                         (click)="selectUnit($event, unit)"
                     ></p-button>
 
-                    <p-button
-                        *ngIf="checkIfSelected(unit)"
-                        icon="pi pi-times"
-                        severity="danger"
-                        (click)="unselectUnit(unit)"
-                    ></p-button>
+                    <hr />
+
+                    <div *ngIf="unit.unitOwnerships?.length">
+                        <div
+                            *ngFor="
+                                let ownership of unit.unitOwnerships;
+                                index as i
+                            "
+                            class="flex gap-1 mb-1"
+                            style="text-wrap: wrap"
+                        >
+                            <div>
+                                {{
+                                    ownership.buildingOwnership?.owner?.cid
+                                }},<br />
+                                {{
+                                    ownership.buildingOwnership?.owner?.name
+                                }},<br />
+                                Percentage: {{ ownership.ownershipPercentage }}%
+                            </div>
+
+                            <p-button
+                                icon="pi pi-times"
+                                [outlined]="true"
+                                severity="danger"
+                                (click)="unmapUnit(unit)"
+                            ></p-button>
+                        </div>
+                    </div>
                 </td>
             </tr>
         </ng-template>

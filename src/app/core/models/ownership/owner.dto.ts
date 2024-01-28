@@ -22,6 +22,7 @@ export interface UnitOwnership {
     unitId: number;
     buildingOwnershipId: number;
     ownershipPercentage: number;
+    unit?: UnitDto;
 }
 
 export interface CreateBuildingOwnershipDto {

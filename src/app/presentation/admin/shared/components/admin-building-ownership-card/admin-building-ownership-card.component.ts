@@ -64,6 +64,13 @@ export class AdminBuildingOwnershipCardComponent implements OnInit {
         return val;
     }
 
+    getUnitOwnership(id) {
+        this.ownershipDataService
+            .GetAllUnitOwnershipByBuildingOwnership(id)
+            .subscribe((res: any) => {
+                return res;
+            });
+    }
     openAddBuildingOwnershipModal() {
         this.ref = this.dialogService.open(AdminAddBuildingOwnershipComponent, {
             header: 'Add Ownership for bid ' + this.buildingId,

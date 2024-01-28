@@ -58,9 +58,12 @@ export class AdminBuildingInventoryViewBuildingComponent
     plotGeom: any;
 
     buildingPointsGeom: any;
-    isBuildingPoint:boolean = false;
+    isBuildingPoint: boolean = false;
 
     units: any[];
+
+    showZhicharPoints: boolean = true;
+    showRedrawBuildings: boolean = true;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -79,6 +82,18 @@ export class AdminBuildingInventoryViewBuildingComponent
         if (this.instance && this.instance.data) {
             this.buildingId = this.instance.data.buildingId;
             this.isBuildingPoint = this.instance.data.isBuildingPoint;
+            if (
+                this.instance.data.showZhicharPoints &&
+                this.instance.data.showZhicharPoints === false
+            ) {
+                this.showZhicharPoints = false;
+            }
+            if (
+                this.instance.data.showRedrawBuilding &&
+                this.instance.data.showRedrawBuilding === false
+            ) {
+                this.showRedrawBuildings = false;
+            }
             this.getBuildingDetails(this.buildingId);
             this.getUnitsByBuildingId(this.buildingId);
             this.getBuilding(this.buildingId);
@@ -86,52 +101,53 @@ export class AdminBuildingInventoryViewBuildingComponent
         }
     }
 
-    ngOnInit(): void { }
+    ngOnInit(): void {}
 
     ngOnDestroy(): void {
         this.ref.destroy();
     }
 
     async showBuildingsNearBy() {
-        let hash = await this.generateGoeHashFromPlotId()
-        this.buildingPointsGeom = await this.geometryService.GetBuildingPointNearHash(hash).toPromise()
+        let hash = await this.generateGoeHashFromPlotId();
+        this.buildingPointsGeom = await this.geometryService
+            .GetBuildingPointNearHash(hash)
+            .toPromise();
         this.ref.close({
             delete: false,
-            type: "POINTS",
-            data: this.buildingPointsGeom
-        })
+            type: 'POINTS',
+            data: this.buildingPointsGeom,
+        });
     }
 
     async generateGoeHashFromPlotId() {
-        let plotId = this.buildingPlots[0]['plotId']
-        let response = await this.geometryService.GetPlotGeom(plotId).toPromise()
-        this.plotGeom = L.geoJSON(response[0])
+        let plotId = this.buildingPlots[0]['plotId'];
+        let response = await this.geometryService
+            .GetPlotGeom(plotId)
+            .toPromise();
+        this.plotGeom = L.geoJSON(response[0]);
         const center = this.plotGeom.getBounds().getCenter();
-        const hash = encodeBase32(center.lat, center.lng, 7)
-        return hash
+        const hash = encodeBase32(center.lat, center.lng, 7);
+        return hash;
     }
 
     async redrawBuilding(buildingId) {
         //redraw the shape of the building
-        this.secondRef = this.dialogService.open(
-            AdminMasterBuildingComponent,
-            {
-                header: 'REshape Building for id: ' + buildingId,
-                data: {
-                    type: GeomEditType.EDIT,
-                    buildingId: buildingId
-                },
-                width: '90%',
-                height: '90%'
-            }
-        )
+        this.secondRef = this.dialogService.open(AdminMasterBuildingComponent, {
+            header: 'REshape Building for id: ' + buildingId,
+            data: {
+                type: GeomEditType.EDIT,
+                buildingId: buildingId,
+            },
+            width: '90%',
+            height: '90%',
+        });
 
         this.secondRef.onClose.subscribe((res) => {
-            console.log("in menu", res)
+            console.log('in menu', res);
             this.ref.close({
                 delete: false,
-                type: "REDRAW",
-                data: res
+                type: 'REDRAW',
+                data: res,
             });
         });
     }
@@ -211,20 +227,20 @@ export class AdminBuildingInventoryViewBuildingComponent
                         });
                         this.ref.close({
                             delete: true,
-                            type: "DELETE",
-                            data: null
+                            type: 'DELETE',
+                            data: null,
                         });
                     });
             },
-            reject: () => { },
+            reject: () => {},
         });
     }
 
-    clearBuildingNearBy(){
+    clearBuildingNearBy() {
         this.ref.close({
             delete: false,
-            type: "NO_POINTS",
-            data: this.buildingPointsGeom
-        })
+            type: 'NO_POINTS',
+            data: this.buildingPointsGeom,
+        });
     }
 }

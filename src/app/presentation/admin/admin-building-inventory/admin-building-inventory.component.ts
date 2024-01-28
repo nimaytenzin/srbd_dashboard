@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as L from 'leaflet';
-import { SelectItem } from 'primeng/api';
+import { MessageService, SelectItem } from 'primeng/api';
 import { DropdownModule } from 'primeng/dropdown';
 import { LocationDataService } from 'src/app/core/services/location.dataservice';
 import { CardModule } from 'primeng/card';
@@ -19,6 +19,28 @@ import { Router } from '@angular/router';
 import { AdminMasterBuildingComponent } from '../admin-master-building/admin-master-building.component';
 import { GeomEditType } from 'src/app/core/constants';
 
+interface BuildingPoint {
+    lat: number;
+    lng: number;
+    plotId: string;
+    dzongkhagId: number;
+}
+
+interface BuildingGeom {
+    geometry: string;
+    dzoid: number;
+    admid: number;
+    subadmid: number;
+    buildingid: number;
+    areaSqFt: number;
+}
+
+interface BuildingPlot {
+    buildingId: number;
+    plotId: string;
+    overlapPercentage: number;
+}
+
 @Component({
     selector: 'app-admin-building-inventory',
     standalone: true,
@@ -31,7 +53,7 @@ import { GeomEditType } from 'src/app/core/constants';
         DividerModule,
         DynamicDialogModule,
     ],
-    providers: [DialogService],
+    providers: [DialogService, MessageService],
     templateUrl: './admin-building-inventory.component.html',
     styleUrl: './admin-building-inventory.component.scss',
 })
@@ -40,7 +62,8 @@ export class AdminBuildingInventoryComponent implements OnInit {
         private locationDataService: LocationDataService,
         private geometryDataService: GeometryDataService,
         public dialogService: DialogService,
-        private router: Router
+        private router: Router,
+        private messageService: MessageService
     ) {}
 
     ref: DynamicDialogRef | undefined;
@@ -60,6 +83,27 @@ export class AdminBuildingInventoryComponent implements OnInit {
     selectedSubAdministrativeZone: any;
     selected = false;
     mapStateStored = localStorage.getItem('mapState');
+
+    buildingGeom: BuildingGeom = {
+        geometry: '',
+        dzoid: 0,
+        admid: 0,
+        subadmid: 0,
+        buildingid: 0,
+        areaSqFt: 0,
+    };
+    buildingPoint: BuildingPoint = {
+        lat: 0,
+        lng: 0,
+        plotId: '',
+        dzongkhagId: 0,
+    };
+
+    buildingPlot: BuildingPlot = {
+        buildingId: 0,
+        plotId: '',
+        overlapPercentage: 0,
+    };
 
     ngOnInit(): void {
         this.renderMap();
@@ -145,7 +189,11 @@ export class AdminBuildingInventoryComponent implements OnInit {
                             onEachFeature: (feature, layer) => {
                                 layer.on({
                                     click: (e: any) => {
-                                        alert(feature.properties.plotId);
+                                        this.showAddBuilding(
+                                            feature.properties['plotid'],
+                                            feature.properties['dzongkhagi'],
+                                            feature.properties['subadmid']
+                                        );
                                     },
                                 });
                             },
@@ -184,14 +232,80 @@ export class AdminBuildingInventoryComponent implements OnInit {
                     });
             });
     }
-    showAddBuilding(plotId) {
-        this.ref = this.dialogService.open(AdminMasterBuildingComponent, {
-            data: {
-                type: GeomEditType.ADD,
-                plotId: plotId,
-            },
-            width: '90%',
-            height: '90%',
+    showAddBuilding(plotId, dzongkhagId, subadmId) {
+        this.ref = this.dialogService.open(
+            AdminMasterBuildingComponent,
+            // AdminBuildingMenuComponent,
+            {
+                header: 'Building Menu for plot: ' + plotId,
+                data: {
+                    type: GeomEditType.ADD,
+                    plotId: plotId,
+                },
+                width: '90%',
+                height: '90%',
+            }
+        );
+
+        this.ref.onClose.subscribe((res) => {
+            console.log('Add building dialog close', res);
+            this.buildingPoint.lat = res.lat;
+            this.buildingPoint.lng = res.lng;
+            this.buildingPoint.dzongkhagId = dzongkhagId;
+            this.buildingPoint.lat;
+            this.buildingPoint.plotId = `New Building Added on ${plotId}`;
+            this.buildingGeom.areaSqFt = res.area;
+
+            res.geom['features'][0]['geometry']['type'] = 'MultiPolygon';
+            res.geom['features'][0]['geometry']['coordinates'] = [
+                res.geom['features'][0]['geometry']['coordinates'],
+            ];
+            var jsonData = JSON.stringify(res.geom['features'][0]['geometry']);
+            this.buildingGeom.geometry = jsonData;
+
+            this.insertBuildingPoint(this.buildingPoint).then((res: any) => {
+                console.log('building id new ', res.id);
+
+                this.buildingGeom.buildingid = res.id;
+                this.buildingGeom.subadmid = subadmId;
+
+                //building plot data
+                this.buildingPlot.buildingId = res.id;
+                this.buildingPlot.plotId = plotId;
+                this.buildingPlot.overlapPercentage = 100.0;
+
+                this.insertBuildingGeom(this.buildingGeom).then((result) => {
+                    if (result[1]) {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Message',
+                            detail: 'Building added Successfully!!!',
+                        });
+                    } else {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'Building could not be added!!!',
+                        });
+                    }
+                });
+                this.insertBuildingPlots(this.buildingPlot).then((result) => {
+                    if (result) {
+                        this.loadBuildings();
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Message',
+                            detail: 'Building Plot added Successfully!!!',
+                        });
+                    } else {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'Building could not be added!!!',
+                        });
+                    }
+                });
+            });
         });
     }
 
@@ -202,12 +316,14 @@ export class AdminBuildingInventoryComponent implements OnInit {
                 header: 'Building ID: ' + buildingId,
                 data: {
                     buildingId: buildingId,
+                    showZhicharPoints: false,
+                    showRedrawBuilding: false,
                 },
                 width: 'max-content',
             }
         );
         this.ref.onClose.subscribe((res) => {
-            if (res.delete) {
+            if (res && res.delete) {
                 this.loadBuildings();
             }
         });
@@ -319,8 +435,8 @@ export class AdminBuildingInventoryComponent implements OnInit {
             this.map.removeLayer(this.buildingGeojson);
         }
         this.geometryDataService
-            .GetBuildingFootprintsByAdministrativeBoundary(
-                this.selectedAdministrativeZone.id
+            .GetBuildingFootprintsBySubAdministrativeBoundary(
+                this.selectedSubAdministrativeZone.id
             )
             .subscribe((res: any) => {
                 this.buildingGeojson = L.geoJSON(res, {
@@ -346,5 +462,29 @@ export class AdminBuildingInventoryComponent implements OnInit {
                     },
                 }).addTo(this.map);
             });
+    }
+
+    async updateBuildingGeom(buildingId, data) {
+        return await this.geometryDataService
+            .updateBuildingGeom(buildingId, data)
+            .toPromise();
+    }
+
+    async insertBuildingPoint(data) {
+        return await this.geometryDataService
+            .postBuildingPoint(data)
+            .toPromise();
+    }
+
+    async insertBuildingGeom(data) {
+        return await this.geometryDataService
+            .postBuildingGeom(data)
+            .toPromise();
+    }
+
+    async insertBuildingPlots(data) {
+        return await this.geometryDataService
+            .postBuildingPlot(data)
+            .toPromise();
     }
 }

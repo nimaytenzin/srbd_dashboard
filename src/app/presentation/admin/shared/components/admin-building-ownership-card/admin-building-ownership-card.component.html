@@ -41,6 +41,16 @@
                     <span *ngIf="ownership.type !== 'STRATA'">
                         {{ ownership.ownershipPercentage }} %
                     </span>
+                    <div *ngIf="ownership.type === 'STRATA'" class="text-sm">
+                        <span
+                            *ngFor="let item of ownership.unitOwnerships"
+                            class=""
+                        >
+                            {{ item.unit.unitNumberPrefix }}-{{
+                                item.unit.unitNumber
+                            }},
+                        </span>
+                    </div>
                 </td>
                 <td>
                     <div class="flex gap-2">

@@ -75,10 +75,18 @@ export class AdminAddStrataUnitownershipComponent implements OnInit {
     unitOwnerships: UnitOwnershipDto[] = [];
 
     @ViewChild(ConfirmPopup) confirmPopup!: ConfirmPopup;
+    @ViewChild(ConfirmPopup) confirmPopup2!: ConfirmPopup;
+
     accept() {
         this.confirmPopup.accept();
     }
     reject() {
+        this.confirmPopup.reject();
+    }
+    accept2() {
+        this.confirmPopup.accept();
+    }
+    reject3() {
         this.confirmPopup.reject();
     }
     constructor(
@@ -91,7 +99,6 @@ export class AdminAddStrataUnitownershipComponent implements OnInit {
         private messageService: MessageService
     ) {
         this.instance = this.dialogService.getInstance(this.ref);
-        console.log(this.instance.data);
         if (this.instance && this.instance.data) {
             this.buildingId = this.instance.data.buildingId;
             this.buildingOwnership = this.instance.data;
@@ -108,7 +115,6 @@ export class AdminAddStrataUnitownershipComponent implements OnInit {
             ownershipPercentage: [],
             buildingId: [this.buildingId],
         });
-        this.getUnitOwnership();
     }
 
     selectUnit(event: Event, unit: UnitDto) {
@@ -123,7 +129,7 @@ export class AdminAddStrataUnitownershipComponent implements OnInit {
                         ownershipPercentage: this.ownershipPercentage,
                     })
                     .subscribe((res) => {
-                        this.getUnitOwnership();
+                        this.getUnitsByBuilding();
                     });
             },
             reject: () => {
@@ -155,21 +161,15 @@ export class AdminAddStrataUnitownershipComponent implements OnInit {
             });
     }
 
-    // selectUnit(passedUnit: UnitDto) {
-    //     this.confirm1();
-    //     if (!this.selectedUnits.some((unit) => unit.id === passedUnit.id)) {
-    //         this.selectedUnits.push(passedUnit);
-    //     }
-    // }
-
-    unselectUnit(passedUnit: UnitDto) {
+    unmapUnit(passedUnit: UnitDto) {
+        console.log(this.buildingOwnership.id, passedUnit.id);
         this.ownershipDataService
             .DeleteUnitOwnershipByBuildingOwnerUnit(
                 this.buildingOwnership.id,
                 passedUnit.id
             )
             .subscribe((res) => {
-                this.getUnitOwnership();
+                this.getUnitsByBuilding();
             });
     }
 

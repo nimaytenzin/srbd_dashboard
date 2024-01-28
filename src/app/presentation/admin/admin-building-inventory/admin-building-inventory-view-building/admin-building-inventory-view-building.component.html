@@ -45,18 +45,19 @@
                 (click)="goToBuildingDetailedView(buildingId)"
             ></p-button>
             <p-button
-                *ngIf = "!isBuildingPoint"
+                *ngIf="!isBuildingPoint || showZhicharPoints"
                 label="Show Zhichar Points"
                 class="mr-4"
                 (click)="showBuildingsNearBy()"
             ></p-button>
             <p-button
-                *ngIf = "isBuildingPoint"
+                *ngIf="isBuildingPoint"
                 label="Clear Zhichar Points"
                 class="mr-4"
                 (click)="clearBuildingNearBy()"
             ></p-button>
             <p-button
+                *ngIf="showRedrawBuildings"
                 label="Redraw Building"
                 (click)="redrawBuilding(buildingId)"
             ></p-button>
