@@ -1,6 +1,6 @@
 <p-card class="w-4" *ngIf="units?.length">
     <ng-template pTemplate="header">
-        <div class="flex justify-content-between align-item-end p-4">
+        <div class="flex justify-content-between align-item-end pt-4 pr-4 pl-4">
             <p class="text-gray-700 text-xl font-semibold">Units</p>
             <p-button
                 icon="pi pi-plus"
@@ -9,6 +9,18 @@
             ></p-button>
         </div>
     </ng-template>
+
+    <div *ngIf="buildingOwnerships?.length">
+        Building Ownership
+        <p
+            *ngFor="let ownership of buildingOwnerships; index as i"
+            class="text-sm"
+        >
+            {{ i + 1 }}. {{ ownership.type }} Ownership,
+            {{ ownership.ownershipPercentage }} %, {{ ownership.owner.cid }},
+            {{ ownership.owner.name }}
+        </p>
+    </div>
 
     <p-table
         [value]="units"
@@ -38,10 +50,7 @@
             <tr>
                 <td>
                     <div class="flex flex-column align-items-center">
-                        <p
-                            class="font-bold m-0 cursor-pointer"
-                            (click)="editUnit(unit)"
-                        >
+                        <p class="font-bold m-0 cursor-pointer">
                             {{ unit?.unitNumberPrefix }}-{{ unit?.unitNumber }}
                         </p>
                         <qrcode
@@ -59,11 +68,22 @@
                             [title]="'BuildingQr'"
                             [width]="30"
                         ></qrcode>
+
+                        <small
+                            class="text-center"
+                            *ngIf="unit.unitDetail?.name"
+                        >
+                            {{ unit.unitDetail?.name }} <br />
+                        </small>
                     </div>
                 </td>
                 <td>
                     {{ unit.unitDetail?.use }}
                     <br />
+                    <span *ngIf="unit.unitDetail?.numberOfBedrooms">
+                        {{ unit.unitDetail?.numberOfBedrooms }} BHK <br />
+                    </span>
+
                     {{ unit.unitDetail?.occupancyStatus }}
                 </td>
                 <td class="line-height-1">
@@ -85,10 +105,11 @@
                             Percentage: {{ ownership.ownershipPercentage }}%
                         </p>
                     </div>
+                    <p *ngIf="!unit.unitOwnerships?.length">NA</p>
                 </td>
                 <td>
                     <i
-                        (click)="editUnitDetail(unit)"
+                        (click)="editUnit(unit)"
                         class="pi pi-pencil cursor-pointer"
                         style="font-size: 0.9rem"
                     ></i>

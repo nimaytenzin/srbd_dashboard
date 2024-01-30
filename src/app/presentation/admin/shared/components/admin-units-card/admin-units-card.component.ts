@@ -19,6 +19,11 @@ import { UnitDto } from 'src/app/core/models/units/unit.dto';
 import { UnitDataService } from 'src/app/core/services/unit.dataservice';
 import { GETBUILDINGFLOORLABEL } from 'src/app/core/helper-function';
 import { EditUnitModalComponent } from '../../admin-view-plot-buildings/edit-unit-modal/edit-unit-modal.component';
+import { AdminEditUnitComponent } from '../crud-modals/units/admin-edit-unit/admin-edit-unit.component';
+import { BuildingDetailDto } from 'src/app/core/models/buildings/building-detail.dto';
+import { BuildingDetailDataService } from 'src/app/core/services/building-detail.dataservice';
+import { BuildingOwnershipDto } from 'src/app/core/models/ownership/owner.dto';
+import { OwnershipDataService } from 'src/app/core/services/ownership.dataservice';
 
 @Component({
     selector: 'app-admin-units-card',
@@ -34,17 +39,30 @@ import { EditUnitModalComponent } from '../../admin-view-plot-buildings/edit-uni
     ],
     styleUrls: ['./admin-units-card.component.css'],
 })
-export class AdminUnitsCardComponent implements OnChanges {
+export class AdminUnitsCardComponent implements OnChanges, OnInit {
     @Input() buildingId;
 
     ref: DynamicDialogRef | undefined;
     units: UnitDto[];
     getBuildingFloorLabel = GETBUILDINGFLOORLABEL;
 
+    buildingDetails!: BuildingDetailDto;
+    buildingOwnerships: BuildingOwnershipDto[];
+
     constructor(
         private unitDataService: UnitDataService,
-        private dialogService: DialogService
+        private dialogService: DialogService,
+        private buildingDetailService: BuildingDetailDataService,
+        private ownershipDataService: OwnershipDataService
     ) {}
+    ngOnInit(): void {
+        this.buildingDetailService
+            .GetBuildingDetailsByBuildingId(this.buildingId)
+            .subscribe((res) => {
+                this.buildingDetails = res;
+            });
+    }
+
     ngOnChanges(changes: SimpleChanges): void {
         this.getUnitDetails();
     }
@@ -54,6 +72,13 @@ export class AdminUnitsCardComponent implements OnChanges {
             .GetAllUnitsByBuilding(this.buildingId)
             .subscribe((res) => {
                 this.units = res;
+                this.ownershipDataService
+                    .GetAllBuildingOwnerships(this.buildingId)
+                    .subscribe((res) => {
+                        console.log(res);
+                        console.log('BUILDing OWNerSHIP');
+                        this.buildingOwnerships = res;
+                    });
             });
     }
 
@@ -68,8 +93,7 @@ export class AdminUnitsCardComponent implements OnChanges {
                 isEditUnit: false,
                 isEditUnitDetails: false,
             },
-            width: '70vw',
-            height: '70vh',
+            width: '40vw',
         });
         this.ref.onClose.subscribe((res) => {
             this.getUnitDetails();
@@ -77,19 +101,22 @@ export class AdminUnitsCardComponent implements OnChanges {
     }
 
     editUnit(unit) {
-        this.ref = this.dialogService.open(EditUnitModalComponent, {
+        this.ref = this.dialogService.open(AdminEditUnitComponent, {
             data: {
                 buildingId: this.buildingId,
+                unitId: unit.id,
                 unit: unit,
-                isEditUnit: true,
-                isEditUnitDetails: false,
-                isCreateUnitDetails: false,
+                buildingDetails: this.buildingDetails,
             },
-            width: '70vw',
-            height: '70vh',
+            header:
+                'Editing BuildingID:' + this.buildingId + ', unitId:' + unit.id,
+            width: 'max-content',
         });
         this.ref.onClose.subscribe((res) => {
-            this.getUnitDetails();
+            if (res.dataChanged) {
+                console.log(res, 'DATA CHANGED UPDATING UNITS CARD');
+                this.getUnitDetails();
+            }
         });
     }
 

@@ -43,4 +43,8 @@ export class UnitDataService {
             data
         );
     }
+
+    UpdateUnit(data: any, unitId: number) {
+        return this.http.patch(`${this.apiUrl}/unit/${unitId}`, data);
+    }
 }

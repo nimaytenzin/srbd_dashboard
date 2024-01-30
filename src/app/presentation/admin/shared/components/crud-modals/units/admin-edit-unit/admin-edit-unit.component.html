@@ -1,0 +1,189 @@
+<p-tabView>
+    <p-tabPanel header="Unit">
+        <div class="grid">
+            <div class="col-12">
+                <div class="p-fluid">
+                    <div class="field">
+                        <label htmlFor="floorLevel">Floor Level</label>
+                        <p-dropdown
+                            id="floorLevel"
+                            [options]="floorLevelOption"
+                            [(ngModel)]="selectedFloorLevel"
+                            placeholder="select floor"
+                        ></p-dropdown>
+                    </div>
+
+                    <div class="field">
+                        <label htmlFor="unitNumber">Unit Number</label>
+                        <p-dropdown
+                            id="unitNumber"
+                            [options]="unitNumberOption"
+                            [(ngModel)]="selectedUnitNumber"
+                            placeholder="Unit Number"
+                        ></p-dropdown>
+                    </div>
+
+                    <div class="field">
+                        <label htmlFor="floorLevel"
+                            >Captured during Survey?</label
+                        >
+                        <p-dropdown
+                            id="floorLevel"
+                            [options]="yesNoOptions"
+                            [(ngModel)]="isLocked"
+                            optionValue="value"
+                            optionLabel="label"
+                            placeholder="Locked During Survey?"
+                        ></p-dropdown>
+                    </div>
+
+                    <p-button
+                        label="updateUnit"
+                        (click)="updateUnit()"
+                    ></p-button>
+                </div>
+            </div>
+        </div>
+    </p-tabPanel>
+    <p-tabPanel header="Unit Details">
+        <form [formGroup]="editUnitDetailsForm" class="grid">
+            <div class="col-12">
+                <div class="p-fluid">
+                    <div class="field">
+                        <label htmlFor="floorLevel"
+                            >Unit Name(name of shop/offices..etc)</label
+                        >
+                        <input
+                            pInputText
+                            id="floorLevel"
+                            formControlName="name"
+                        />
+                    </div>
+
+                    <div class="field">
+                        <label htmlFor="unitNumber">Unit Occupancy</label>
+                        <p-dropdown
+                            id="unitNumber"
+                            [options]="unitOccupancies"
+                            formControlName="occupancyStatus"
+                        ></p-dropdown>
+                    </div>
+
+                    <div class="field">
+                        <label htmlFor="unitNumber">Unit Use</label>
+                        <p-dropdown
+                            id="unitNumber"
+                            [options]="unitUses"
+                            formControlName="use"
+                        ></p-dropdown>
+                    </div>
+
+                    <div class="field">
+                        <label htmlFor="unitNumber">Bedrooms</label>
+                        <p-inputNumber
+                            id="unitNumber"
+                            formControlName="numberOfBedrooms"
+                        ></p-inputNumber>
+                    </div>
+
+                    <div class="field">
+                        <label htmlFor="unitNumber">Is Rented?</label>
+                        <p-dropdown
+                            id="floorLevel"
+                            [options]="yesNoOptions"
+                            formControlName="isRented"
+                            optionValue="value"
+                            optionLabel="label"
+                        ></p-dropdown>
+                    </div>
+
+                    <div class="field">
+                        <label htmlFor="unitNumber">Rent</label>
+                        <p-inputGroup>
+                            <p-inputGroupAddon>Nu.</p-inputGroupAddon>
+                            <input pInputText formControlName="rent" />
+                        </p-inputGroup>
+                    </div>
+                    <div class="field">
+                        <label htmlFor="unitNumber">Contact(occupant)</label>
+
+                        <p-inputGroup>
+                            <p-inputGroupAddon>+975</p-inputGroupAddon>
+                            <input pInputText formControlName="contact" />
+                        </p-inputGroup>
+                    </div>
+
+                    <p-button
+                        label="Update Unit Details"
+                        (click)="updateUnitDetails()"
+                    ></p-button>
+                </div>
+            </div>
+        </form>
+    </p-tabPanel>
+    <p-tabPanel header="QR Code">
+        <div class="grid">
+            <div class="col-12">
+                <div class="p-fluid">
+                    <div class="flex justify-content-center">
+                        <qrcode
+                            *ngIf="unit?.qrUuid"
+                            [qrdata]="getQr(unit?.qrUuid)"
+                            [errorCorrectionLevel]="'M'"
+                            [allowEmptyString]="true"
+                            [cssClass]="'center'"
+                            [errorCorrectionLevel]="'high'"
+                            [colorDark]="'#111827'"
+                            [colorLight]="'#FFFFFF00'"
+                            [elementType]="'svg'"
+                            [errorCorrectionLevel]="'H'"
+                            [scale]="1"
+                            [title]="'BuildingQr'"
+                            [width]="300"
+                        ></qrcode>
+                    </div>
+                    <p class="text-center">
+                        {{ unit?.qrUuid }}
+                    </p>
+                    <!-- <p-button
+                        severity="danger"
+                        size="small"
+                        label="UnMap QR"
+                    ></p-button> -->
+                </div>
+            </div>
+        </div>
+    </p-tabPanel>
+
+    <p-tabPanel header="Unit Ownership">
+        <div class="grid">
+            <div class="col-12">
+                <div *ngIf="unit.unitOwnerships?.length">
+                    <p
+                        *ngFor="
+                            let ownership of unit.unitOwnerships;
+                            index as i
+                        "
+                    >
+                        1. {{ ownership.buildingOwnership?.owner?.cid }}
+                        <br />
+                        {{ ownership.buildingOwnership?.owner?.name }}
+                        <br />
+                        Percentage: {{ ownership.ownershipPercentage }}%
+                    </p>
+                </div>
+
+                <div
+                    *ngIf="!unit.unitOwnerships?.length"
+                    class="flex flex-column justify-content-center align-items-center"
+                >
+                    <img
+                        style="height: 100px; width: auto"
+                        src="assets/nodata2.png"
+                    />
+                    <p>No Ownership Data (or) Soley owned by the plot owners</p>
+                </div>
+            </div>
+        </div>
+    </p-tabPanel>
+</p-tabView>

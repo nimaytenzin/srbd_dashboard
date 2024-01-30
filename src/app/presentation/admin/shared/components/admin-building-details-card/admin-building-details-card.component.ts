@@ -16,7 +16,7 @@ import { ButtonModule } from 'primeng/button';
 import { PARSEBUILDINGFLOORS, PARSEDATE } from 'src/app/core/helper-function';
 import { BuildingDetailDto } from 'src/app/core/models/buildings/building-detail.dto';
 import { BuildingDetailDataService } from 'src/app/core/services/building-detail.dataservice';
-import { EditBuildingModalComponent } from '../../admin-view-plot-buildings/edit-building-modal/edit-building-modal.component';
+import { EditBuildingModalComponent } from '../crud-modals/buildings/edit-building-modal/edit-building-modal.component';
 
 @Component({
     selector: 'app-admin-building-details-card',
@@ -47,7 +47,6 @@ export class AdminBuildingDetailsCardComponent implements OnChanges {
         this.buildingDetailDataService
             .GetBuildingDetailsByBuildingId(this.buildingId)
             .subscribe((res) => {
-                console.log(res);
                 this.buildingDetails = res;
             });
     }
@@ -61,7 +60,7 @@ export class AdminBuildingDetailsCardComponent implements OnChanges {
                     buildingDetails: this.buildingDetails,
                     isEdit: true,
                 },
-                width: '50vw',
+                width: 'max-content',
             });
         } else {
             this.ref = this.dialogService.open(EditBuildingModalComponent, {
@@ -70,11 +69,14 @@ export class AdminBuildingDetailsCardComponent implements OnChanges {
                     buildingId: this.buildingId,
                     isEdit: false,
                 },
-                width: '50vw',
+                width: 'max-content',
             });
         }
         this.ref.onClose.subscribe((res) => {
-            this.getBuildingDetails();
+            if (res.dataChanged) {
+                console.log(res);
+                this.getBuildingDetails();
+            }
         });
     }
 }

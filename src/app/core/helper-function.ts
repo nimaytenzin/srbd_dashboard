@@ -40,11 +40,15 @@ export function PARSEBUILDINGFLOORS(
         : '';
     const stiltLabel = stiltCount
         ? stiltCount === 1
-            ? 'S'
-            : `${stiltCount}S`
+            ? 'S+'
+            : `${stiltCount}S+`
         : '';
     const regularFloorLabel =
-        regularFloorCount > 0 ? `G+${regularFloorCount - 1}` : 'G';
+        regularFloorCount > 0
+            ? regularFloorCount - 1 === 0
+                ? `G`
+                : `G+${regularFloorCount - 1}`
+            : 'G';
 
     const atticLabel = atticCount
         ? atticCount === 1

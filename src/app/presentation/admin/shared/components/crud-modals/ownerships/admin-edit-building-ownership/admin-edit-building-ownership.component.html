@@ -1,0 +1,71 @@
+<form [formGroup]="myForm" class="grid p-4">
+    <div class="p-fluid">
+        <div class="col-12">
+            <div class="field">
+                <label for="cid">Citizen Identity Card Numebr </label>
+                <p>press enter to search existing details</p>
+                <input
+                    id="cid"
+                    formControlName="cid"
+                    pInputText
+                    (keyup)="searchOwners($event)"
+                />
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="field">
+                <label for="name">Full Name </label>
+                <input id="name" formControlName="name" pInputText />
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="field">
+                <label for="contact">Phone Number </label>
+                <p-inputNumber
+                    id="contact"
+                    [useGrouping]="false"
+                    formControlName="contact"
+                ></p-inputNumber>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="field">
+                <label for="type">Ownership Type</label>
+                <p-dropdown
+                    id="type"
+                    class="w-full"
+                    formControlName="type"
+                    [options]="ownershipTypes"
+                >
+                </p-dropdown>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="field">
+                <label for="ownershipPercentage">Ownership Percentage </label>
+                <p-inputNumber
+                    id="ownershipPercentage"
+                    mode="decimal"
+                    [minFractionDigits]="2"
+                    formControlName="ownershipPercentage"
+                ></p-inputNumber>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <p-button
+                label="Update"
+                class="col-6"
+                (click)="updateOwnership()"
+            ></p-button>
+            <p-button
+                severity="danger"
+                label="Delete "
+                class="col-6"
+                (click)="deleteOwnership()"
+            ></p-button>
+        </div>
+    </div>
+</form>

@@ -178,7 +178,10 @@ export const UnitPrimaryUses = [
     'Residential',
     'Commercial',
     'Institutional',
+    'Private Offices',
+    'Hotes & Resorts',
     'Religious',
+    'Social',
     'Health',
     'Industrial',
 ];

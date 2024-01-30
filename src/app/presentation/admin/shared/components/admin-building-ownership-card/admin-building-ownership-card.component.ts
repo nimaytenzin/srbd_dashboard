@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { QRCodeModule } from 'angularx-qrcode';
 import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -8,11 +8,11 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TableModule } from 'primeng/table';
 import { BuildingDTO } from 'src/app/core/models/buildings/building.dto';
 import { BuildingDataService } from 'src/app/core/services/building.dataservice';
-import { AdminAddBuildingOwnershipComponent } from '../crud-modals/admin-add-building-ownership/admin-add-building-ownership.component';
+import { AdminAddBuildingOwnershipComponent } from '../crud-modals/ownerships/admin-add-building-ownership/admin-add-building-ownership.component';
 import { OwnershipDataService } from 'src/app/core/services/ownership.dataservice';
 import { BuildingOwnershipDto } from 'src/app/core/models/ownership/owner.dto';
-import { AdminEditBuildingOwnershipComponent } from '../crud-modals/admin-edit-building-ownership/admin-edit-building-ownership.component';
-import { AdminAddStrataUnitownershipComponent } from '../crud-modals/admin-add-strata-unitownership/admin-add-strata-unitownership.component';
+import { AdminEditBuildingOwnershipComponent } from '../crud-modals/ownerships/admin-edit-building-ownership/admin-edit-building-ownership.component';
+import { AdminAddStrataUnitownershipComponent } from '../crud-modals/ownerships/admin-add-strata-unitownership/admin-add-strata-unitownership.component';
 
 @Component({
     selector: 'app-admin-building-ownership-card',
@@ -27,6 +27,7 @@ export class AdminBuildingOwnershipCardComponent implements OnInit {
     ref: DynamicDialogRef | undefined;
     buildingOwnerships: BuildingOwnershipDto[];
     @Input() buildingId;
+    @Output() ownershipUpdated = new EventEmitter<string>();
 
     constructor(
         private buildingDataService: BuildingDataService,
@@ -82,6 +83,7 @@ export class AdminBuildingOwnershipCardComponent implements OnInit {
         this.ref.onClose.subscribe((res) => {
             if (res.added) {
                 this.getBuildingOwnerships();
+                this.ownershipUpdated.emit('1');
             }
         });
     }
@@ -100,9 +102,11 @@ export class AdminBuildingOwnershipCardComponent implements OnInit {
         this.ref.onClose.subscribe((res) => {
             if (res.updated) {
                 this.getBuildingOwnerships();
+                this.ownershipUpdated.emit('1');
             }
             if (res.deleted) {
                 this.getBuildingOwnerships();
+                this.ownershipUpdated.emit('1');
             }
         });
     }
@@ -119,12 +123,8 @@ export class AdminBuildingOwnershipCardComponent implements OnInit {
             }
         );
         this.ref.onClose.subscribe((res) => {
-            if (res.updated) {
-                this.getBuildingOwnerships();
-            }
-            if (res.deleted) {
-                this.getBuildingOwnerships();
-            }
+            this.getBuildingOwnerships();
+            this.ownershipUpdated.emit('1');
         });
     }
 }

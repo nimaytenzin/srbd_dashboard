@@ -28,6 +28,7 @@ export interface UnitDto {
     unitNumberPrefix: string;
     unitNumber: string;
     qrUuid?: string;
+    isLocked?: boolean;
 }
 
 export interface UnitDetailDto {

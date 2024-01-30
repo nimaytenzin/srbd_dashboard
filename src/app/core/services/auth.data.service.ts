@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { API_URL } from '../constants/constants';
+import { API_URL, AUTHTOKENKEY } from '../constants/constants';
 import { Router } from '@angular/router';
 import * as jwt_decode from 'jwt-decode';
 
@@ -9,6 +9,7 @@ import * as jwt_decode from 'jwt-decode';
 })
 export class AuthService {
     apiUrl = API_URL;
+    tokenName = AUTHTOKENKEY;
 
     constructor(private http: HttpClient, private router: Router) {}
 
@@ -17,14 +18,14 @@ export class AuthService {
     }
 
     getToken(): string | null {
-        return localStorage.getItem('token');
+        return localStorage.getItem(this.tokenName);
     }
 
     setToken(token: string): void {
-        localStorage.setItem('token', token);
+        localStorage.setItem(this.tokenName, token);
     }
     removeToken(): void {
-        localStorage.removeItem('token');
+        localStorage.removeItem(this.tokenName);
     }
 
     decodeToken() {

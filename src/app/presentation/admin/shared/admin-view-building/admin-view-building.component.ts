@@ -8,6 +8,7 @@ import {
     OnInit,
     Output,
     SimpleChanges,
+    ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { QRCodeModule } from 'angularx-qrcode';
@@ -34,7 +35,7 @@ import { BuildingPlotDataService } from 'src/app/core/services/buildingplot.data
 import { GeometryDataService } from 'src/app/core/services/geometry.dataservice';
 import { UnitDataService } from 'src/app/core/services/unit.dataservice';
 import { AdminViewUnitModalComponent } from './modals/admin-view-unit-modal/admin-view-unit-modal.component';
-import { AdminViewBuildingModalComponent } from './modals/admin-view-building-modal/admin-view-building-modal.component';
+// import { AdminViewBuildingModalComponent } from '../components/crud-modals/buildings/admin-view-building-modal/admin-view-building-modal.component';
 import { BuildingDetailDto } from 'src/app/core/models/buildings/building-detail.dto';
 import { AdminBuildingCardComponent } from '../components/admin-building-card/admin-building-card.component';
 import { AdminBuildingDetailsCardComponent } from '../components/admin-building-details-card/admin-building-details-card.component';
@@ -80,6 +81,8 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
     ) {}
     @Input() buildingId: number;
     ref: DynamicDialogRef | undefined;
+
+    @ViewChild('unitsCard') unitsCard: AdminUnitsCardComponent;
 
     building: any;
     buildingDetails: any;
@@ -243,21 +246,25 @@ export class AdminViewBuildingComponent implements OnInit, OnChanges {
         });
     }
 
-    openBuildingDetailsModal(
-        buildingId: number,
-        buildingDetails: BuildingDetailDto
-    ) {
-        this.ref = this.dialogService.open(AdminViewBuildingModalComponent, {
-            header: 'Building: ' + buildingId,
-            data: {
-                buildingId: buildingId,
-            },
-            width: 'max-content',
-        });
-        this.ref.onClose.subscribe((res) => {
-            if (res.updated) {
-                this.getBuildingUnits(this.buildingId);
-            }
-        });
+    refreshOwnerhipDependentComponents() {
+        this.unitsCard.getUnitDetails();
     }
+
+    // openBuildingDetailsModal(
+    //     buildingId: number,
+    //     buildingDetails: BuildingDetailDto
+    // ) {
+    //     this.ref = this.dialogService.open(AdminViewBuildingModalComponent, {
+    //         header: 'Building: ' + buildingId,
+    //         data: {
+    //             buildingId: buildingId,
+    //         },
+    //         width: 'max-content',
+    //     });
+    //     this.ref.onClose.subscribe((res) => {
+    //         if (res.updated) {
+    //             this.getBuildingUnits(this.buildingId);
+    //         }
+    //     });
+    // }
 }

@@ -40,7 +40,7 @@
         {{ buildingDetails.use }}
     </p>
 
-    <h5>
+    <p>
         <strong>Floor Configuration:</strong>
         {{
             parseBuildingFloorLabel(
@@ -51,7 +51,20 @@
                 buildingDetails.jamthogCount
             )
         }}
-    </h5>
+        <br />
+        <span *ngIf="buildingDetails.basementCount">
+            Basement: {{ buildingDetails.basementCount }}
+        </span>
+        <span *ngIf="buildingDetails.stiltCount">
+            Stilt: {{ buildingDetails.stiltCount }}
+        </span>
+        <span *ngIf="buildingDetails.atticCount">
+            Attic: {{ buildingDetails.atticCount }}
+        </span>
+        <span *ngIf="buildingDetails.jamthogCount">
+            Jamthog: {{ buildingDetails.jamthogCount }}
+        </span>
+    </p>
 </p-card>
 
 <p-card *ngIf="!buildingDetails">
