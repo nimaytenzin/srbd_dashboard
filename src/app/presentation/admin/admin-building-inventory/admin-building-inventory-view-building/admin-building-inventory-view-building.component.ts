@@ -126,7 +126,8 @@ export class AdminBuildingInventoryViewBuildingComponent
             .toPromise();
         this.plotGeom = L.geoJSON(response[0]);
         const center = this.plotGeom.getBounds().getCenter();
-        const hash = encodeBase32(center.lat, center.lng, 7);
+        const hash = encodeBase32(center.lat, center.lng, 5);
+        console.log("this is the hash",hash,"lat: ",center.lat," lng: ",center.lng)
         return hash;
     }
 
