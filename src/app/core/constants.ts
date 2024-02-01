@@ -14,7 +14,7 @@ export enum UnitOccupancyStatus {
     // 'UNDER_MAINTENANCE' = 'Under Maintenance',
     // 'UNDER_CONSTRUCTION' = 'Under Construction',
 
-    'OWNER_OCCUPIED' = 'Owner Occupied',
+    'OWNER_OCCUPIED' = 'OwnerOccupied',
     'RENTED' = 'Rented',
     // 'SHORT_TERM_RENTAL' = 'Short Term Rental',
     // 'OCCUPIED' = 'Occupied',
@@ -171,7 +171,7 @@ export const UnitNumbers = [
     '100',
 ];
 
-export const UnitOccupancyOption = ['Vacant', 'Owner Occupied', 'Rented'];
+export const UnitOccupancyOption = ['Vacant', 'OwnerOccupied', 'Rented'];
 
 export const UnitPrimaryUses = [
     'Mixed Use',
