@@ -11,7 +11,7 @@ import { BuildingDTO } from '../models/buildings/building.dto';
 export class BuildingDataService {
     apiUrl = API_URL;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     GetBuildingById(buildingId: number): Observable<BuildingDTO> {
         return this.http.get<BuildingDTO>(
@@ -31,6 +31,10 @@ export class BuildingDataService {
                 polygonId: polygonId,
             }
         );
+    }
+
+    decoupleBuilding(buildingId, plotId) {
+        return this.http.delete(`${this.apiUrl}/building-plots/plot/${buildingId}/${plotId}`);
     }
 
     DeleteBuilding(buildingId: number) {

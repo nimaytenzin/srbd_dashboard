@@ -47,8 +47,7 @@ import { GeomEditType } from 'src/app/core/constants';
     styleUrls: ['./admin-building-inventory-view-building.component.css'],
 })
 export class AdminBuildingInventoryViewBuildingComponent
-    implements OnInit, OnDestroy
-{
+    implements OnInit, OnDestroy {
     instance: DynamicDialogComponent | undefined;
     buildingId: number;
 
@@ -101,7 +100,7 @@ export class AdminBuildingInventoryViewBuildingComponent
         }
     }
 
-    ngOnInit(): void {}
+    ngOnInit(): void { }
 
     ngOnDestroy(): void {
         this.ref.destroy();
@@ -109,14 +108,46 @@ export class AdminBuildingInventoryViewBuildingComponent
 
     async showBuildingsNearBy() {
         let hash = await this.generateGoeHashFromPlotId();
-        this.buildingPointsGeom = await this.geometryService
-            .GetBuildingPointNearHash(hash)
-            .toPromise();
+        this.buildingPointsGeom = await this.geometryService.GetBuildingPointNearHash(hash).toPromise();
         this.ref.close({
             delete: false,
             type: 'POINTS',
             data: this.buildingPointsGeom,
         });
+    }
+
+    async decoupleBuilding(buildingId) {
+        this.confirmationService.confirm({
+            target: event.target as EventTarget,
+            message: 'Do you want to decouple this record?',
+            header: 'Decouple Confirmation',
+            icon: 'pi pi-info-circle',
+            acceptButtonStyleClass: 'p-button-danger p-button-text',
+            rejectButtonStyleClass: 'p-button-text p-button-text',
+            acceptIcon: 'none',
+            rejectIcon: 'none',
+
+            accept: () => {
+                let plotId = this.buildingPlots[0]['plotId']
+                this.buildingDataService.decoupleBuilding(buildingId, plotId).subscribe((res) => {
+                    if (res) {
+                        this.messageService.add({
+                            severity: 'info',
+                            summary: 'Decoupled',
+                            detail: 'Record deleted',
+                        });
+                        this.ref.close({
+                            delete: true,
+                            type: 'DELETE',
+                            data: null,
+                        });
+                    }
+
+                })
+            },
+            reject: () => { },
+        });
+
     }
 
     async generateGoeHashFromPlotId() {
@@ -127,7 +158,7 @@ export class AdminBuildingInventoryViewBuildingComponent
         this.plotGeom = L.geoJSON(response[0]);
         const center = this.plotGeom.getBounds().getCenter();
         const hash = encodeBase32(center.lat, center.lng, 5);
-        console.log("this is the hash",hash,"lat: ",center.lat," lng: ",center.lng)
+        console.log("this is the hash", hash, "lat: ", center.lat, " lng: ", center.lng)
         return hash;
     }
 
@@ -233,7 +264,7 @@ export class AdminBuildingInventoryViewBuildingComponent
                         });
                     });
             },
-            reject: () => {},
+            reject: () => { },
         });
     }
 

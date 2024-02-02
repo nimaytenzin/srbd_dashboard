@@ -61,6 +61,11 @@
                 label="Redraw Building"
                 (click)="redrawBuilding(buildingId)"
             ></p-button>
+            <p-button
+                *ngIf="showRedrawBuildings"
+                label="Decouple Building from Plot"
+                (click)="decoupleBuilding(buildingId)"
+            ></p-button>
         </div>
     </div>
 </div>
