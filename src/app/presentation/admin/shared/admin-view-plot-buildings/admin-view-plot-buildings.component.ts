@@ -252,7 +252,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                 this.selectedBuildingId = null
             } else if (res['type'] == "REDRAW") {
                 if (res['data'] !== null) {
-                    console.log("res data",res['data']['area'])
+                    console.log("res data",res['data'])
 
                     let resp = res['data']
                     let data = {

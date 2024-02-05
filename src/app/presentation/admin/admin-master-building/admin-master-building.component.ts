@@ -6,6 +6,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
+import * as turf from '@turf/turf';
 import {
   DialogService,
   DynamicDialogComponent,
@@ -225,11 +226,16 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
       var area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0])
       area = Number(area) * 10.7639
 
+      console.log("area is ",area)
       this.buildingGeom.areaSqFt = area
     })
 
     this.map.on(L.Draw.Event.EDITSTOP, (e) => {
       var centroid = this.editableLayers.getBounds().getCenter()
+      var geo = this.editableLayers.toGeoJSON();
+      var polygon = turf.polygon(geo['features'][0]['geometry']['coordinates'])
+      this.buildingGeom.areaSqFt = turf.area(polygon)
+
 
       var data = {
         geom: this.editableLayers.toGeoJSON(),
