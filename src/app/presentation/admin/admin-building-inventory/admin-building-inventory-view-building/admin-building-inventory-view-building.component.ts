@@ -50,6 +50,7 @@ export class AdminBuildingInventoryViewBuildingComponent
     implements OnInit, OnDestroy {
     instance: DynamicDialogComponent | undefined;
     buildingId: number;
+    geomId: number;
 
     buildingDetails: any;
     building: any;
@@ -93,6 +94,7 @@ export class AdminBuildingInventoryViewBuildingComponent
             ) {
                 this.showRedrawBuildings = false;
             }
+            this.geomId = this.instance.data.geomId
             this.getBuildingDetails(this.buildingId);
             this.getUnitsByBuildingId(this.buildingId);
             this.getBuilding(this.buildingId);
@@ -160,6 +162,30 @@ export class AdminBuildingInventoryViewBuildingComponent
         const hash = encodeBase32(center.lat, center.lng, 5);
         console.log("this is the hash", hash, "lat: ", center.lat, " lng: ", center.lng)
         return hash;
+    }
+
+    async deleteGeometry() {
+        this.confirmationService.confirm({
+            target: event.target as EventTarget,
+            message: 'Do you want to delete this geometry?',
+            header: 'Delete Confirmation',
+            icon: 'pi pi-info-circle',
+            acceptButtonStyleClass: 'p-button-danger p-button-text',
+            rejectButtonStyleClass: 'p-button-text p-button-text',
+            acceptIcon: 'none',
+            rejectIcon: 'none',
+
+            accept: () => {
+                this.geometryService.deleteBuildingFootPrint(this.geomId).subscribe((res) => {
+                    this.ref.close({
+                        delete: true,
+                        type: 'DELETE',
+                        data: null,
+                    });
+                })
+            },
+            reject: () => { },
+        });
     }
 
     async redrawBuilding(buildingId) {

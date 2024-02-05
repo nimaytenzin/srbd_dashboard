@@ -302,7 +302,8 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
       onEachFeature: (feature, layer) => {
         layer.on({
           click: (e: any) => {
-            this.openDeleteInterface(feature.properties.buildingid);
+            console.log("kjsldjf;lk")
+            this.openDeleteInterface(feature.properties.buildingid,feature.properties.id_0);
           },
         });
       },
@@ -320,13 +321,14 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
     this.editableLayers.addLayer(this.buildingGeojson);
   }
 
-  openDeleteInterface(buildingId: number) {
+  openDeleteInterface(buildingId: number,geomId:number) {
     this.secondRef = this.dialogService.open(
       AdminBuildingInventoryViewBuildingComponent,
       {
         header: 'Building ID: ' + buildingId,
         data: {
           buildingId: buildingId,
+          geomId:geomId
         },
         width: 'max-content',
       }

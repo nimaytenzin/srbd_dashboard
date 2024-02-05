@@ -58,13 +58,20 @@
             ></p-button>
             <p-button
                 *ngIf="showRedrawBuildings"
+                class="mr-4"
                 label="Redraw Building"
                 (click)="redrawBuilding(buildingId)"
             ></p-button>
             <p-button
-                *ngIf="showRedrawBuildings"
+                class="mr-4"
                 label="Decouple Building from Plot"
                 (click)="decoupleBuilding(buildingId)"
+            ></p-button>
+            <p-button
+                severity="danger"
+                class="mr-4"
+                label="Delete Geometry"
+                (click)="deleteGeometry()"
             ></p-button>
         </div>
     </div>

@@ -26,6 +26,10 @@ export class GeometryDataService {
         );
     }
 
+    deleteBuildingFootPrint(id: number) {
+        return this.http.delete( `${this.apiUrl}/building-footprint/${id}`);
+    }
+
     updateBuildingGeomBuildingId(buildingId: number, polygonId: number) {
         let data = {
             polygonId: polygonId,

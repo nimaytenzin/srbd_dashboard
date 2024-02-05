@@ -234,7 +234,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
         );
     }
 
-    openDeleteInterface(buildingId: number, isBuildingPoint: boolean) {
+    openDeleteInterface(buildingId: number, isBuildingPoint: boolean,geomId) {
         this.ref = this.dialogService.open(
             AdminBuildingInventoryViewBuildingComponent,
             {
@@ -242,6 +242,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                 data: {
                     isBuildingPoint: isBuildingPoint,
                     buildingId: buildingId,
+                    geomId:geomId
                 },
                 width: 'max-content',
             }
@@ -319,8 +320,8 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
             onEachFeature: (feature, layer) => {
                 layer.on({
                     click: (e: any) => {
+                        console.log("sdklfj",feature)
                         this.buildingGeojson.resetStyle()
-
                         if (this.selectedBuildingId !== feature.properties.buildingid) {
                             if (this.buildingPointGeojson) {
                                 this.plotMap.removeLayer(this.buildingPointGeojson)
@@ -328,9 +329,9 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                             }
                         }
                         if (this.buildingPointGeojson) {
-                            this.openDeleteInterface(feature.properties.buildingid, true);
+                            this.openDeleteInterface(feature.properties.buildingid, true,feature.properties.id_0);
                         } else {
-                            this.openDeleteInterface(feature.properties.buildingid, false);
+                            this.openDeleteInterface(feature.properties.buildingid, false,feature.properties.id_0);
                         }
 
                         var ll = e.target
@@ -403,7 +404,6 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
     showAddBuilding(plotId, dzongkhagId,subadmId) {
         this.ref = this.dialogService.open(
             AdminMasterBuildingComponent,
-            // AdminBuildingMenuComponent,
             {
                 header: 'Building Menu for plot: ' + plotId,
                 data: {
@@ -481,9 +481,9 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                         this.buildingPointRef = this.dialogService.open(
                             AdminBuildingMenuComponent,
                             {
-                                header: 'Building ID: ' + feature.properties.id,
+                                header: 'Building ID: ' + feature.properties.buildingid,
                                 data: {
-                                    buildingId: feature.properties.id,
+                                    buildingId: feature.properties.buildingid,
                                     selectedBuildingId: this.selectedBuildingId,
                                     plotId: this.plotId
                                 },

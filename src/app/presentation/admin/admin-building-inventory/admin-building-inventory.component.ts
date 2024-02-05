@@ -64,7 +64,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
         public dialogService: DialogService,
         private router: Router,
         private messageService: MessageService
-    ) {}
+    ) { }
 
     ref: DynamicDialogRef | undefined;
 
@@ -216,12 +216,9 @@ export class AdminBuildingInventoryComponent implements OnInit {
                                     onEachFeature: (feature, layer) => {
                                         layer.on({
                                             click: (e: any) => {
-                                                console.log(feature, 'CLICKED');
+                                                console.log("lskdjf;alksjdflkj", feature)
                                                 this.saveMapState();
-                                                this.showBuilding(
-                                                    feature.properties
-                                                        .buildingid
-                                                );
+                                                this.showBuilding(feature.properties.buildingid, feature.properties.id_0);
                                             },
                                         });
                                     },
@@ -235,7 +232,6 @@ export class AdminBuildingInventoryComponent implements OnInit {
     showAddBuilding(plotId, dzongkhagId, subadmId) {
         this.ref = this.dialogService.open(
             AdminMasterBuildingComponent,
-            // AdminBuildingMenuComponent,
             {
                 header: 'Building Menu for plot: ' + plotId,
                 data: {
@@ -309,13 +305,14 @@ export class AdminBuildingInventoryComponent implements OnInit {
         });
     }
 
-    showBuilding(buildingId: number) {
+    showBuilding(buildingId: number, geomId: number) {
         this.ref = this.dialogService.open(
             AdminBuildingInventoryViewBuildingComponent,
             {
                 header: 'Building ID: ' + buildingId,
                 data: {
                     buildingId: buildingId,
+                    geomId: geomId,
                     showZhicharPoints: false,
                     showRedrawBuilding: false,
                 },
@@ -337,7 +334,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
         localStorage.setItem('mapState', JSON.stringify(mapState));
     }
 
-    restoreMapState() {}
+    restoreMapState() { }
 
     clearMapState() {
         localStorage.removeItem('mapState');
@@ -408,12 +405,9 @@ export class AdminBuildingInventoryComponent implements OnInit {
                                     onEachFeature: (feature, layer) => {
                                         layer.on({
                                             click: (e: any) => {
-                                                console.log(feature, 'CLICKED');
+                                                console.log("lskdjf;alksjdflkj", feature)
                                                 this.saveMapState();
-                                                this.showBuilding(
-                                                    feature.properties
-                                                        .buildingid
-                                                );
+                                                this.showBuilding(feature.properties.buildingid, feature.properties.id_0);
                                             },
                                         });
                                     },
@@ -452,11 +446,9 @@ export class AdminBuildingInventoryComponent implements OnInit {
                         // console.log(feature);
                         layer.on({
                             click: (e: any) => {
-                                console.log(feature, 'CLICKED');
+                                console.log("lskdjf;alksjdflkj", feature)
                                 this.saveMapState();
-                                this.showBuilding(
-                                    feature.properties.buildingid
-                                );
+                                this.showBuilding(feature.properties.buildingid, feature.properties.id_0);
                             },
                         });
                     },
