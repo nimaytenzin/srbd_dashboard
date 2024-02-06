@@ -234,7 +234,7 @@ export class AdminMasterBuildingComponent implements OnInit, OnDestroy {
       var centroid = this.editableLayers.getBounds().getCenter()
       var geo = this.editableLayers.toGeoJSON();
       var polygon = turf.polygon(geo['features'][0]['geometry']['coordinates'])
-      this.buildingGeom.areaSqFt = turf.area(polygon)
+      this.buildingGeom.areaSqFt = turf.area(polygon) * 10.764
 
 
       var data = {
