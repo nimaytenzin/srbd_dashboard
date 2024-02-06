@@ -320,7 +320,6 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
             onEachFeature: (feature, layer) => {
                 layer.on({
                     click: (e: any) => {
-                        console.log("sdklfj",feature)
                         this.buildingGeojson.resetStyle()
                         if (this.selectedBuildingId !== feature.properties.buildingid) {
                             if (this.buildingPointGeojson) {
@@ -481,9 +480,9 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
                         this.buildingPointRef = this.dialogService.open(
                             AdminBuildingMenuComponent,
                             {
-                                header: 'Building ID: ' + feature.properties.buildingid,
+                                header: 'Building ID: ' + feature.properties.id,
                                 data: {
-                                    buildingId: feature.properties.buildingid,
+                                    buildingId: feature.properties.id,
                                     selectedBuildingId: this.selectedBuildingId,
                                     plotId: this.plotId
                                 },

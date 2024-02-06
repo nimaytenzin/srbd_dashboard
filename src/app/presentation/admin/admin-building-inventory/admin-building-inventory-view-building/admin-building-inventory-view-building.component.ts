@@ -118,6 +118,25 @@ export class AdminBuildingInventoryViewBuildingComponent
         });
     }
 
+    async assignBuildingToPlot(buildingId) {
+        let plotId = this.buildingPlots[0]['plotId']
+        this.buildingDataService.assignBuildingToPlot(buildingId, plotId).subscribe((res) => {
+            if (res) {
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Assigned',
+                    detail: 'Record deleted',
+                });
+                this.ref.close({
+                    delete: true,
+                    type: 'DELETE',
+                    data: null,
+                });
+            }
+
+        })
+    }
+
     async decoupleBuilding(buildingId) {
         this.confirmationService.confirm({
             target: event.target as EventTarget,

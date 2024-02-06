@@ -33,6 +33,10 @@ export class BuildingDataService {
         );
     }
 
+    assignBuildingToPlot(buildingId, plotId) {
+        return this.http.patch(`${this.apiUrl}/building-plots/plot-assign/${buildingId}/${plotId}`,{});
+    }
+
     decoupleBuilding(buildingId, plotId) {
         return this.http.delete(`${this.apiUrl}/building-plots/plot/${buildingId}/${plotId}`);
     }
