@@ -19,11 +19,18 @@
             {{ building?.qrUuid }}
         </p>
 
-        <p *ngFor="let plot of buildingPlots">
-            Plot: {{ plot.plotId }}
-            <br />
-            overlapt Percentage:
-            {{ round(plot.overlapPercentage) }} %
+        <p *ngFor="let plot of buildingPlots" [ngClass]="{'text-red-500': plot.overlapPercentage < 35}" class="text-red-500">
+            Plot: {{ plot.plotId }} overlapt Percentage: {{ round(plot.overlapPercentage) }} %
+            <p-button
+                severity="danger"
+                label="Decouple Building from Plot"
+                (click)="decoupleBuilding(buildingId,plot.plotId)"
+            ></p-button>
+            <p-button *ngIf="plot.overlapPercentage < 35"
+                class="ml-4"
+                label="Couple Building to Plot"
+                (click)="assignBuildingToPlot(buildingId,plot.plotId)"
+            ></p-button>
         </p>
     </div>
     <p-divider type="dotted"></p-divider>
@@ -61,16 +68,6 @@
                 class="mr-4"
                 label="Redraw Building"
                 (click)="redrawBuilding(buildingId)"
-            ></p-button>
-            <p-button
-                class="mr-4"
-                label="Decouple Building from Plot"
-                (click)="decoupleBuilding(buildingId)"
-            ></p-button>
-            <p-button
-                class="mr-4"
-                label="Assign Plot to Building"
-                (click)="assignBuildingToPlot(buildingId)"
             ></p-button>
             <p-button
                 severity="danger"

@@ -134,6 +134,7 @@ export class AdminBuildingMenuComponent implements OnInit, OnDestroy {
         detail: 'Building Geom Transferred',
       })
     }
+    return result
   }
 
   async updateBuildingPlotTable() {
@@ -146,7 +147,7 @@ export class AdminBuildingMenuComponent implements OnInit, OnDestroy {
         detail: 'Building Plot Transferred',
       })
     }
-
+    return result
   }
 
   assignToBuilding() {

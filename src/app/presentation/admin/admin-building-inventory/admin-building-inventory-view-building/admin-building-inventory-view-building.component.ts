@@ -118,26 +118,7 @@ export class AdminBuildingInventoryViewBuildingComponent
         });
     }
 
-    async assignBuildingToPlot(buildingId) {
-        let plotId = this.buildingPlots[0]['plotId']
-        this.buildingDataService.assignBuildingToPlot(buildingId, plotId).subscribe((res) => {
-            if (res) {
-                this.messageService.add({
-                    severity: 'info',
-                    summary: 'Assigned',
-                    detail: 'Record deleted',
-                });
-                this.ref.close({
-                    delete: true,
-                    type: 'DELETE',
-                    data: null,
-                });
-            }
-
-        })
-    }
-
-    async decoupleBuilding(buildingId) {
+    async assignBuildingToPlot(buildingId, plotId) {
         this.confirmationService.confirm({
             target: event.target as EventTarget,
             message: 'Do you want to decouple this record?',
@@ -149,7 +130,38 @@ export class AdminBuildingInventoryViewBuildingComponent
             rejectIcon: 'none',
 
             accept: () => {
-                let plotId = this.buildingPlots[0]['plotId']
+                this.buildingDataService.assignBuildingToPlot(buildingId, plotId).subscribe((res) => {
+                    if (res) {
+                        this.messageService.add({
+                            severity: 'info',
+                            summary: 'Assigned',
+                            detail: 'Record deleted',
+                        });
+                        this.ref.close({
+                            delete: true,
+                            type: 'DELETE',
+                            data: null,
+                        });
+                    }
+
+                })
+            },
+            reject: () => { },
+        });
+    }
+
+    async decoupleBuilding(buildingId, plotId) {
+        this.confirmationService.confirm({
+            target: event.target as EventTarget,
+            message: 'Do you want to decouple this record?',
+            header: 'Decouple Confirmation',
+            icon: 'pi pi-info-circle',
+            acceptButtonStyleClass: 'p-button-danger p-button-text',
+            rejectButtonStyleClass: 'p-button-text p-button-text',
+            acceptIcon: 'none',
+            rejectIcon: 'none',
+
+            accept: () => {
                 this.buildingDataService.decoupleBuilding(buildingId, plotId).subscribe((res) => {
                     if (res) {
                         this.messageService.add({
