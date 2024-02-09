@@ -145,7 +145,13 @@ export class EditUnitModalComponent implements OnInit {
             (_, i) => i + 1
         );
         if(this.buildingDetail.basementCount > 0){
-            this.floorLevelOption.push('B')
+            for(var i = 1; i <= this.buildingDetail.basementCount; i ++){
+                if(i == 1){
+                    this.floorLevelOption.push('B')
+                }else{
+                    this.floorLevelOption.push(`${i}B`)
+                }
+            }
         }
     }
 

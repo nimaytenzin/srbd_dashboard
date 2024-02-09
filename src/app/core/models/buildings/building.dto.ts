@@ -4,6 +4,7 @@ export interface BuildingDTO {
     lat: number;
     lng: number;
     qrUuid: string;
+    isProtected:boolean;
 }
 
 export interface CreateBuildingDto {}

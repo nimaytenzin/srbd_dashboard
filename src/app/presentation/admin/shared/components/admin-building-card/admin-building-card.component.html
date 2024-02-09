@@ -1,27 +1,12 @@
 <p-card header="Building" *ngIf="building">
     <div class="flex">
         <div class="flex justify-content-start gap-2">
-            <qrcode
-                *ngIf="building?.qrUuid"
-                [qrdata]="getQr(building?.qrUuid)"
-                [errorCorrectionLevel]="'M'"
-                [allowEmptyString]="true"
-                [cssClass]="'center'"
-                [errorCorrectionLevel]="'high'"
-                [colorDark]="'#111827'"
-                [colorLight]="'#FFFFFF00'"
-                [elementType]="'svg'"
-                [errorCorrectionLevel]="'H'"
-                [scale]="1"
-                [title]="'BuildingQr'"
-                [width]="200"
-                class="m-0 p-0"
-            ></qrcode>
-            <div
-                *ngIf="!building.qrUuid"
-                style="width: 150px; height: 150px"
-                class="surface-300 p-3 flex justify-content-center align-items-center border-round"
-            >
+            <qrcode *ngIf="building?.qrUuid" [qrdata]="getQr(building?.qrUuid)" [errorCorrectionLevel]="'M'"
+                [allowEmptyString]="true" [cssClass]="'center'" [errorCorrectionLevel]="'high'" [colorDark]="'#111827'"
+                [colorLight]="'#FFFFFF00'" [elementType]="'svg'" [errorCorrectionLevel]="'H'" [scale]="1"
+                [title]="'BuildingQr'" [width]="200" class="m-0 p-0"></qrcode>
+            <div *ngIf="!building.qrUuid" style="width: 150px; height: 150px"
+                class="surface-300 p-3 flex justify-content-center align-items-center border-round">
                 <p>No Building QR</p>
             </div>
             <div class="flex flex-column justify-content-center">
@@ -31,11 +16,16 @@
                 <p>
                     <strong>Address:</strong>
                     {{
-                        building.address
-                            ? building.address
-                            : "Adress not assigned"
+                    building.address
+                    ? building.address
+                    : "Adress not assigned"
                     }}
                 </p>
+                <p><strong>Protected:</strong> {{ building?.isProtected }}</p>
+                <p-button *ngIf="building.isProtected" severity="danger" label='Assign Not-Protected' class="mr-4"
+                    (click)="toggleIsProtected()"></p-button>
+                <p-button *ngIf="!building.isProtected"  label='Assign Protected' class="mr-4"
+                    (click)="toggleIsProtected()"></p-button>
             </div>
         </div>
     </div>

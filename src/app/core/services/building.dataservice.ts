@@ -44,4 +44,8 @@ export class BuildingDataService {
     DeleteBuilding(buildingId: number) {
         return this.http.delete(`${this.apiUrl}/building/${buildingId}`);
     }
+
+    updateBuilding(buildingId:number,data:any){
+        return this.http.patch(`${this.apiUrl}/building/${buildingId}`,data);
+    }
 }
