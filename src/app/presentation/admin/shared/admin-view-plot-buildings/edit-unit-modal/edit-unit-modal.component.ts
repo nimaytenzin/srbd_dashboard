@@ -139,12 +139,14 @@ export class EditUnitModalComponent implements OnInit {
             this.buildingDetail.atticCount +
             this.buildingDetail.jamthogCount +
             this.buildingDetail.floorCount +
-            this.buildingDetail.stiltCount +
-            this.buildingDetail.basementCount;
+            this.buildingDetail.stiltCount; 
         this.floorLevelOption = Array.from(
             { length: this.totalFloorCount },
             (_, i) => i + 1
         );
+        if(this.buildingDetail.basementCount > 0){
+            this.floorLevelOption.push('B')
+        }
     }
 
     async createUnitAndDetails() {
