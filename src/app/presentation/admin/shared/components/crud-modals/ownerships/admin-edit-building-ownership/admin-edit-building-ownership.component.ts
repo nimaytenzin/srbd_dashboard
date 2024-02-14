@@ -86,22 +86,25 @@ export class AdminEditBuildingOwnershipComponent implements OnInit {
                         contact: res.contact,
                     });
                 },
-                (error) => {}
+                (error) => { }
             );
         }
     }
     updateOwnership() {
-        this.ownershipDataService
-            .UpdateBuildingOwnership(this.buildingOwnership.id, {
+        this.ownershipDataService.updateOwnerDetail(this.buildingOwnership.ownerId, {
+            ...this.myForm.value,
+        }).subscribe((res) => {
+            this.ownershipDataService.UpdateBuildingOwnership(this.buildingOwnership.id, {
                 ...this.myForm.value,
             })
-            .subscribe((res) => {
-                if (res) {
-                    this.ref.close({
-                        updated: true,
-                    });
-                }
-            });
+                .subscribe((res) => {
+                    if (res) {
+                        this.ref.close({
+                            updated: true,
+                        });
+                    }
+                });
+        })
     }
     deleteOwnership() {
         this.ownershipDataService

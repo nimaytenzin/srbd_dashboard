@@ -47,6 +47,11 @@ export class OwnershipDataService {
     DeleteBuildingOwnership(id: number) {
         return this.http.delete(`${this.apiUrl}/building-ownership/${id}`);
     }
+
+    updateOwnerDetail(id:number,data:any){
+        return this.http.patch(`${this.apiUrl}/owner/${id}`,data);
+    }
+
     UpdateBuildingOwnership(id: number, data: UpdateBuildingOwnershipDto) {
         return this.http.patch(`${this.apiUrl}/building-ownership/${id}`, data);
     }
