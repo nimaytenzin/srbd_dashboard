@@ -267,7 +267,7 @@ export class AdminBuildingInventoryComponent implements OnInit {
 
                 //building plot data
                 this.buildingPlot.buildingId = res.id;
-                this.buildingPlot.plotId = plotId;
+                this.buildingPlot.plotId = plotId.trim();
                 this.buildingPlot.overlapPercentage = 100.0;
 
                 this.insertBuildingGeom(this.buildingGeom).then((result) => {

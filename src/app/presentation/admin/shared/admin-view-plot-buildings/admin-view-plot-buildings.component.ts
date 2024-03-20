@@ -437,7 +437,7 @@ export class AdminViewPlotBuildingsComponent implements OnInit, OnChanges, OnDes
 
                 //building plot data
                 this.buildingPlot.buildingId = res.id
-                this.buildingPlot.plotId = this.plotId
+                this.buildingPlot.plotId = this.plotId.trim()
                 this.buildingPlot.overlapPercentage = 100.0
 
                 this.insertBuildingGeom(this.buildingGeom).then((result) => {
