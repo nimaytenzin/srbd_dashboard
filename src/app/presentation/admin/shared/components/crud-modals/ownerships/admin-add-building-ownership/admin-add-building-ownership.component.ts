@@ -30,7 +30,6 @@ import { OwnershipDataService } from 'src/app/core/services/ownership.dataservic
         InputNumberModule,
         DropdownModule,
         ButtonModule,
-
         MessagesModule,
     ],
     providers: [MessageService],

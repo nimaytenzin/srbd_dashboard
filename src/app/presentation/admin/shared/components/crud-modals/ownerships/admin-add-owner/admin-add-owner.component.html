@@ -1,0 +1,38 @@
+<form [formGroup]="myForm" class="grid p-4">
+    <div class="p-fluid">
+        <div class="col-12">
+            <div class="field">
+                <label for="cid">Citizen Identity Card Number </label>
+                <p>press enter to search existing details</p>
+                <input
+                    id="cid"
+                    formControlName="cid"
+                    pInputText
+                />
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="field">
+                <label for="name">Full Name </label>
+                <input id="name" formControlName="name" pInputText />
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="field">
+                <label for="contact">Phone Number </label>
+                <p-inputNumber
+                    id="contact"
+                    [useGrouping]="false"
+                    formControlName="contact"
+                ></p-inputNumber>
+            </div>
+        </div>
+
+        <p-button
+            class="col-12"
+            label="Add Owner"
+            (click)="createOwner()"
+        ></p-button>
+    </div>
+</form>

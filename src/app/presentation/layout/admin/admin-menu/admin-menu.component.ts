@@ -66,6 +66,11 @@ export class AdminMenuComponent implements OnInit {
                         icon: 'pi pi-fw pi-building',
                         routerLink: ['/admin/master-medianrents'],
                     },
+                    {
+                        label: 'Owners',
+                        icon: 'pi pi-fw pi-building',
+                        routerLink: ['/admin/master-owners'],
+                    },
                 ],
             },
         ];

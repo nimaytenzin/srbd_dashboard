@@ -66,6 +66,13 @@ import { AdminLayoutComponent } from './presentation/layout/admin/admin-layout.c
                                     (m) => m.AdminBuildingDetailedViewModule
                                 ),
                         },
+                        {
+                            path: 'master-owners',
+                            loadChildren: () =>
+                                import(
+                                    './presentation/admin/admin-master-owner/admin-master-owner.module'
+                                ).then((m) => m.AdminMasterOwnerModule),
+                        }
                     ],
                 },
 
@@ -94,4 +101,4 @@ import { AdminLayoutComponent } from './presentation/layout/admin/admin-layout.c
     ],
     exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }
