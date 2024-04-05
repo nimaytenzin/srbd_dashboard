@@ -24,6 +24,8 @@ import { BuildingDetailDto } from 'src/app/core/models/buildings/building-detail
 import { BuildingDetailDataService } from 'src/app/core/services/building-detail.dataservice';
 import { BuildingOwnershipDto } from 'src/app/core/models/ownership/owner.dto';
 import { OwnershipDataService } from 'src/app/core/services/ownership.dataservice';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
     selector: 'app-admin-units-card',
@@ -35,6 +37,7 @@ import { OwnershipDataService } from 'src/app/core/services/ownership.dataservic
         ButtonModule,
         TableModule,
         DynamicDialogModule,
+        ConfirmDialogModule,
         QRCodeModule,
     ],
     styleUrls: ['./admin-units-card.component.css'],
@@ -53,8 +56,9 @@ export class AdminUnitsCardComponent implements OnChanges, OnInit {
         private unitDataService: UnitDataService,
         private dialogService: DialogService,
         private buildingDetailService: BuildingDetailDataService,
+        private confirmationService: ConfirmationService,
         private ownershipDataService: OwnershipDataService
-    ) {}
+    ) { }
     ngOnInit(): void {
         this.buildingDetailService
             .GetBuildingDetailsByBuildingId(this.buildingId)
@@ -84,6 +88,27 @@ export class AdminUnitsCardComponent implements OnChanges, OnInit {
 
     getQr(val) {
         return val;
+    }
+
+    deleteUnit(unit) {
+        console.log("Delete Unit")
+        this.confirmationService.confirm({
+            target: event.target as EventTarget,
+            message: 'Do you want to this unit and its details?',
+            header: 'Delete Confirmation',
+            icon: 'pi pi-info-circle',
+            acceptButtonStyleClass: 'p-button-danger p-button-text',
+            rejectButtonStyleClass: 'p-button-text p-button-text',
+            acceptIcon: 'none',
+            rejectIcon: 'none',
+            accept: () => {
+                this.unitDataService.DeleteUnitAndDetails(unit.id).subscribe((res) => {
+                    this.getUnitDetails();
+                });
+            },
+            reject: () => {
+            },
+        });
     }
 
     addUnit() {
@@ -118,6 +143,7 @@ export class AdminUnitsCardComponent implements OnChanges, OnInit {
                 this.getUnitDetails();
             }
         });
+        this.ref.onClose
     }
 
     editUnitDetail(unit) {

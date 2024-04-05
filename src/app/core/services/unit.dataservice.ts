@@ -33,8 +33,13 @@ export class UnitDataService {
     GetUnitById(unitId: number) {
         return this.http.get(`${this.apiUrl}/unit/${unitId}`);
     }
+
     GetUnitDetails(unitId: number) {
         return this.http.get(`${this.apiUrl}/unit-detail/uid/${unitId}`);
+    }
+
+    DeleteUnitAndDetails(unitId:number){
+        return this.http.delete(`${this.apiUrl}/unit/${unitId}`);
     }
 
     UpdateUnitDetails(unitId: number, data) {
