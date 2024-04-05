@@ -23,8 +23,8 @@ export class OwnershipDataService {
         return this.http.get<BuildingOwnershipDto>(`${this.apiUrl}/owner`);
     }
 
-    CreateOwner(data:OwnerDto):Observable<OwnerDto>{
-        return this.http.post<OwnerDto>(`${this.apiUrl}/owner`,data);
+    CreateOwner(data: OwnerDto): Observable<OwnerDto> {
+        return this.http.post<OwnerDto>(`${this.apiUrl}/owner`, data);
     }
 
     CreateBuildingOwnership(
@@ -56,7 +56,7 @@ export class OwnershipDataService {
         return this.http.delete(`${this.apiUrl}/building-ownership/${id}`);
     }
 
-    DeleteOwner(id:number){
+    DeleteOwner(id: number) {
         return this.http.delete(`${this.apiUrl}/owner/${id}`);
     }
 

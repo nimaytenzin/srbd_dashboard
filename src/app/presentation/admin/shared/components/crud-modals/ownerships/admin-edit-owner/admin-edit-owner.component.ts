@@ -37,7 +37,7 @@ import { OwnershipDataService } from 'src/app/core/services/ownership.dataservic
   templateUrl: './admin-edit-owner.component.html',
   styleUrl: './admin-edit-owner.component.scss'
 })
-export class AdminEditOwnerComponent implements OnInit{
+export class AdminEditOwnerComponent implements OnInit {
   instance: DynamicDialogComponent | undefined;
   buildingId: number;
   myForm: FormGroup;
@@ -53,7 +53,7 @@ export class AdminEditOwnerComponent implements OnInit{
     this.instance = this.dialogService.getInstance(this.ref);
     if (this.instance && this.instance.data) {
       this.ownerData = this.instance.data;
-      console.log("lksdjflk",this.ownerData.owner.cid)
+      console.log("lksdjflk", this.ownerData.owner.cid)
     }
   }
 
@@ -70,9 +70,10 @@ export class AdminEditOwnerComponent implements OnInit{
     });
   }
 
+
   updateOwner() {
     this.ownershipDataService
-      .updateOwnerDetail(this.ownerData.owner.id,this.myForm.value)
+      .updateOwnerDetail(this.ownerData.owner.id, this.myForm.value)
       .subscribe((res) => {
         if (res) {
           this.ref.close({
@@ -81,5 +82,4 @@ export class AdminEditOwnerComponent implements OnInit{
         }
       });
   }
-
 }

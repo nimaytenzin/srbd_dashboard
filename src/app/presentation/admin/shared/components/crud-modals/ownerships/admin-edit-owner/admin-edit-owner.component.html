@@ -4,11 +4,7 @@
             <div class="field">
                 <label for="cid">Citizen Identity Card Numebr </label>
                 <p>press enter to search existing details</p>
-                <input
-                    id="cid"
-                    formControlName="cid"
-                    pInputText
-                />
+                <input id="cid" formControlName="cid" pInputText />
             </div>
         </div>
         <div class="col-12">
@@ -21,18 +17,10 @@
         <div class="col-12">
             <div class="field">
                 <label for="contact">Phone Number </label>
-                <p-inputNumber
-                    id="contact"
-                    [useGrouping]="false"
-                    formControlName="contact"
-                ></p-inputNumber>
+                <p-inputNumber id="contact" [useGrouping]="false" formControlName="contact"></p-inputNumber>
             </div>
         </div>
 
-        <p-button
-            class="col-12"
-            label="Update Owner"
-            (click)="updateOwner()"
-        ></p-button>
+        <p-button class="col-12" label="Update Owner" (click)="updateOwner()"></p-button>
     </div>
 </form>

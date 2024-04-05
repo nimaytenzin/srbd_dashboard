@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import {
     FormBuilder,
@@ -30,6 +31,7 @@ import { OwnershipDataService } from 'src/app/core/services/ownership.dataservic
         InputNumberModule,
         DropdownModule,
         ButtonModule,
+        CommonModule,
         MessagesModule,
     ],
     providers: [MessageService],
@@ -40,8 +42,11 @@ export class AdminAddBuildingOwnershipComponent implements OnInit {
     instance: DynamicDialogComponent | undefined;
     buildingId: number;
     myForm: FormGroup;
-
+    error_msg: string = ""
     ownershipTypes = Object.values(BuildingOwnershipTypes);
+
+    error: boolean = false;
+    isButtonDisabled: boolean = true;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -63,13 +68,35 @@ export class AdminAddBuildingOwnershipComponent implements OnInit {
             name: ['', Validators.required],
             contact: [null],
             type: [Validators.required],
-            ownershipPercentage: [],
+            ownershipPercentage: [100, Validators.required],
             buildingId: [this.buildingId],
         });
+        this.updateOwnerTypeAndPercentageButton(false)
     }
 
+    updateOwnerTypeAndPercentageButton(enable: boolean) {
+        if (enable) {
+            this.myForm.get('type').enable();
+            this.myForm.get('ownershipPercentage').enable();
+            this.isButtonDisabled = false;
+        } else {
+            this.myForm.get('type').disable();
+            this.myForm.get('ownershipPercentage').disable();
+            this.isButtonDisabled = true;
+        }
+    }
+
+    updateOwnershipForStrata() {
+        if (this.myForm.get('type').value == 'STRATA') {
+            this.myForm.patchValue({
+                ownershipPercentage: 100
+            })
+        }
+    }
+
+
     createOwnership() {
-        console.log(this.myForm.value);
+        this.updateOwnershipForStrata();
         this.ownershipDataService
             .CreateBuildingOwnership(this.myForm.value)
             .subscribe((res) => {
@@ -81,19 +108,33 @@ export class AdminAddBuildingOwnershipComponent implements OnInit {
             });
     }
 
-    searchOwners(event: KeyboardEvent) {
-        if (event.key === 'Enter') {
-            const cid = this.myForm.controls['cid'].value;
+    resetForm() {
+        this.myForm.patchValue({
+            name: '',
+            contact: null,
+            type: null,
+            ownershipPercentage: 100
+        })
+    }
 
-            this.ownershipDataService.GetOneByCid(cid).subscribe(
-                (res) => {
-                    this.myForm.patchValue({
-                        name: res.name,
-                        contact: res.contact,
-                    });
-                },
-                (error) => {}
-            );
-        }
+
+    searchCid() {
+        let cid = this.myForm.value.cid;
+        this.ownershipDataService.GetOneByCid(cid).subscribe(
+            (res) => {
+                this.error = false
+                this.myForm.patchValue({
+                    name: res.name,
+                    contact: res.contact,
+                });
+                this.updateOwnerTypeAndPercentageButton(true)
+            },
+            (error) => {
+                this.error = true
+                this.error_msg = "CID not found. Please add owner details in Master."
+                this.updateOwnerTypeAndPercentageButton(false)
+                this.resetForm()
+            }
+        );
     }
 }

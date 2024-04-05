@@ -118,29 +118,38 @@ export class AdminAddStrataUnitownershipComponent implements OnInit {
     }
 
     selectUnit(event: Event, unit: UnitDto) {
-        this.confirmationService.confirm({
-            target: event.target as EventTarget,
-            message: 'map the units/?',
-            accept: () => {
-                this.ownershipDataService
-                    .MapUnitOwnership({
-                        buildingOwnershipId: this.buildingOwnership.id,
-                        unitId: unit.id,
-                        ownershipPercentage: this.ownershipPercentage,
-                    })
-                    .subscribe((res) => {
-                        this.getUnitsByBuilding();
-                    });
-            },
-            reject: () => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Rejected',
-                    detail: 'You have rejected',
-                    life: 3000,
-                });
-            },
-        });
+        this.ownershipDataService
+            .MapUnitOwnership({
+                buildingOwnershipId: this.buildingOwnership.id,
+                unitId: unit.id,
+                ownershipPercentage: this.ownershipPercentage,
+            })
+            .subscribe((res) => {
+                this.getUnitsByBuilding();
+            });
+        // this.confirmationService.confirm({
+        //     target: event.target as EventTarget,
+        //     message: 'map the units/?',
+        //     accept: () => {
+        //         this.ownershipDataService
+        //             .MapUnitOwnership({
+        //                 buildingOwnershipId: this.buildingOwnership.id,
+        //                 unitId: unit.id,
+        //                 ownershipPercentage: this.ownershipPercentage,
+        //             })
+        //             .subscribe((res) => {
+        //                 this.getUnitsByBuilding();
+        //             });
+        //     },
+        //     reject: () => {
+        //         this.messageService.add({
+        //             severity: 'error',
+        //             summary: 'Rejected',
+        //             detail: 'You have rejected',
+        //             life: 3000,
+        //         });
+        //     },
+        // });
     }
 
     getUnitOwnership() {

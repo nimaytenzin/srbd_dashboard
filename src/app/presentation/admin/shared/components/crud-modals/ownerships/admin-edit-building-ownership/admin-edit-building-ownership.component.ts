@@ -91,21 +91,27 @@ export class AdminEditBuildingOwnershipComponent implements OnInit {
         }
     }
     updateOwnership() {
-        this.ownershipDataService.updateOwnerDetail(this.buildingOwnership.ownerId, {
+        this.updateOwnershipForStrata()
+        this.ownershipDataService.UpdateBuildingOwnership(this.buildingOwnership.id, {
             ...this.myForm.value,
-        }).subscribe((res) => {
-            this.ownershipDataService.UpdateBuildingOwnership(this.buildingOwnership.id, {
-                ...this.myForm.value,
-            })
-                .subscribe((res) => {
-                    if (res) {
-                        this.ref.close({
-                            updated: true,
-                        });
-                    }
-                });
         })
+            .subscribe((res) => {
+                if (res) {
+                    this.ref.close({
+                        updated: true,
+                    });
+                }
+            });
     }
+
+    updateOwnershipForStrata() {
+        if (this.myForm.get('type').value == 'STRATA') {
+            this.myForm.patchValue({
+                ownershipPercentage: 100
+            })
+        }
+    }
+
     deleteOwnership() {
         this.ownershipDataService
             .DeleteBuildingOwnership(this.buildingOwnership.id)
