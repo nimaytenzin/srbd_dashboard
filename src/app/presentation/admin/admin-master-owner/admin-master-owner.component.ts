@@ -9,15 +9,23 @@ import { ToastModule } from 'primeng/toast';
 import { OwnerDto } from 'src/app/core/models/ownership/owner.dto';
 import { AdminEditOwnerComponent } from '../shared/components/crud-modals/ownerships/admin-edit-owner/admin-edit-owner.component';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { Paginator, PaginatorModule } from 'primeng/paginator';
 
+interface PageEvent {
+  first: number;
+  rows: number;
+  page: number;
+  pageCount: number;
+}
 @Component({
   selector: 'app-admin-master-owner',
   standalone: true,
-  imports: [TableModule, ButtonModule, ToastModule, ConfirmDialogModule],
-  providers: [MessageService, DialogService,ConfirmationService],
+  imports: [TableModule, ButtonModule, ToastModule, ConfirmDialogModule, PaginatorModule],
+  providers: [MessageService, DialogService, ConfirmationService],
   templateUrl: './admin-master-owner.component.html',
   styleUrl: './admin-master-owner.component.scss'
 })
+
 export class AdminMasterOwnerComponent implements OnInit {
   ref: DynamicDialogRef | undefined;
   constructor(
@@ -27,16 +35,15 @@ export class AdminMasterOwnerComponent implements OnInit {
     private confirmationService: ConfirmationService,
   ) { }
 
-  owners: any[] = [];
+  firstPageNumber = 1;
+  currentPage = 1;
+  rows = 100;
+  rowsPerPageOptions = 100;
+  ownersPaginated: any;
+
 
   ngOnInit(): void {
-    this.fetchOwners();
-  }
-
-  fetchOwners() {
-    this.ownerDataService.GetAllOwners().subscribe((res: any) => {
-      this.owners = res
-    })
+    this.handlePagination();
   }
 
   addOwner() {
@@ -52,7 +59,7 @@ export class AdminMasterOwnerComponent implements OnInit {
             detail: 'Added owner',
           }
         )
-        this.fetchOwners()
+        this.handlePagination()
       }
     });
   }
@@ -75,7 +82,7 @@ export class AdminMasterOwnerComponent implements OnInit {
             detail: 'Added owner',
           }
         )
-        this.fetchOwners()
+        this.handlePagination()
       }
     });
   }
@@ -99,7 +106,7 @@ export class AdminMasterOwnerComponent implements OnInit {
               summary: 'Deleted',
               detail: 'Record deleted',
             });
-            this.fetchOwners()
+            this.handlePagination()
           }
         })
       },
@@ -107,4 +114,17 @@ export class AdminMasterOwnerComponent implements OnInit {
     });
   }
 
+  onPageChange(event: PageEvent): void {
+    this.firstPageNumber = event.first;
+    this.currentPage = event.page + 1;
+    this.rows = event.rows;
+    this.handlePagination();
+  }
+
+  private handlePagination(): void {
+    this.ownerDataService.GetAllOwnerPaginated(this.currentPage, this.rows)
+      .subscribe((res: any) => {
+        this.ownersPaginated = res;
+      });
+  }
 }

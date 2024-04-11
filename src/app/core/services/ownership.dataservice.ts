@@ -19,8 +19,8 @@ export class OwnershipDataService {
     apiUrl = API_URL;
     constructor(private http: HttpClient) { }
 
-    GetAllOwners() {
-        return this.http.get<BuildingOwnershipDto>(`${this.apiUrl}/owner`);
+    GetAllOwnerPaginated(page,limit) {
+        return this.http.get(`${this.apiUrl}/owner/paginate?page=${page}&limit=${limit}`);
     }
 
     CreateOwner(data: OwnerDto): Observable<OwnerDto> {
