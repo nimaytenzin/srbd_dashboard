@@ -55,6 +55,14 @@
                         (click)="selectUnit($event, unit)"
                     ></p-button>
 
+                    <p-button
+                        class = "ml-3"
+                        severity="danger"
+                        icon="pi pi-eye"
+                        size="small"
+                        (click)="selectUnitJoint($event, unit)"
+                    ></p-button>
+
                     <hr />
 
                     <div *ngIf="unit.unitOwnerships?.length">
