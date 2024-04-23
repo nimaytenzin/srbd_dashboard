@@ -106,6 +106,7 @@
                     <p-inputGroup>
                         <p-inputNumber
                             mode="decimal"
+                            [minFractionDigits]="2" [maxFractionDigits]="5"
                             label="Price"
                             [(ngModel)]="ownershipPercentage"
                         />
