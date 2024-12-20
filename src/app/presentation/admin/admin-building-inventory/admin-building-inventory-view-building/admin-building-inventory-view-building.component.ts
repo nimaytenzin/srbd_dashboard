@@ -47,7 +47,8 @@ import { GeomEditType } from 'src/app/core/constants';
     styleUrls: ['./admin-building-inventory-view-building.component.css'],
 })
 export class AdminBuildingInventoryViewBuildingComponent
-    implements OnInit, OnDestroy {
+    implements OnInit, OnDestroy
+{
     instance: DynamicDialogComponent | undefined;
     buildingId: number;
     geomId: number;
@@ -94,7 +95,7 @@ export class AdminBuildingInventoryViewBuildingComponent
             ) {
                 this.showRedrawBuildings = false;
             }
-            this.geomId = this.instance.data.geomId
+            this.geomId = this.instance.data.geomId;
             this.getBuildingDetails(this.buildingId);
             this.getUnitsByBuildingId(this.buildingId);
             this.getBuilding(this.buildingId);
@@ -102,7 +103,7 @@ export class AdminBuildingInventoryViewBuildingComponent
         }
     }
 
-    ngOnInit(): void { }
+    ngOnInit(): void {}
 
     ngOnDestroy(): void {
         this.ref.destroy();
@@ -110,7 +111,9 @@ export class AdminBuildingInventoryViewBuildingComponent
 
     async showBuildingsNearBy() {
         let hash = await this.generateGoeHashFromPlotId();
-        this.buildingPointsGeom = await this.geometryService.GetBuildingPointNearHash(hash).toPromise();
+        this.buildingPointsGeom = await this.geometryService
+            .GetBuildingPointNearHash(hash)
+            .toPromise();
         this.ref.close({
             delete: false,
             type: 'POINTS',
@@ -130,23 +133,24 @@ export class AdminBuildingInventoryViewBuildingComponent
             rejectIcon: 'none',
 
             accept: () => {
-                this.buildingDataService.assignBuildingToPlot(buildingId, plotId).subscribe((res) => {
-                    if (res) {
-                        this.messageService.add({
-                            severity: 'info',
-                            summary: 'Assigned',
-                            detail: 'Record deleted',
-                        });
-                        this.ref.close({
-                            delete: true,
-                            type: 'DELETE',
-                            data: null,
-                        });
-                    }
-
-                })
+                this.buildingDataService
+                    .assignBuildingToPlot(buildingId, plotId)
+                    .subscribe((res) => {
+                        if (res) {
+                            this.messageService.add({
+                                severity: 'info',
+                                summary: 'Assigned',
+                                detail: 'Record deleted',
+                            });
+                            this.ref.close({
+                                delete: true,
+                                type: 'DELETE',
+                                data: null,
+                            });
+                        }
+                    });
             },
-            reject: () => { },
+            reject: () => {},
         });
     }
 
@@ -162,25 +166,25 @@ export class AdminBuildingInventoryViewBuildingComponent
             rejectIcon: 'none',
 
             accept: () => {
-                this.buildingDataService.decoupleBuilding(buildingId, plotId).subscribe((res) => {
-                    if (res) {
-                        this.messageService.add({
-                            severity: 'info',
-                            summary: 'Decoupled',
-                            detail: 'Record deleted',
-                        });
-                        this.ref.close({
-                            delete: true,
-                            type: 'DELETE',
-                            data: null,
-                        });
-                    }
-
-                })
+                this.buildingDataService
+                    .decoupleBuilding(buildingId, plotId)
+                    .subscribe((res) => {
+                        if (res) {
+                            this.messageService.add({
+                                severity: 'info',
+                                summary: 'Decoupled',
+                                detail: 'Record deleted',
+                            });
+                            this.ref.close({
+                                delete: true,
+                                type: 'DELETE',
+                                data: null,
+                            });
+                        }
+                    });
             },
-            reject: () => { },
+            reject: () => {},
         });
-
     }
 
     async generateGoeHashFromPlotId() {
@@ -191,7 +195,14 @@ export class AdminBuildingInventoryViewBuildingComponent
         this.plotGeom = L.geoJSON(response[0]);
         const center = this.plotGeom.getBounds().getCenter();
         const hash = encodeBase32(center.lat, center.lng, 5);
-        console.log("this is the hash", hash, "lat: ", center.lat, " lng: ", center.lng)
+        console.log(
+            'this is the hash',
+            hash,
+            'lat: ',
+            center.lat,
+            ' lng: ',
+            center.lng
+        );
         return hash;
     }
 
@@ -207,15 +218,17 @@ export class AdminBuildingInventoryViewBuildingComponent
             rejectIcon: 'none',
 
             accept: () => {
-                this.geometryService.deleteBuildingFootPrint(this.geomId).subscribe((res) => {
-                    this.ref.close({
-                        delete: true,
-                        type: 'DELETE',
-                        data: null,
+                this.geometryService
+                    .deleteBuildingFootPrint(this.geomId)
+                    .subscribe((res) => {
+                        this.ref.close({
+                            delete: true,
+                            type: 'DELETE',
+                            data: null,
+                        });
                     });
-                })
             },
-            reject: () => { },
+            reject: () => {},
         });
     }
 
@@ -321,7 +334,7 @@ export class AdminBuildingInventoryViewBuildingComponent
                         });
                     });
             },
-            reject: () => { },
+            reject: () => {},
         });
     }
 

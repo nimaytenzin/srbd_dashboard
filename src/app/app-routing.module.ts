@@ -25,6 +25,25 @@ import { AdminLayoutComponent } from './presentation/layout/admin/admin-layout.c
                                 ).then((m) => m.AdminBuildingInventoryModule),
                         },
                         {
+                            path: 'correction-requests',
+                            loadChildren: () =>
+                                import(
+                                    './presentation/admin/building-information-corrections/admin-building-information-corrections-routing.module'
+                                ).then(
+                                    (m) =>
+                                        m.AdminBuildingInformationCorrectionsRoutingModule
+                                ),
+                        },
+                        {
+                            path: 'taxation',
+                            loadChildren: () =>
+                                import(
+                                    './presentation/admin/taxation/admin-building-information-corrections-routing.module'
+                                ).then(
+                                    (m) => m.AdminBuildingTaxationRoutingModule
+                                ),
+                        },
+                        {
                             path: 'master-medianrents',
                             loadChildren: () =>
                                 import(
@@ -72,7 +91,7 @@ import { AdminLayoutComponent } from './presentation/layout/admin/admin-layout.c
                                 import(
                                     './presentation/admin/admin-master-owner/admin-master-owner.module'
                                 ).then((m) => m.AdminMasterOwnerModule),
-                        }
+                        },
                     ],
                 },
 
@@ -81,6 +100,13 @@ import { AdminLayoutComponent } from './presentation/layout/admin/admin-layout.c
                     path: '',
                     redirectTo: 'login',
                     pathMatch: 'full',
+                },
+                {
+                    path: 'public',
+                    loadChildren: () =>
+                        import(
+                            './presentation/public/public.routing.module'
+                        ).then((m) => m.PublicRoutingModule),
                 },
 
                 {
@@ -101,4 +127,4 @@ import { AdminLayoutComponent } from './presentation/layout/admin/admin-layout.c
     ],
     exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

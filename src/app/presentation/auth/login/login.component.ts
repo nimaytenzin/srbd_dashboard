@@ -9,6 +9,7 @@ import { AuthService } from 'src/app/core/services/auth.data.service';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
+import { DividerModule } from 'primeng/divider';
 
 @Component({
     selector: 'app-login',
@@ -22,6 +23,7 @@ import { CommonModule } from '@angular/common';
         RouterModule,
         ToastModule,
         CommonModule,
+        DividerModule,
     ],
     templateUrl: './login.component.html',
     styleUrl: './login.component.scss',
@@ -47,7 +49,6 @@ export class LoginComponent implements OnInit {
         this.token = this.authDataService.getToken();
 
         if (this.token) {
-            console.log(this.authDataService.decodeToken());
             this.decodedToken = this.authDataService.decodeToken();
             // setTimeout(() => {
             //     this.messageService.add({
@@ -102,5 +103,9 @@ export class LoginComponent implements OnInit {
     removeToken() {
         this.authDataService.removeToken();
         this.token = null;
+    }
+
+    navigateToBuildingInformationCorrectionPage() {
+        this.router.navigate(['/public']);
     }
 }

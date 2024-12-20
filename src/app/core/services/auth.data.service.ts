@@ -4,6 +4,12 @@ import { API_URL, AUTHTOKENKEY } from '../constants/constants';
 import { Router } from '@angular/router';
 import * as jwt_decode from 'jwt-decode';
 
+export interface AuthenticatedUserDTO {
+    userId: number;
+    cid: string;
+    fullName: string;
+    role: string;
+}
 @Injectable({
     providedIn: 'root',
 })
@@ -28,7 +34,7 @@ export class AuthService {
         localStorage.removeItem(this.tokenName);
     }
 
-    decodeToken() {
+    decodeToken(): AuthenticatedUserDTO {
         const token = this.getToken();
         if (token) {
             return jwt_decode.jwtDecode(token);

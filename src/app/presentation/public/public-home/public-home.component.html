@@ -1,0 +1,95 @@
+<div class="flex flex-column align-items-center justify-content-center h-full">
+    <div class="text-xl mt-4">
+        <p>Building Information Correction Request</p>
+    </div>
+    <p class="text-blue-400 hover:text-blue-800 cursor-pointer">
+        <a
+            href="../../../../assets/forms/correctionform.pdf"
+            target="_blank"
+            download="Building_Correction_Form.pdf"
+        >
+            - Download Building Correction Form
+        </a>
+    </p>
+
+    <div class="p-fluid text-center w-full md:w-30rem px-4 md:px-0">
+        <p class="font-semibold">Track Request Status</p>
+        <div class="flex flex-column md:flex-row gap-3 align-items-center">
+            <div class="w-full md:w-auto flex-grow-1">
+                <p-inputGroup class="flex">
+                    <input
+                        pInputText
+                        class="flex-grow-1"
+                        placeholder="Plot ID"
+                        [(ngModel)]="plotId"
+                        type="text"
+                        (input)="toUpperCase()"
+                    />
+                    <input
+                        pInputText
+                        class="flex-grow-1"
+                        placeholder="Owner CID"
+                        [(ngModel)]="searchOwnerCid"
+                        type="text"
+                    />
+                    <button
+                        type="button"
+                        pButton
+                        label="Track"
+                        (click)="searchStatusByPlotId()"
+                        class="w-auto"
+                    ></button>
+                </p-inputGroup>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex my-4 justify-center">
+        <p-button
+            label="Upload Request"
+            (click)="openUploadCorrectionRequestModal()"
+            class="w-full md:w-auto"
+            size="small"
+        ></p-button>
+    </div>
+
+    <div *ngIf="searched">
+        <p class="my-4">Correction Request under the plot ID: {{ plotId }}</p>
+
+        <div class="card" *ngFor="let item of correctionRequests">
+            <div class="flex justify-content-between align-items-end">
+                <p class="p-0 m-0">{{ plotId }}</p>
+                <p class="py-0 m-0" [ngClass]="getStatusClass(item.status)">
+                    {{ item?.status }}
+                </p>
+            </div>
+            <hr />
+            <p>Submitted on: {{ item?.createdAt | date : "medium" }}</p>
+
+            <p>
+                Requested By: {{ item.requestorName }}/{{
+                    item.requestorPhoneNumber
+                }}
+            </p>
+            <p-button
+                label="View PDF"
+                size="small"
+                [outlined]="true"
+                severity="secondary"
+                (click)="openViewCorrectionRequestPdf(item)"
+            ></p-button>
+
+            <div *ngIf="item.status !== correctionRequestEnum.PENDING">
+                <hr />
+                <p class="p-0 m-0">Remarks: {{ item.remarks }}</p>
+                <p class="text-xs p-0 m-0">
+                    Updated on: {{ item.updatedAt | date : "medium" }}
+                </p>
+            </div>
+        </div>
+
+        <p class="ml-4 mt-4" *ngIf="!correctionRequests.length">
+            - No requests submitted under the supplied plotId
+        </p>
+    </div>
+</div>

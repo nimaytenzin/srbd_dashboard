@@ -17,57 +17,43 @@ export class AdminMenuComponent implements OnInit {
                 label: 'Home',
                 items: [
                     {
-                        label: 'Dashboard',
+                        label: 'Search',
                         icon: 'pi pi-fw pi-home',
                         routerLink: ['/admin'],
                     },
-                ],
-            },
-            {
-                label: 'Database',
-                items: [
                     {
-                        label: 'Plan Inventory',
-                        icon: 'pi pi-fw pi-th-large',
-                        routerLink: ['/plans'],
-                    },
-                    {
-                        label: 'Plots Inventory',
-                        icon: 'pi pi-fw pi-building',
-                        routerLink: ['/plots'],
-                    },
-                    {
-                        label: 'Buildings Inventory',
+                        label: 'Building Inventory',
                         icon: 'pi pi-fw pi-building',
                         routerLink: ['/admin/building-inventory'],
                     },
+                    {
+                        label: 'Correction Requests',
+                        icon: 'pi pi-fw pi-building',
+                        routerLink: ['/admin/correction-requests'],
+                    },
                 ],
             },
             {
-                label: 'Master',
+                label: 'Building Tax',
                 items: [
                     {
-                        label: 'Dzongkhags',
-                        icon: 'pi pi-fw pi-th-large',
-                        routerLink: ['/admin/master-dzongkhags'],
-                    },
-                    {
-                        label: 'Admnistrative Zones',
+                        label: 'Tax Calculator',
                         icon: 'pi pi-fw pi-building',
-                        routerLink: ['/admin/master-admzones'],
-                    },
-                    {
-                        label: 'Sub Adminstrative Zones',
-                        icon: 'pi pi-fw pi-building',
-                        routerLink: ['/admin/master-subadmzones'],
+                        routerLink: ['/admin/taxation'],
                     },
                     {
                         label: 'Median Rents',
                         icon: 'pi pi-fw pi-building',
                         routerLink: ['/admin/master-medianrents'],
                     },
+                ],
+            },
+
+            {
+                label: 'Ownership',
+                items: [
                     {
-                        label: 'Owners',
+                        label: 'Building Owners',
                         icon: 'pi pi-fw pi-building',
                         routerLink: ['/admin/master-owners'],
                     },
