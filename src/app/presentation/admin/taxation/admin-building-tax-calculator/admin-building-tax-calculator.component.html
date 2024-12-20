@@ -1,3 +1,80 @@
-<p>
-  admin-building-tax-calculator works!
-</p>
+<div class="p-4">
+    <p class="text-lg">Calculate Tax by Plot</p>
+    <div class="grid">
+        <p-inputGroup class="col-12 md:col-5">
+            <input
+                type="text"
+                pInputText
+                [(ngModel)]="plotId"
+                (keyup)="searchPlotOnEnter()"
+                (input)="onInputChange()"
+                placeholder="Calculate Building Tax by Plot ID"
+            />
+            <p-button
+                icon="pi pi-search"
+                (click)="calculateTaxByPlot()"
+            ></p-button>
+        </p-inputGroup>
+    </div>
+</div>
+
+<div *ngIf="searched">
+    <p class="font-semibold text-lg">
+        Total Building Tax for plot {{ plotId }}: Nu.{{
+            computeTotalTax(ptsObject)
+        }}
+    </p>
+    <div *ngFor="let item of ptsObject" class="card">
+        <p>Building ID: {{ item.buildingId }}</p>
+        <p>
+            Total Tax For the Building: Nu.
+            {{ computeTotalBuildingTax(item.units) }}
+        </p>
+        <p>Unit wise Tax Breakdown for Building# {{ item.buildingId }}</p>
+        <p-table
+            [value]="item.units"
+            responsiveLayout="scroll"
+            [scrollable]="true"
+            sortField="unitId"
+            [sortOrder]="1"
+        >
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>#</th>
+                    <th pSortableColumn="unitId">
+                        Unit ID <p-sortIcon field="unitId"></p-sortIcon>
+                    </th>
+
+                    <th pSortableColumn="floorLevel">Unit Number</th>
+                    <th>Occupancy Status</th>
+                    <th pSortableColumn="use">
+                        Use <p-sortIcon field="use"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="monthlyRentalValue">
+                        Monthly Rental
+                        <p-sortIcon field="monthlyRentalValue"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="rentSource">
+                        Rent Source <p-sortIcon field="rentSource"></p-sortIcon>
+                    </th>
+                    <th>Unit Tax</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-unit let-index="rowIndex">
+                <tr>
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ unit.unitId }}</td>
+                    <td>{{ unit.unitNumber }}</td>
+                    <td>{{ unit.occupancy }}</td>
+                    <td>{{ unit.use }}</td>
+
+                    <td>
+                        {{ unit.monthlyRentalValue | currency : "BTN" : "Nu" }}
+                    </td>
+                    <td>{{ unit.rentSource }}</td>
+                    <td>Nu.{{ computeUnitTax(unit.monthlyRentalValue) }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
