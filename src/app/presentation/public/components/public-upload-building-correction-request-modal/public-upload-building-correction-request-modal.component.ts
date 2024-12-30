@@ -7,13 +7,16 @@ import {
     FormGroup,
     Validators,
 } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
-import { DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FileUploadModule } from 'primeng/fileupload';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { BuildingCorrectionRequestDataService } from 'src/app/core/services/building-correction-request.dataservice';
+import { ToastModule } from 'primeng/toast';
+import { PublicUploadSuccessModalComponent } from '../public-upload-success-modal/public-upload-success-modal.component';
 
 @Component({
     selector: 'app-public-upload-building-correction-request-modal',
@@ -33,18 +36,23 @@ import { BuildingCorrectionRequestDataService } from 'src/app/core/services/buil
         FormsModule,
         InputNumberModule,
         CommonModule,
+        ToastModule,
     ],
+    providers: [MessageService],
 })
 export class PublicUploadBuildingCorrectionRequestModalComponent
     implements OnInit
 {
     correctionForm: FormGroup;
     selectedPdfFile: File | null = null;
+    showDialogRef: DynamicDialogRef | undefined;
 
     constructor(
         private fb: FormBuilder,
         private ref: DynamicDialogRef,
-        private buildingCorrectionRequestDataService: BuildingCorrectionRequestDataService
+        private buildingCorrectionRequestDataService: BuildingCorrectionRequestDataService,
+        private messageService: MessageService,
+        private dialogService: DialogService
     ) {}
 
     ngOnInit() {
@@ -83,8 +91,18 @@ export class PublicUploadBuildingCorrectionRequestModalComponent
         this.buildingCorrectionRequestDataService
             .CreateBuildingCorrectionRequest(formData)
             .subscribe(
-                () => {
-                    this.ref.close({ status: 201 });
+                (res) => {
+                    this.ref.close();
+                    this.showDialogRef = this.dialogService.open(
+                        PublicUploadSuccessModalComponent,
+                        {
+                            header: 'Success',
+
+                            data: {
+                                ...res,
+                            },
+                        }
+                    );
                 },
                 (err) => {
                     alert('Failed to submit request. Please try again.');

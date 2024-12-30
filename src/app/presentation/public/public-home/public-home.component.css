@@ -1,0 +1,47 @@
+.centeredElement {
+    width: 60vw; /* Default width for larger screens */
+    max-width: 100%; /* Prevents overflow */
+    padding: 1rem; /* Optional padding for aesthetics */
+    box-sizing: border-box; /* Includes padding in width calculations */
+    background-color: white;
+    height: 100vh;
+}
+
+@media (max-width: 768px) { /* For smaller screens */
+    .centeredElement {
+        width: 90vw; /* Increase width for smaller screens */
+    }
+}
+
+@media (max-width: 480px) { /* For very small screens */
+    .centeredElement {
+        width: 100%; /* Full width */
+    }
+}
+
+p{
+    padding: 0;
+    margin: 0;
+}
+
+.attention-blink a {
+    animation: blink 1.8s infinite; /* Blinking effect */
+    color: white ; /* Base blue color */
+    font-weight: bold; /* Makes it stand out */
+    background:#d81d1d ;
+    padding: 4px 8px;
+    border-radius: 5px;
+}
+
+.attention-blink a:hover {
+    background-color: #af1e1e; /* Darker blue on hover */
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1; /* Fully visible */
+    }
+    50% {
+        opacity: .4; /* Invisible */
+    }
+}

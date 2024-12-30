@@ -13,7 +13,8 @@ import {
 import { BuildingCorrectionRequestDataService } from 'src/app/core/services/building-correction-request.dataservice';
 import { PublicUploadBuildingCorrectionRequestModalComponent } from '../components/public-upload-building-correction-request-modal/public-upload-building-correction-request-modal.component';
 import { PublicViewPdfComponent } from '../components/public-view-pdf/public-view-pdf.component';
-
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 @Component({
     selector: 'app-public-home',
     templateUrl: './public-home.component.html',
@@ -26,8 +27,9 @@ import { PublicViewPdfComponent } from '../components/public-view-pdf/public-vie
         InputTextModule,
         FormsModule,
         TableModule,
+        ToastModule,
     ],
-    providers: [DialogService],
+    providers: [DialogService, MessageService],
 })
 export class PublicHomeComponent implements OnInit {
     plotId: string;
@@ -39,10 +41,19 @@ export class PublicHomeComponent implements OnInit {
     correctionRequestEnum = BUILDINGCORRECTIONSTATUSENUM;
     constructor(
         private correctionRequestDataService: BuildingCorrectionRequestDataService,
-        private dialogService: DialogService
+        private dialogService: DialogService,
+        private messageService: MessageService
     ) {}
 
-    ngOnInit() {}
+    ngOnInit() {
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Info',
+            detail: 'Message Content',
+            life: 3000,
+        });
+        console.log(this.messageService);
+    }
 
     toUpperCase() {
         this.plotId = this.plotId.toUpperCase();
