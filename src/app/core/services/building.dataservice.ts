@@ -34,6 +34,12 @@ export interface PTSRETURNDTO {
     type: string; // Type of building, e.g., "Contemporary"
     units: PTSUNITDTO[];
 }
+
+export interface BuildingImageDTO {
+    id: number;
+    buildingId: number;
+    uri: string;
+}
 @Injectable({
     providedIn: 'root',
 })
@@ -91,5 +97,13 @@ export class BuildingDataService {
         return this.http.get<PTSRETURNDTO[]>(`${this.apiUrl}/pts/buildings`, {
             params,
         });
+    }
+
+    GetAllBuildingPhotosById(
+        buildingId: number
+    ): Observable<BuildingImageDTO[]> {
+        return this.http.get<BuildingImageDTO[]>(
+            `${this.apiUrl}/building-image/bid/${buildingId}`
+        );
     }
 }

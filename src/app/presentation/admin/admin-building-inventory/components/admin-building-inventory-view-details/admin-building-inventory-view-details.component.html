@@ -1,0 +1,51 @@
+<div class="flex">
+    <!-- General Information -->
+    <div class="w-4">
+        <h3 class="text-xl font-bold mb-3">General Information</h3>
+        <p><strong>Building ID:</strong> {{ buildingDetails.id }}</p>
+        <p>
+            <strong>Building Name:</strong> {{ buildingDetails.name || "NA" }}
+        </p>
+        <h3 class="text-xl font-bold mb-3">Building Details</h3>
+        <p>
+            <strong>Existency Status:</strong>
+            {{ buildingDetails.existencyStatus }}
+        </p>
+        <p><strong>Typology:</strong> {{ buildingDetails.typology }}</p>
+        <p><strong>Primary Use:</strong> {{ buildingDetails.primaryUse }}</p>
+        <p>
+            <strong>Secondary Use:</strong> {{ buildingDetails.secondaryUse }}
+        </p>
+        <p><strong>Status:</strong> {{ buildingDetails.status }}</p>
+        <p><strong>Length:</strong> {{ buildingDetails.length }} m</p>
+        <p><strong>Breadth:</strong> {{ buildingDetails.breadth }} m</p>
+
+        <h3 class="text-xl font-bold mt-4 mb-3">Floor Details</h3>
+        <p>
+            <strong>Regular Floor Count:</strong>
+            {{ buildingDetails.regularFloorCount }}
+        </p>
+        <p>
+            <strong>Basement Count:</strong> {{ buildingDetails.basementCount }}
+        </p>
+        <p><strong>Stilt Count:</strong> {{ buildingDetails.stiltCount }}</p>
+        <p><strong>Attic Count:</strong> {{ buildingDetails.atticCount }}</p>
+        <p>
+            <strong>Jamthog Count:</strong> {{ buildingDetails.jamthogCount }}
+        </p>
+    </div>
+
+    <!-- Building Images -->
+    <div class="w-8">
+        <h3 class="text-xl font-bold mt-4 mb-3">Building Images</h3>
+        <div class="flex flex-wrap">
+            <div *ngFor="let image of buildingImages" class="col-4">
+                <img
+                    class="w-full border-round shadow-2"
+                    [src]="parseUri(image.uri)"
+                    [alt]="image.description || 'Building Image'"
+                />
+            </div>
+        </div>
+    </div>
+</div>

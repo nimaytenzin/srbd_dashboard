@@ -2,7 +2,37 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { API_URL } from '../constants/constants';
+import { Observable } from 'rxjs';
 
+export interface BuildingWithGeom {
+    id: number;
+    clientBuildingId: number | null;
+    geom: GeoJSON.Geometry;
+    geomSource: string;
+    address: string | null;
+    qrUuid: string;
+    existencyStatus: string;
+    associativePosition: string;
+    name: string;
+    typology: string | null;
+    type: string;
+    primaryUse: string;
+    secondaryUse: string | null;
+    regularFloorCount: number;
+    basementCount: number;
+    stiltCount: number;
+    atticCount: number;
+    jamthogCount: number;
+    length: number | null;
+    breadth: number | null;
+    footprintArea: number | null;
+    contact: number;
+    isProtected: boolean;
+    status: string | null;
+    subAdministrativeZoneId: number;
+    createdAt: string;
+    updatedAt: string;
+}
 @Injectable({
     providedIn: 'root',
 })
@@ -27,7 +57,7 @@ export class GeometryDataService {
     }
 
     deleteBuildingFootPrint(id: number) {
-        return this.http.delete( `${this.apiUrl}/building-footprint/${id}`);
+        return this.http.delete(`${this.apiUrl}/building-footprint/${id}`);
     }
 
     updateBuildingGeomBuildingId(buildingId: number, polygonId: number) {
@@ -74,7 +104,7 @@ export class GeometryDataService {
     GetBuildingFootprintsByAdministrativeBoundary(
         administrativeZoneId: number
     ) {
-        return this.http.get(
+        return this.http.get<BuildingWithGeom[]>(
             `${this.apiUrl}/administrative-zone/buildings/geom/${administrativeZoneId}`
         );
     }
@@ -97,9 +127,9 @@ export class GeometryDataService {
     }
     GetBuildingFootprintsBySubAdministrativeBoundary(
         subAdministrativeZoneId: number
-    ) {
-        return this.http.get(
-            `${this.apiUrl}/sub-administrative-zone/buildings/geom/${subAdministrativeZoneId}`
+    ): Observable<BuildingWithGeom[]> {
+        return this.http.get<BuildingWithGeom[]>(
+            `${this.apiUrl}/sub-administrative-zone/buildings/${subAdministrativeZoneId}`
         );
     }
 
