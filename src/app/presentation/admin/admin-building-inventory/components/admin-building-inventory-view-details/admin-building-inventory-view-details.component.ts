@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { DialogModule } from 'primeng/dialog';
 import {
     BuildingDataService,
     BuildingImageDTO,
 } from 'src/app/core/services/building.dataservice';
+import { GalleriaModule } from 'primeng/galleria';
 
 export interface BuildingDetails {
     id: string;
@@ -39,11 +41,29 @@ export interface BuildingDetails {
     templateUrl: './admin-building-inventory-view-details.component.html',
     styleUrls: ['./admin-building-inventory-view-details.component.css'],
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, DialogModule, GalleriaModule],
 })
 export class AdminBuildingInventoryViewDetailsComponent implements OnInit {
     buildingDetails: BuildingDetails;
     buildingImages: BuildingImageDTO[] = [];
+    displayDialog: boolean = false;
+    selectedImage: BuildingImageDTO | null = null;
+
+    responsiveOptions = [
+        {
+            breakpoint: '1024px',
+            numVisible: 3,
+        },
+        {
+            breakpoint: '768px',
+            numVisible: 2,
+        },
+        {
+            breakpoint: '560px',
+            numVisible: 1,
+        },
+    ];
+
     constructor(
         private config: DynamicDialogConfig,
         private buildingService: BuildingDataService
@@ -67,5 +87,18 @@ export class AdminBuildingInventoryViewDetailsComponent implements OnInit {
             `https://www.zhichar.bt/app/images/building/${uri}`
         );
         return `https://www.zhichar.bt/app/images/building/${uri}`;
+    }
+
+    viewImage(image: BuildingImageDTO) {
+        const imageUrl = this.parseUri(image.uri);
+        const newWindow = window.open(imageUrl, '_blank');
+        if (newWindow) {
+            newWindow.focus();
+        }
+    }
+
+    openDialog(image: BuildingImageDTO) {
+        this.selectedImage = image;
+        this.displayDialog = true;
     }
 }

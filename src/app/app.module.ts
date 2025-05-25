@@ -6,6 +6,7 @@ import { AdminLayoutModule } from './presentation/layout/admin/admin-layout.modu
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { GalleriaModule } from 'primeng/galleria';
 
 @NgModule({
     declarations: [AppComponent],

@@ -37,15 +37,59 @@
 
     <!-- Building Images -->
     <div class="w-8">
-        <h3 class="text-xl font-bold mt-4 mb-3">Building Images</h3>
-        <div class="flex flex-wrap">
-            <div *ngFor="let image of buildingImages" class="col-4">
+        <p-dialog
+            [(visible)]="displayDialog"
+            [modal]="true"
+            [style]="{ width: '50vw', height: '80vh' }"
+            [closable]="true"
+            [dismissableMask]="true"
+        >
+            <ng-template pTemplate="header">
+                <h3>Building Image</h3>
+            </ng-template>
+            <ng-template pTemplate="content">
                 <img
-                    class="w-full border-round shadow-2"
-                    [src]="parseUri(image.uri)"
-                    [alt]="image.description || 'Building Image'"
+                    class="border-round shadow-2"
+                    [src]="parseUri(selectedImage.uri)"
                 />
-            </div>
+            </ng-template>
+        </p-dialog>
+
+        <div class="col-12">
+            <h3 class="text-xl font-bold mt-4 mb-3">Building Images</h3>
+            <p-galleria
+                [value]="buildingImages"
+                [responsiveOptions]="responsiveOptions"
+                [numVisible]="5"
+                [circular]="true"
+                [showItemNavigators]="true"
+                [showThumbnails]="true"
+            >
+                <ng-template pTemplate="item" let-item>
+                    <img
+                        [src]="parseUri(item.uri)"
+                        [alt]="item.description || 'Building Image'"
+                        style="
+                            width: 100%;
+                            display: block;
+                            max-height: 400px;
+                            object-fit: contain;
+                        "
+                    />
+                </ng-template>
+                <ng-template pTemplate="thumbnail" let-item>
+                    <img
+                        [src]="parseUri(item.uri)"
+                        [alt]="item.description || 'Building Thumbnail'"
+                        style="
+                            width: 100%;
+                            display: block;
+                            max-height: 100px;
+                            object-fit: contain;
+                        "
+                    />
+                </ng-template>
+            </p-galleria>
         </div>
     </div>
 </div>
