@@ -11,7 +11,7 @@ import { AdminLayoutComponent } from './presentation/layout/admin/admin-layout.c
                     component: AdminLayoutComponent,
                     children: [
                         {
-                            path: 'building-inventory',
+                            path: '',
                             loadChildren: () =>
                                 import(
                                     './presentation/admin/admin-building-inventory/admin-building-inventory.module'
