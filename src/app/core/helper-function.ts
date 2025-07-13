@@ -12,27 +12,13 @@ export function PARSEDATE(date: string) {
     });
 }
 
-export function GETBUILDINGFLOORLABEL(
-    floorLevel: number,
-    basementCount: number,
-    stiltCount: number,
-    totalFloors: number,
-    atticCount: number,
-    jamthogCount: number
-) {
-    return 'Ground';
-}
-
 export function PARSEBUILDINGFLOORS(
-    totalFloors: number,
+    regularFloorCount: number,
     basementCount: number,
     stiltCount: number,
     atticCount: number,
     jamthogCount: number
 ): string {
-    const regularFloorCount =
-        totalFloors - basementCount - stiltCount - jamthogCount - atticCount;
-
     const basementLabel = basementCount
         ? basementCount === 1
             ? 'B+'

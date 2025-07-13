@@ -1,0 +1,37 @@
+/* Minimal custom styles - using PrimeFlex for layout */
+.main{
+    max-width: 80vw;
+    margin: 0 auto;
+}
+/* Custom progress bar styling for better visibility */
+:host ::ng-deep .p-progressbar {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Table header styling */
+:host ::ng-deep .p-datatable th {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Table row hover effect */
+:host ::ng-deep .p-datatable tbody tr:hover {
+    background-color: var(--surface-hover) !important;
+}
+
+/* Loading skeleton animation */
+:host ::ng-deep .p-skeleton {
+    background: linear-gradient(90deg, var(--surface-200) 25%, var(--surface-100) 50%, var(--surface-200) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}

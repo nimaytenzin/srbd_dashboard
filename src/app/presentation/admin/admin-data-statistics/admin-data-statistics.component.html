@@ -1,0 +1,472 @@
+<div class="surface-ground min-h-screen p-4 main">
+    <!-- Header Section -->
+    <div class="surface-card border-round-lg p-4 mb-4 shadow-1">
+        <div
+            class="flex flex-column lg:flex-row lg:align-items-center lg:justify-content-between gap-3"
+        >
+            <div>
+                <h1
+                    class="text-4xl font-bold text-900 m-0 mb-2 flex align-items-center gap-3"
+                >
+                    <i class="pi pi-chart-bar text-primary"></i>
+                    Data Cleaning Statistics
+                </h1>
+                <p class="text-600 m-0 text-lg">
+                    Real-time overview of building data cleaning progress across
+                    all dzongkhags
+                </p>
+            </div>
+            <div class="flex flex-column align-items-end gap-2">
+                <button
+                    pButton
+                    type="button"
+                    icon="pi pi-refresh"
+                    label="Refresh"
+                    class="p-button-outlined"
+                    (click)="refreshData()"
+                    [disabled]="isLoading"
+                ></button>
+                <div
+                    class="text-600 text-sm flex align-items-center gap-1"
+                    *ngIf="lastRefreshed"
+                >
+                    <i class="pi pi-clock"></i>
+                    Last updated: {{ lastRefreshed }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading && dzongkhagStats.length === 0" class="grid">
+        <div class="col-5">
+            <div class="flex flex-column gap-3">
+                <p-card
+                    *ngFor="let i of [1, 2, 3, 4]"
+                    styleClass="surface-card border-round-lg"
+                >
+                    <div class="flex align-items-center">
+                        <p-skeleton
+                            shape="circle"
+                            size="4rem"
+                            class="mr-3"
+                        ></p-skeleton>
+                        <div class="flex-1">
+                            <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                            <p-skeleton height="1rem" width="60%"></p-skeleton>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+        <div class="col-7">
+            <div class="flex flex-column gap-3">
+                <p-card
+                    *ngFor="let i of [1, 2, 3, 4]"
+                    styleClass="surface-card border-round-lg"
+                >
+                    <div class="flex align-items-center">
+                        <p-skeleton
+                            shape="circle"
+                            size="4rem"
+                            class="mr-3"
+                        ></p-skeleton>
+                        <div class="flex-1">
+                            <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                            <p-skeleton height="1rem" width="60%"></p-skeleton>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="hasError" class="p-4">
+        <p-card styleClass="surface-card border-round-lg">
+            <div
+                class="flex flex-column align-items-center text-center gap-4 p-6"
+            >
+                <i class="pi pi-exclamation-triangle text-6xl text-red-500"></i>
+                <div>
+                    <h3 class="text-xl font-bold text-900 mb-2">
+                        Failed to Load Statistics
+                    </h3>
+                    <p class="text-600 m-0">{{ errorMessage }}</p>
+                </div>
+                <button
+                    pButton
+                    type="button"
+                    label="Retry"
+                    icon="pi pi-refresh"
+                    (click)="refreshData()"
+                    class="p-button-outlined"
+                ></button>
+            </div>
+        </p-card>
+    </div>
+
+    <!-- Statistics Content -->
+    <div *ngIf="dzongkhagStats.length > 0 && !hasError" class="grid">
+        <!-- Left Side - Overview Statistics -->
+        <div class="col-5">
+            <div class="flex flex-column gap-3">
+                <!-- Total Buildings Card -->
+                <p-card styleClass="surface-card border-round-lg">
+                    <div class="flex align-items-center">
+                        <div
+                            class="bg-blue-100 border-circle w-4rem h-4rem flex align-items-center justify-content-center mr-3"
+                        >
+                            <i class="pi pi-home text-blue-600 text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-3xl font-bold text-blue-600 mb-1">
+                                {{ totalBuildings | number }}
+                            </div>
+                            <div class="text-600 font-medium mb-1">
+                                Total Buildings
+                            </div>
+                            <div class="text-500 text-sm">
+                                Across all dzongkhags
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Cleaned Buildings Card -->
+                <p-card styleClass="surface-card border-round-lg">
+                    <div class="flex align-items-center">
+                        <div
+                            class="bg-green-100 border-circle w-4rem h-4rem flex align-items-center justify-content-center mr-3"
+                        >
+                            <i
+                                class="pi pi-check-circle text-green-600 text-2xl"
+                            ></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-3xl font-bold text-green-600 mb-1">
+                                {{ totalCleanedBuildings | number }}
+                            </div>
+                            <div class="text-600 font-medium mb-1">
+                                Cleaned Buildings
+                            </div>
+                            <div class="text-500 text-sm">
+                                Data processing completed
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Pending Buildings Card -->
+                <p-card styleClass="surface-card border-round-lg">
+                    <div class="flex align-items-center">
+                        <div
+                            class="bg-orange-100 border-circle w-4rem h-4rem flex align-items-center justify-content-center mr-3"
+                        >
+                            <i class="pi pi-clock text-orange-600 text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div
+                                class="text-3xl font-bold text-orange-600 mb-1"
+                            >
+                                {{ totalUncleanedBuildings | number }}
+                            </div>
+                            <div class="text-600 font-medium mb-1">
+                                Pending Buildings
+                            </div>
+                            <div class="text-500 text-sm">
+                                Awaiting data cleaning
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Overall Progress Card -->
+                <p-card styleClass="surface-card border-round-lg">
+                    <div class="flex align-items-center">
+                        <div
+                            class="bg-purple-100 border-circle w-4rem h-4rem flex align-items-center justify-content-center mr-3"
+                        >
+                            <i
+                                class="pi pi-chart-line text-purple-600 text-2xl"
+                            ></i>
+                        </div>
+                        <div class="flex-1">
+                            <div
+                                class="text-3xl font-bold text-purple-600 mb-1"
+                            >
+                                {{
+                                    overallCleaningPercentage
+                                        | number : "1.1-1"
+                                }}%
+                            </div>
+                            <div class="text-600 font-medium mb-1">
+                                Overall Progress
+                            </div>
+                            <div class="text-sm">
+                                <span
+                                    [class]="
+                                        overallCleaningPercentage >= 80
+                                            ? 'text-green-600 font-semibold'
+                                            : overallCleaningPercentage >= 50
+                                            ? 'text-orange-600 font-semibold'
+                                            : 'text-red-600 font-semibold'
+                                    "
+                                >
+                                    {{
+                                        overallCleaningPercentage >= 80
+                                            ? "Excellent Progress"
+                                            : overallCleaningPercentage >= 50
+                                            ? "Good Progress"
+                                            : "Needs Attention"
+                                    }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+
+        <!-- Right Side - Dzongkhag Table -->
+        <div class="col-7">
+            <p-card
+                header="Dzongkhag-wise Statistics"
+                styleClass="surface-card border-round-lg h-full"
+            >
+                <ng-template pTemplate="header">
+                    <div
+                        class="flex align-items-center justify-content-between p-3"
+                    >
+                        <div>
+                            <h3 class="text-xl font-bold text-900 m-0 mb-1">
+                                <i
+                                    class="pi pi-chart-bar mr-2 text-primary"
+                                ></i>
+                                Progress by Dzongkhag
+                            </h3>
+                            <p class="text-600 m-0">
+                                Data cleaning progress for
+                                {{ dzongkhagStats.length }} dzongkhags
+                            </p>
+                        </div>
+                    </div>
+                </ng-template>
+
+                <p-table
+                    [value]="dzongkhagStats"
+                    [sortField]="'cleaningPercentage'"
+                    [sortOrder]="-1"
+                    styleClass="p-datatable-striped p-datatable-gridlines"
+                    [loading]="isLoading"
+                    responsiveLayout="scroll"
+                >
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th
+                                pSortableColumn="dzongkhagName"
+                                class="white-space-nowrap"
+                            >
+                                <div class="flex align-items-center">
+                                    <i
+                                        class="pi pi-map-marker mr-1 text-500"
+                                    ></i>
+                                    Dzongkhag
+                                </div>
+                                <p-sortIcon field="dzongkhagName"></p-sortIcon>
+                            </th>
+                            <th
+                                pSortableColumn="totalBuildings"
+                                class="text-center white-space-nowrap"
+                            >
+                                <div
+                                    class="flex align-items-center justify-content-center"
+                                >
+                                    <i class="pi pi-home mr-1 text-500"></i>
+                                    Total
+                                </div>
+                                <p-sortIcon field="totalBuildings"></p-sortIcon>
+                            </th>
+                            <th
+                                pSortableColumn="cleanedBuildings"
+                                class="text-center white-space-nowrap"
+                            >
+                                <div
+                                    class="flex align-items-center justify-content-center"
+                                >
+                                    <i
+                                        class="pi pi-check-circle mr-1 text-green-600"
+                                    ></i>
+                                    Cleaned
+                                </div>
+                                <p-sortIcon
+                                    field="cleanedBuildings"
+                                ></p-sortIcon>
+                            </th>
+                            <th
+                                pSortableColumn="uncleanedBuildings"
+                                class="text-center white-space-nowrap"
+                            >
+                                <div
+                                    class="flex align-items-center justify-content-center"
+                                >
+                                    <i
+                                        class="pi pi-clock mr-1 text-orange-600"
+                                    ></i>
+                                    Pending
+                                </div>
+                                <p-sortIcon
+                                    field="uncleanedBuildings"
+                                ></p-sortIcon>
+                            </th>
+                            <th
+                                pSortableColumn="cleaningPercentage"
+                                class="text-center white-space-nowrap"
+                            >
+                                <div
+                                    class="flex align-items-center justify-content-center"
+                                >
+                                    <i
+                                        class="pi pi-chart-line mr-1 text-500"
+                                    ></i>
+                                    Progress
+                                </div>
+                                <p-sortIcon
+                                    field="cleaningPercentage"
+                                ></p-sortIcon>
+                            </th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template
+                        pTemplate="body"
+                        let-dzongkhag
+                        let-i="rowIndex"
+                    >
+                        <tr>
+                            <td>
+                                <div class="flex align-items-center gap-2">
+                                    <div
+                                        class="bg-primary border-circle w-2rem h-2rem flex align-items-center justify-content-center text-primary-contrast text-xs font-bold"
+                                    >
+                                        {{ i + 1 }}
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-900">
+                                            {{ dzongkhag.dzongkhagName }}
+                                        </div>
+                                        <div class="text-500 text-sm">
+                                            {{
+                                                dzongkhag.dzongkhagCode || "N/A"
+                                            }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-bold text-900">{{
+                                    dzongkhag.totalBuildings | number
+                                }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div
+                                    class="flex flex-column align-items-center"
+                                >
+                                    <span class="font-bold text-green-700">{{
+                                        dzongkhag.cleanedBuildings | number
+                                    }}</span>
+                                    <span class="text-green-600 text-xs">
+                                        ({{
+                                            dzongkhag.totalBuildings > 0
+                                                ? ((dzongkhag.cleanedBuildings /
+                                                      dzongkhag.totalBuildings) *
+                                                      100 | number : "1.0-0")
+                                                : 0
+                                        }}%)
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div
+                                    class="flex flex-column align-items-center"
+                                >
+                                    <span class="font-bold text-orange-700">{{
+                                        dzongkhag.uncleanedBuildings | number
+                                    }}</span>
+                                    <span class="text-orange-600 text-xs">
+                                        ({{
+                                            dzongkhag.totalBuildings > 0
+                                                ? ((dzongkhag.uncleanedBuildings /
+                                                      dzongkhag.totalBuildings) *
+                                                      100 | number : "1.0-0")
+                                                : 0
+                                        }}%)
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div
+                                    class="flex flex-column align-items-center gap-1"
+                                >
+                                    <p-progressBar
+                                        [value]="dzongkhag.cleaningPercentage"
+                                        [style]="{
+                                            height: '6px',
+                                            width: '80px'
+                                        }"
+                                        [showValue]="false"
+                                    ></p-progressBar>
+                                    <span
+                                        class="text-600 text-sm font-semibold"
+                                    >
+                                        {{
+                                            dzongkhag.cleaningPercentage
+                                                | number : "1.1-1"
+                                        }}%
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <p-tag
+                                    [value]="
+                                        getProgressLabel(
+                                            dzongkhag.cleaningPercentage
+                                        )
+                                    "
+                                    [severity]="
+                                        getProgressSeverity(
+                                            dzongkhag.cleaningPercentage
+                                        )
+                                    "
+                                    [icon]="
+                                        getProgressIcon(
+                                            dzongkhag.cleaningPercentage
+                                        )
+                                    "
+                                ></p-tag>
+                            </td>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="6" class="text-center p-4">
+                                <div
+                                    class="flex flex-column align-items-center gap-3"
+                                >
+                                    <i
+                                        class="pi pi-info-circle text-4xl text-400"
+                                    ></i>
+                                    <p class="text-500 m-0">
+                                        No dzongkhag data available
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-card>
+        </div>
+    </div>
+</div>

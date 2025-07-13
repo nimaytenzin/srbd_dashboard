@@ -1,0 +1,585 @@
+<div class="building-editor-container">
+    <!-- Loading Overlay -->
+    <div *ngIf="isLoadingData" class="loading-overlay">
+        <div class="loading-content">
+            <i class="pi pi-spin pi-spinner loading-spinner"></i>
+            <p class="loading-text">Loading building data...</p>
+        </div>
+    </div>
+
+    <!-- // Implement next and previous button -> to switch from one entry to -->
+    <!-- Header -->
+    <div class="editor-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="pi pi-building"></i>
+                Building ID: {{ buildingDetails?.id }}
+            </h1>
+            <p-tag
+                [value]="'Status: ' + getDataStatusText()"
+                [severity]="hasCleanedData ? 'success' : 'warning'"
+                [icon]="
+                    hasCleanedData
+                        ? 'pi pi-check-circle'
+                        : 'pi pi-exclamation-triangle'
+                "
+            >
+            </p-tag>
+
+            <!-- View History Button -->
+
+            <div class="page-subtitle-container">
+                <!-- STATUS DISPLAY -->
+
+                <p *ngIf="getBuildingContextInfo()" class="context-info">
+                    <i class="pi pi-map-marker"></i>
+                    {{ getBuildingContextInfo() }}
+                </p>
+                <p *ngIf="getCurrentPositionInfo()" class="position-info">
+                    <i class="pi pi-list"></i>
+                    {{ getCurrentPositionInfo() }}
+                </p>
+            </div>
+        </div>
+
+        <div class="navigation-controls">
+            <button
+                *ngIf="canViewHistory()"
+                pButton
+                [outlined]="true"
+                (click)="openHistoryDialog()"
+                size="small"
+            >
+                <i class="pi pi-history"></i>
+                View Old Data
+            </button>
+            <!-- BACK TO GEWOG SELECTOR -->
+            <button pButton (click)="navigateBackToGewogSelector()">
+                <i class="pi pi-arrow-left"></i>
+                <p>Back to Gewog Selection</p>
+            </button>
+
+            <!-- PREVIOUS AND NEXT BUTTON -->
+            <button
+                pButton
+                (click)="navigateToPrevious()"
+                [disabled]="!hasPreviousBuilding()"
+                [title]="
+                    hasPreviousBuilding()
+                        ? 'Previous Building'
+                        : 'No previous building'
+                "
+            >
+                <i
+                    class="pi"
+                    [ngClass]="
+                        isLoadingData ? 'pi-spin pi-spinner' : 'pi-chevron-left'
+                    "
+                ></i>
+                Previous
+            </button>
+            <button
+                pButton
+                (click)="navigateToNext()"
+                [disabled]="!hasNextBuilding()"
+                [title]="
+                    hasNextBuilding() ? 'Next Building' : 'No next building'
+                "
+            >
+                Next
+                <i
+                    class="pi"
+                    [ngClass]="
+                        isLoadingData
+                            ? 'pi-spin pi-spinner'
+                            : 'pi-chevron-right'
+                    "
+                ></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="hasLoadingError" class="error-message">
+        <div class="error-content">
+            <i class="pi pi-exclamation-triangle error-icon"></i>
+            <div class="error-text">
+                <strong>Loading Error</strong>
+                <p>{{ errorMessage }}</p>
+            </div>
+            <button class="retry-btn" pButton (click)="retryLoadData()">
+                <i class="pi pi-refresh"></i>
+                Retry
+            </button>
+        </div>
+    </div>
+
+    <div class="editor-layout">
+        <!-- Left Side - Images Grid -->
+        <div class="images-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="pi pi-images"></i>
+                    Building Images
+                </h2>
+                <span class="image-count"
+                    >{{ buildingImages?.length || 0 }} photos</span
+                >
+            </div>
+
+            <div
+                class="images-grid"
+                *ngIf="buildingImages?.length > 0; else noImages"
+            >
+                <div
+                    class="image-card"
+                    *ngFor="let image of buildingImages; let i = index"
+                    (click)="openImageViewer(image, i)"
+                >
+                    <div class="image-wrapper">
+                        <img
+                            [src]="parseUri(image.uri)"
+                            [alt]="image.description || 'Building Image'"
+                            class="grid-image"
+                        />
+                        <div class="image-overlay"></div>
+                    </div>
+                </div>
+            </div>
+
+            <ng-template #noImages>
+                <div class="no-images">
+                    <i class="pi pi-image no-image-icon"></i>
+                    <h3>No Images Available</h3>
+                    <p>No building images have been uploaded yet.</p>
+                </div>
+            </ng-template>
+        </div>
+
+        <!-- Right Side - Building Details Form -->
+        <div class="details-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="pi pi-file-edit"></i>
+                    Building Details
+                </h2>
+            </div>
+
+            <div class="details-form">
+                <div class="form-grid">
+                    <div class="form-group p-fluid">
+                        <label for="buildingName">Building Name</label>
+                        <input
+                            id="buildingName"
+                            type="text"
+                            pInputText
+                            [(ngModel)]="buildingDetails.name"
+                            placeholder="Enter building name"
+                            [disabled]="isFormDisabled()"
+                            [title]="getFieldDisabledTooltip()"
+                        />
+                    </div>
+                    <div class="form-group p-fluid">
+                        <label for="existencyStatus">Existency Status</label>
+                        <p-dropdown
+                            id="existencyStatus"
+                            [(ngModel)]="buildingDetails.existencyStatus"
+                            [options]="existencyStatusOptions"
+                            placeholder="Select status"
+                            [disabled]="isFormDisabled()"
+                            [title]="getFieldDisabledTooltip()"
+                        ></p-dropdown>
+                    </div>
+                    <div class="form-group p-fluid">
+                        <label for="existencyStatus"
+                            >Associative Position
+                        </label>
+                        <p-dropdown
+                            id="existencyStatus"
+                            [(ngModel)]="buildingDetails.associativePosition"
+                            [options]="associativePositionOptions"
+                            placeholder="Select option"
+                        ></p-dropdown>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group p-fluid">
+                        <label for="typology">Typology</label>
+                        <p-dropdown
+                            id="typology"
+                            [(ngModel)]="buildingDetails.typology"
+                            [options]="typologyOptions"
+                            placeholder="Select typology"
+                        ></p-dropdown>
+                    </div>
+                    <div class="form-group p-fluid">
+                        <label for="primaryUse">Primary Use</label>
+                        <p-dropdown
+                            id="primaryUse"
+                            [(ngModel)]="buildingDetails.primaryUse"
+                            [options]="primaryUseOptions"
+                            placeholder="Select primary use"
+                        ></p-dropdown>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group p-fluid">
+                        <label for="length">Length (m)</label>
+                        <p-inputNumber
+                            id="length"
+                            [(ngModel)]="buildingDetails.length"
+                            [min]="0"
+                            [max]="1000"
+                        ></p-inputNumber>
+                    </div>
+                    <div class="form-group p-fluid">
+                        <label for="breadth">Breadth (m)</label>
+                        <p-inputNumber
+                            id="breadth"
+                            [(ngModel)]="buildingDetails.breadth"
+                            [min]="0"
+                            [max]="1000"
+                        ></p-inputNumber>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group p-fluid">
+                        <label for="regularFloorCount"
+                            >Regular Floor Count</label
+                        >
+                        <p-inputNumber
+                            id="regularFloorCount"
+                            [(ngModel)]="buildingDetails.regularFloorCount"
+                            [showButtons]="true"
+                            [min]="0"
+                            [max]="50"
+                            class="form-input"
+                        ></p-inputNumber>
+                    </div>
+                    <div class="form-group p-fluid">
+                        <label for="basementCount">Basement Count</label>
+                        <p-inputNumber
+                            id="basementCount"
+                            [(ngModel)]="buildingDetails.basementCount"
+                            [showButtons]="true"
+                            [min]="0"
+                            [max]="10"
+                        ></p-inputNumber>
+                    </div>
+                    <div class="form-group p-fluid">
+                        <label for="stiltCount">Stilt Count</label>
+                        <p-inputNumber
+                            id="stiltCount"
+                            [(ngModel)]="buildingDetails.stiltCount"
+                            [showButtons]="true"
+                            [min]="0"
+                            [max]="10"
+                        ></p-inputNumber>
+                    </div>
+                    <div class="form-group p-fluid">
+                        <label for="atticCount">Attic Count</label>
+                        <p-inputNumber
+                            id="atticCount"
+                            [(ngModel)]="buildingDetails.atticCount"
+                            [showButtons]="true"
+                            [min]="0"
+                            [max]="10"
+                            class="form-input"
+                        ></p-inputNumber>
+                    </div>
+                    <div class="form-group p-fluid">
+                        <label for="jamthogCount">Jamthog Count</label>
+                        <p-inputNumber
+                            id="jamthogCount"
+                            [(ngModel)]="buildingDetails.jamthogCount"
+                            [showButtons]="true"
+                            [min]="0"
+                            [max]="10"
+                            class="form-input"
+                        ></p-inputNumber>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <button
+                        pButton
+                        type="button"
+                        class="save-btn"
+                        (click)="updateBuildingData()"
+                        [disabled]="isSavingData"
+                        title="Save building data"
+                    >
+                        <i
+                            class="pi"
+                            [ngClass]="
+                                isSavingData ? 'pi-spin pi-spinner' : 'pi-save'
+                            "
+                        ></i>
+                        {{
+                            isSavingData ? "Saving..." : "Update Building Data"
+                        }}
+                    </button>
+                    <button
+                        pButton
+                        type="button"
+                        class="cancel-btn"
+                        severity="secondary"
+                        (click)="cancelEdit()"
+                    >
+                        <i class="pi pi-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Viewer Dialog -->
+    <p-dialog
+        [(visible)]="displayImageViewer"
+        [modal]="true"
+        [style]="{ width: '90vw', height: '90vh' }"
+        [closable]="true"
+        [dismissableMask]="true"
+        styleClass="image-viewer-dialog"
+    >
+        <ng-template pTemplate="header">
+            <div class="dialog-header">
+                <h3>Building Image Viewer</h3>
+                <div class="image-navigation">
+                    <span class="image-counter"
+                        >{{ currentImageIndex + 1 }} of
+                        {{ buildingImages?.length }}</span
+                    >
+                </div>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="content">
+            <div class="image-viewer-content" *ngIf="selectedImage">
+                <div class="viewer-controls">
+                    <button
+                        pButton
+                        type="button"
+                        icon="pi pi-angle-left"
+                        class="nav-btn"
+                        (click)="previousImage()"
+                        [disabled]="currentImageIndex === 0"
+                    ></button>
+
+                    <div class="image-container">
+                        <img
+                            [src]="parseUri(selectedImage.uri)"
+                            [alt]="
+                                selectedImage.description || 'Building Image'
+                            "
+                            class="viewer-image"
+                            [style.transform]="
+                                'rotate(' + selectedImage.rotation + 'deg)'
+                            "
+                        />
+                    </div>
+
+                    <button
+                        pButton
+                        type="button"
+                        icon="pi pi-angle-right"
+                        class="nav-btn"
+                        (click)="nextImage()"
+                        [disabled]="
+                            currentImageIndex === buildingImages?.length - 1
+                        "
+                    ></button>
+                </div>
+
+                <div class="viewer-actions">
+                    <button
+                        pButton
+                        type="button"
+                        icon="pi pi-refresh"
+                        label="Rotate"
+                        class="rotate-action-btn"
+                        (click)="rotateCurrentImage()"
+                    ></button>
+                    <button
+                        pButton
+                        type="button"
+                        icon="pi pi-undo"
+                        label="Reset Rotation"
+                        class="reset-btn"
+                        severity="secondary"
+                        (click)="resetImageRotation()"
+                    ></button>
+                </div>
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- History Data Dialog -->
+    <p-dialog
+        [(visible)]="displayHistoryDialog"
+        [modal]="true"
+        [style]="{ width: '60vw', height: '80vh' }"
+        [closable]="true"
+        [dismissableMask]="true"
+        styleClass="history-dialog"
+    >
+        <ng-template pTemplate="header">
+            <div class="dialog-header">
+                <h3><i class="pi pi-history"></i> Original Data (History)</h3>
+                <p class="dialog-subtitle">
+                    This is the original data before cleaning. Current form
+                    shows the cleaned data.
+                </p>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="content">
+            <div class="history-content" *ngIf="originalBuildingData">
+                <div class="history-grid">
+                    <div class="history-section">
+                        <h4>Basic Information</h4>
+                        <div class="data-row">
+                            <span class="label">Building Name:</span>
+                            <span class="value">{{
+                                originalBuildingData.name || "Not specified"
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Existency Status:</span>
+                            <span class="value">{{
+                                originalBuildingData.existencyStatus ||
+                                    "Not specified"
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Associative Position:</span>
+                            <span class="value">{{
+                                originalBuildingData.associativePosition ||
+                                    "Not specified"
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Typology:</span>
+                            <span class="value">{{
+                                originalBuildingData.typology || "Not specified"
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Primary Use:</span>
+                            <span class="value">{{
+                                originalBuildingData.primaryUse ||
+                                    "Not specified"
+                            }}</span>
+                        </div>
+                    </div>
+
+                    <div class="history-section">
+                        <h4>Dimensions</h4>
+                        <div class="data-row">
+                            <span class="label">Length:</span>
+                            <span class="value"
+                                >{{
+                                    originalBuildingData.length ||
+                                        "Not specified"
+                                }}
+                                m</span
+                            >
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Breadth:</span>
+                            <span class="value"
+                                >{{
+                                    originalBuildingData.breadth ||
+                                        "Not specified"
+                                }}
+                                m</span
+                            >
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Footprint Area:</span>
+                            <span class="value"
+                                >{{
+                                    originalBuildingData.footprintArea ||
+                                        "Not specified"
+                                }}
+                                sq.m</span
+                            >
+                        </div>
+                    </div>
+
+                    <div class="history-section">
+                        <h4>Floor Details</h4>
+                        <div class="data-row">
+                            <span class="label">Regular Floors:</span>
+                            <span class="value">{{
+                                originalBuildingData.regularFloorCount || 0
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Basement:</span>
+                            <span class="value">{{
+                                originalBuildingData.basementCount || 0
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Stilt:</span>
+                            <span class="value">{{
+                                originalBuildingData.stiltCount || 0
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Attic:</span>
+                            <span class="value">{{
+                                originalBuildingData.atticCount || 0
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Jamthog:</span>
+                            <span class="value">{{
+                                originalBuildingData.jamthogCount || 0
+                            }}</span>
+                        </div>
+                    </div>
+
+                    <div class="history-section">
+                        <h4>Additional Information</h4>
+                        <div class="data-row">
+                            <span class="label">Contact:</span>
+                            <span class="value">{{
+                                originalBuildingData.contact || "Not specified"
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Protected Status:</span>
+                            <span class="value">{{
+                                originalBuildingData.isProtected ? "Yes" : "No"
+                            }}</span>
+                        </div>
+                        <div class="data-row">
+                            <span class="label">Data Status:</span>
+                            <span class="value">{{
+                                originalBuildingData.status || "Not specified"
+                            }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <button
+                pButton
+                type="button"
+                label="Close"
+                icon="pi pi-times"
+                class="p-button-text"
+                (click)="closeHistoryDialog()"
+            ></button>
+        </ng-template>
+    </p-dialog>
+</div>

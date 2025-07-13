@@ -17,7 +17,6 @@ import {
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { UnitOccupancyStatus, UnitPrimaryUses } from 'src/app/core/constants';
-import { UnitDataService } from 'src/app/core/services/unit.dataservice';
 
 @Component({
     selector: 'app-admin-view-unit-modal',
@@ -45,7 +44,6 @@ export class AdminViewUnitModalComponent implements OnInit, OnDestroy {
     constructor(
         public ref: DynamicDialogRef,
         private dialogService: DialogService,
-        private unitDataService: UnitDataService,
         private confirmationService: ConfirmationService,
         private messageService: MessageService,
         private fb: FormBuilder
@@ -73,35 +71,35 @@ export class AdminViewUnitModalComponent implements OnInit, OnDestroy {
     }
 
     getUnit(unitId: number) {
-        this.unitDataService.GetUnitById(unitId).subscribe((res) => {
-            this.unit = res;
-        });
+        // this.unitDataService.GetUnitById(unitId).subscribe((res) => {
+        //     this.unit = res;
+        // });
     }
 
     getUnitDetails(unitId: number) {
-        this.unitDataService.GetUnitDetails(unitId).subscribe((res) => {
-            this.unitDetails = res;
-            this.myForm.patchValue({
-                rent: this.unitDetails?.rent,
-                occupancyStatus: this.unitDetails?.occupancyStatus,
-                use: this.unitDetails?.use,
-                numberOfBedrooms: this.unitDetails?.numberOfBedrooms,
-                contact: this.unitDetails?.contact,
-            });
-        });
+        // this.unitDataService.GetUnitDetails(unitId).subscribe((res) => {
+        //     this.unitDetails = res;
+        //     this.myForm.patchValue({
+        //         rent: this.unitDetails?.rent,
+        //         occupancyStatus: this.unitDetails?.occupancyStatus,
+        //         use: this.unitDetails?.use,
+        //         numberOfBedrooms: this.unitDetails?.numberOfBedrooms,
+        //         contact: this.unitDetails?.contact,
+        //     });
+        // });
     }
 
     updateDetails() {
-        console.log(this.myForm.value);
-        this.unitDataService
-            .UpdateUnitDetails(this.unitId, this.myForm.value)
-            .subscribe((res) => {
-                if (res) {
-                    this.ref.close({
-                        updated: true,
-                    });
-                }
-            });
+        // console.log(this.myForm.value);
+        // this.unitDataService
+        //     .UpdateUnitDetails(this.unitId, this.myForm.value)
+        //     .subscribe((res) => {
+        //         if (res) {
+        //             this.ref.close({
+        //                 updated: true,
+        //             });
+        //         }
+        //     });
     }
 
     // goToBuildingDetailedView(buildingId) {

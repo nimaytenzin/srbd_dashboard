@@ -1,119 +1,166 @@
-<div
-    class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden"
->
+<div class="login-container">
+    <!-- Animated background -->
+    <div class="background-animation">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+        <div class="floating-shape shape-4"></div>
+        <div class="floating-shape shape-5"></div>
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
     <p-toast></p-toast>
 
-    <div class="flex flex-column align-items-center justify-content-center">
-        <div
-            style="
-                border-radius: 56px;
-                padding: 0.3rem;
-                background: linear-gradient(
-                    180deg,
-                    var(--primary-color) 10%,
-                    rgba(33, 150, 243, 0) 30%
-                );
-            "
-        >
-            <div
-                class="w-full surface-card py-8 px-5 sm:px-8"
-                style="border-radius: 53px"
-            >
-                <div class="text-center mb-5">
+    <div class="login-content">
+        <!-- Left side - Branding -->
+        <div class="branding-section">
+            <div class="brand-content">
+                <div class="logo-container">
                     <img
                         src="assets/logo/logo.png"
-                        alt="Image"
-                        height="50"
-                        class="mb-3"
+                        alt="Logo"
+                        class="logo-image"
                     />
-                    <div class="text-900 text-3xl font-medium mb-3">
-                        Welcome to Zhichar
+                    <div class="logo-glow"></div>
+                </div>
+                <h1 class="brand-title">
+                    <span class="title-line">Data Cleaning for</span>
+                    <span class="title-line highlight">Earthquake Loss</span>
+                    <span class="title-line">Estimation</span>
+                </h1>
+                <p class="brand-subtitle">Data for a earthquake safe bhutan.</p>
+                <div class="feature-highlights">
+                    <div class="feature-item">
+                        <i class="pi pi-shield feature-icon"></i>
+                        <span> Data Cleaning</span>
                     </div>
-                    <p>Planned Human Settlements Powered by Zhichar</p>
+                    <div class="feature-item">
+                        <i class="pi pi-chart-line feature-icon"></i>
+                        <span>Data Analytics</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="pi pi-globe feature-icon"></i>
+                        <span>ELE Report</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side - Login form -->
+        <div class="form-section">
+            <div class="login-card">
+                <div class="card-header">
+                    <h2 class="welcome-title">Welcome Back</h2>
+                    <p class="welcome-subtitle">
+                        Please sign in to your account
+                    </p>
+                    <div class="auth-info">
+                        <div class="info-item">
+                            <strong>Username:</strong> Email address
+                        </div>
+                        <div class="info-item">
+                            <strong>Password:</strong> Phone number
+                        </div>
+                        <div class="info-note">
+                            * Based on nomination list provided
+                        </div>
+                    </div>
                 </div>
 
-                <div *ngIf="!this.token">
-                    <label
-                        for="email1"
-                        class="block text-900 text-xl font-medium mb-2"
-                        >CID</label
-                    >
-                    <input
-                        id="email1"
-                        type="text"
-                        placeholder="cid/userId"
-                        pInputText
-                        [(ngModel)]="username"
-                        class="w-full md:w-30rem mb-5"
-                        style="padding: 1rem"
-                    />
+                <div class="form-content" *ngIf="!this.token">
+                    <div class="input-group">
+                        <label for="email1" class="input-label">
+                            <i class="pi pi-envelope"></i>
+                            Email Address
+                        </label>
+                        <div class="input-wrapper">
+                            <input
+                                id="email1"
+                                type="email"
+                                placeholder="Enter your email"
+                                pInputText
+                                [(ngModel)]="username"
+                                class="modern-input"
+                            />
+                            <div class="input-border"></div>
+                        </div>
+                    </div>
 
-                    <label
-                        for="password1"
-                        class="block text-900 font-medium text-xl mb-2"
-                        >Password</label
-                    >
-                    <p-password
-                        id="password1"
-                        [(ngModel)]="password"
-                        placeholder="Password"
-                        [toggleMask]="true"
-                        [feedback]="false"
-                        styleClass="mb-5"
-                        inputStyleClass="w-full p-3 md:w-30rem"
-                    ></p-password>
+                    <div class="input-group">
+                        <label for="password1" class="input-label">
+                            <i class="pi pi-lock"></i>
+                            Password
+                        </label>
+                        <div class="input-wrapper p-fluid">
+                            <p-password
+                                id="password1"
+                                [(ngModel)]="password"
+                                placeholder="Enter your password"
+                                [toggleMask]="true"
+                                [feedback]="false"
+                                fluid="true"
+                                styleClass="modern-password"
+                                inputStyleClass="modern-input"
+                            ></p-password>
+                            <div class="input-border"></div>
+                        </div>
+                    </div>
 
-                    <div
-                        class="flex align-items-center justify-content-between mb-5 gap-5"
-                    >
-                        <div class="flex align-items-center">
+                    <div class="form-options">
+                        <div class="remember-me">
                             <p-checkbox
                                 id="rememberme1"
                                 [binary]="true"
                                 [(ngModel)]="remember"
-                                styleClass="mr-2"
+                                styleClass="modern-checkbox"
                             ></p-checkbox>
                             <label for="rememberme1">Remember me</label>
                         </div>
+                        <a href="#" class="forgot-password">Forgot password?</a>
                     </div>
+
                     <button
                         pButton
                         pRipple
                         (click)="login()"
-                        label="Sign In"
-                        class="w-full p-3 text-xl"
-                        [routerLink]="['/']"
-                    ></button>
+                        class="login-button"
+                        [disabled]="!username || !password"
+                    >
+                        <span class="button-text">Sign In</span>
+                        <i class="pi pi-arrow-right button-icon"></i>
+                        <div class="button-glow"></div>
+                    </button>
                 </div>
 
-                <div *ngIf="this.token" class="text-center">
-                    <p>Welcome back {{ decodedToken.fullName }}</p>
-                    <p class="text-600 font-medium">you have already logged</p>
-                    <p-button
-                        size="small"
-                        (click)="tokenExistsContinue()"
-                        label="Sign In"
-                        class="w-full"
-                        [routerLink]="['/']"
-                    ></p-button>
-
-                    <p>
-                        Not {{ decodedToken.fullName }} ?
-                        <span
-                            (click)="removeToken()"
-                            class="text-primary cursor-pointer"
-                        >
-                            Click here
-                        </span>
+                <div class="welcome-back" *ngIf="this.token">
+                    <div class="welcome-avatar">
+                        <i class="pi pi-user"></i>
+                    </div>
+                    <h3 class="welcome-name">
+                        Welcome back, {{ decodedToken.fullName }}!
+                    </h3>
+                    <p class="welcome-message">
+                        You're already logged in and ready to continue
                     </p>
-                </div>
 
-                <div class="flex justify-content-center mt-5">
-                    <p-button
-                        severity="secondary"
-                        (click)="navigateToBuildingInformationCorrectionPage()"
-                        label="Apply for Building Information Correction"
-                    ></p-button>
+                    <button
+                        pButton
+                        pRipple
+                        (click)="tokenExistsContinue()"
+                        class="continue-button"
+                    >
+                        <span class="button-text">Continue</span>
+                        <i class="pi pi-arrow-right button-icon"></i>
+                    </button>
+
+                    <div class="switch-user">
+                        <span>Not {{ decodedToken.fullName }}?</span>
+                        <a (click)="removeToken()" class="switch-link">
+                            Switch Account
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

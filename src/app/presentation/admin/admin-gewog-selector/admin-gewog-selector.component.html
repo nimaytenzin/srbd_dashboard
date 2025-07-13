@@ -1,0 +1,454 @@
+<div class="admin-gewog-selector p-4">
+    <!-- Header -->
+    <div class="flex justify-content-between align-items-center mb-4">
+        <h2 class="text-2xl font-bold text-primary m-0">
+            Building Location Selector
+        </h2>
+        <button
+            pButton
+            type="button"
+            label="View Statistics"
+            icon="pi pi-chart-bar"
+            class="p-button-outlined p-button-secondary p-button-sm"
+            (click)="navigateToStatistics()"
+            pTooltip="View detailed cleaning statistics and charts"
+        ></button>
+    </div>
+
+    <!-- Error Message -->
+    <p-message
+        *ngIf="errorMessage"
+        severity="error"
+        [text]="errorMessage"
+        styleClass="mb-4"
+    ></p-message>
+
+    <!-- Restored Session Message -->
+    <p-message
+        *ngIf="restoredFromSession"
+        severity="info"
+        text="Your previous dzongkhag and gewog selection has been restored."
+        styleClass="mb-4"
+        [closable]="true"
+        (onClose)="restoredFromSession = false"
+    ></p-message>
+
+    <!-- Selection Form -->
+    <p-card header="Location Selection" styleClass="mb-4">
+        <div class="grid">
+            <!-- Dzongkhag Dropdown -->
+            <div class="col-12 md:col-6">
+                <label for="dzongkhag" class="block text-900 font-medium mb-2">
+                    Select Dzongkhag
+                    <i
+                        *ngIf="loadingDzongkhags"
+                        class="pi pi-spin pi-spinner text-primary ml-2"
+                    ></i>
+                </label>
+                <p-dropdown
+                    id="dzongkhag"
+                    [options]="dzongkhags"
+                    [(ngModel)]="selectedDzongkhag"
+                    optionLabel="name"
+                    placeholder="Choose a Dzongkhag"
+                    [disabled]="loadingDzongkhags"
+                    (onChange)="onDzongkhagSelect($event)"
+                    styleClass="w-full"
+                    [showClear]="true"
+                >
+                    <ng-template pTemplate="selectedItem">
+                        <div
+                            *ngIf="selectedDzongkhag"
+                            class="flex align-items-center"
+                        >
+                            <i class="pi pi-map-marker text-primary mr-2"></i>
+                            <span>{{ selectedDzongkhag.name }}</span>
+                            <span
+                                *ngIf="selectedDzongkhag.code"
+                                class="text-500 ml-2"
+                                >({{ selectedDzongkhag.code }})</span
+                            >
+                        </div>
+                    </ng-template>
+                    <ng-template let-dzongkhag pTemplate="item">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-map-marker text-primary mr-2"></i>
+                            <span>{{ dzongkhag.name }}</span>
+                            <span *ngIf="dzongkhag.code" class="text-500 ml-2"
+                                >({{ dzongkhag.code }})</span
+                            >
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+
+            <!-- Gewog Dropdown -->
+            <div class="col-12 md:col-6">
+                <label for="gewog" class="block text-900 font-medium mb-2">
+                    Select Gewog
+                    <i
+                        *ngIf="loadingGewogs"
+                        class="pi pi-spin pi-spinner text-primary ml-2"
+                    ></i>
+                </label>
+                <p-dropdown
+                    id="gewog"
+                    [options]="gewogs"
+                    [(ngModel)]="selectedGewog"
+                    optionLabel="name"
+                    placeholder="Choose a Gewog"
+                    [disabled]="!selectedDzongkhag || loadingGewogs"
+                    (onChange)="onGewogSelect($event)"
+                    styleClass="w-full"
+                    [showClear]="true"
+                >
+                    <ng-template pTemplate="selectedItem">
+                        <div
+                            *ngIf="selectedGewog"
+                            class="flex align-items-center"
+                        >
+                            <i class="pi pi-home text-primary mr-2"></i>
+                            <span>{{ selectedGewog.name }}</span>
+                            <span
+                                *ngIf="selectedGewog.code"
+                                class="text-500 ml-2"
+                                >({{ selectedGewog.code }})</span
+                            >
+                        </div>
+                    </ng-template>
+                    <ng-template let-gewog pTemplate="item">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-home text-primary mr-2"></i>
+                            <span>{{ gewog.name }}</span>
+                            <span *ngIf="gewog.code" class="text-500 ml-2"
+                                >({{ gewog.code }})</span
+                            >
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </div>
+    </p-card>
+
+    <!-- Buildings Table -->
+    <p-card
+        *ngIf="selectedGewog"
+        header="Buildings in {{ selectedGewog.name }}"
+    >
+        <!-- Data Cleaning Overview -->
+        <div
+            *ngIf="!loadingBuildings && buildings.length > 0"
+            class="mb-4 p-3 bg-blue-50 border-round"
+        >
+            <div class="flex align-items-center justify-content-between mb-3">
+                <h4 class="text-blue-900 m-0 font-semibold">
+                    Data Cleaning Progress
+                </h4>
+                <div class="flex align-items-center gap-2">
+                    <p-tag
+                        [value]="
+                            getDataCleaningStats().percentage + '% Complete'
+                        "
+                        [severity]="
+                            getDataCleaningStats().percentage >= 80
+                                ? 'success'
+                                : getDataCleaningStats().percentage >= 50
+                                ? 'warning'
+                                : 'danger'
+                        "
+                    ></p-tag>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="col-12 md:col-4">
+                    <div class="text-center p-3 bg-white border-round">
+                        <div class="text-2xl font-bold text-green-600">
+                            {{ getDataCleaningStats().cleaned }}
+                        </div>
+                        <div class="text-sm text-600">Cleaned</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="text-center p-3 bg-white border-round">
+                        <div class="text-2xl font-bold text-red-600">
+                            {{
+                                getDataCleaningStats().total -
+                                    getDataCleaningStats().cleaned
+                            }}
+                        </div>
+                        <div class="text-sm text-600">Pending</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="text-center p-3 bg-white border-round">
+                        <div class="text-2xl font-bold text-blue-600">
+                            {{ getDataCleaningStats().total }}
+                        </div>
+                        <div class="text-sm text-600">Total</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div
+                    class="flex align-items-center justify-content-between mb-2"
+                >
+                    <span class="text-sm text-600">Progress</span>
+                    <span class="text-sm font-semibold"
+                        >{{ getDataCleaningStats().percentage }}%</span
+                    >
+                </div>
+                <div
+                    class="bg-white border-round overflow-hidden"
+                    style="height: 8px"
+                >
+                    <div
+                        class="h-full transition-all transition-duration-500"
+                        [style.width.%]="getDataCleaningStats().percentage"
+                        [style.background-color]="
+                            getDataCleaningStats().percentage >= 80
+                                ? 'var(--green-500)'
+                                : getDataCleaningStats().percentage >= 50
+                                ? 'var(--orange-500)'
+                                : 'var(--red-500)'
+                        "
+                    ></div>
+                </div>
+            </div>
+        </div>
+        <!-- Loading State -->
+        <div
+            *ngIf="loadingBuildings"
+            class="flex align-items-center justify-content-center py-6"
+        >
+            <p-progressSpinner
+                styleClass="w-4rem h-4rem"
+                strokeWidth="8"
+            ></p-progressSpinner>
+            <span class="ml-3 text-lg">Loading buildings...</span>
+        </div>
+
+        <!-- Filter Controls -->
+        <div *ngIf="!loadingBuildings && buildings.length > 0" class="mb-3">
+            <div class="flex justify-content-between align-items-center">
+                <div class="flex align-items-center gap-3">
+                    <label for="data-cleaning-filter" class="font-semibold"
+                        >Show:</label
+                    >
+                    <p-dropdown
+                        id="data-cleaning-filter"
+                        [options]="dataCleaningFilterOptions"
+                        [(ngModel)]="dataCleaningFilter"
+                        (onChange)="onDataCleaningFilterChange($event)"
+                        placeholder="Select filter"
+                        styleClass="w-12rem"
+                    ></p-dropdown>
+                </div>
+                <div class="text-sm text-600">
+                    <span *ngIf="filteredBuildings.length === buildings.length">
+                        Total: {{ buildings.length }} buildings
+                    </span>
+                    <span *ngIf="filteredBuildings.length !== buildings.length">
+                        Showing: {{ filteredBuildings.length }} of
+                        {{ buildings.length }} buildings |
+                        {{ getFilteredDataCleaningStats().cleaned }} cleaned ({{
+                            getFilteredDataCleaningStats().percentage
+                        }}%)
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buildings Table -->
+        <p-table
+            *ngIf="!loadingBuildings"
+            [value]="filteredBuildings"
+            [paginator]="true"
+            [rows]="10"
+            [rowsPerPageOptions]="[5, 10, 20, 50]"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} buildings"
+            styleClass="p-datatable-gridlines"
+            [tableStyle]="{ 'min-width': '50rem' }"
+        >
+            <!-- Table Header -->
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Building ID</th>
+                    <th>Data Cleaned?</th>
+                    <th>Name</th>
+                    <th>Existency Status</th>
+                    <th>Type</th>
+                    <th>Typology</th>
+                    <th>Primary Use</th>
+                    <th>Floors</th>
+                    <th>Dimension</th>
+                    <th>
+                        Area (sq.m)
+                        <p-sortIcon field="footprintArea"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="createdAt">
+                        Created <p-sortIcon field="createdAt"></p-sortIcon>
+                    </th>
+                    <th>Actions</th>
+                </tr>
+            </ng-template>
+
+            <!-- Table Body -->
+            <ng-template pTemplate="body" let-building>
+                <tr>
+                    <td>
+                        <span class="building-id font-semibold text-primary">
+                            #{{ building.id }}
+                        </span>
+                    </td>
+                    <td>
+                        <p-tag
+                            [value]="building.isDataCleaned ? 'Yes' : 'No'"
+                            [severity]="
+                                building.isDataCleaned ? 'success' : 'danger'
+                            "
+                        ></p-tag>
+                    </td>
+                    <td>
+                        <span *ngIf="building.name; else noName">
+                            {{ building.name }}
+                        </span>
+                        <ng-template #noName>
+                            <span class="text-500 italic">-</span>
+                        </ng-template>
+                    </td>
+
+                    <td>
+                        <p-tag
+                            [value]="building.existencyStatus"
+                            [severity]="
+                                getExistencyStatusSeverity(
+                                    building.existencyStatus
+                                )
+                            "
+                        ></p-tag>
+                    </td>
+                    <td>
+                        <span *ngIf="building.type; else noType">
+                            {{ building.type }}
+                        </span>
+                        <ng-template #noType>
+                            <span class="text-500 italic">-</span>
+                        </ng-template>
+                    </td>
+                    <td>
+                        <span *ngIf="building.typology; else noType">
+                            {{ building.typology }}
+                        </span>
+                        <ng-template #noType>
+                            <span class="text-500 italic">-</span>
+                        </ng-template>
+                    </td>
+                    <td>
+                        <span *ngIf="building.primaryUse; else noPrimaryUse">
+                            {{ building.primaryUse }}
+                        </span>
+                        <ng-template #noPrimaryUse>
+                            <span class="text-500 italic">-</span>
+                        </ng-template>
+                    </td>
+                    <td>
+                        <div class="text-center">
+                            {{
+                                parseBuildingFloor(
+                                    building.regularFloorCount,
+                                    building.basementCount,
+                                    building.stiltCount,
+                                    building.atticCount,
+                                    building.jamthogCount
+                                )
+                            }}
+                        </div>
+                    </td>
+                    <td>
+                        <div
+                            class="text-center"
+                            *ngIf="
+                                building.length && building.breadth;
+                                else noDimension
+                            "
+                        >
+                            {{ building.length }} m x {{ building.breadth }} m
+                        </div>
+                        <ng-template #noDimension>
+                            <span class="text-500 italic">-</span>
+                        </ng-template>
+                    </td>
+                    <td>
+                        <span
+                            *ngIf="building.footprintArea; else noArea"
+                            class="font-mono"
+                        >
+                            {{ building.footprintArea | number : "1.2-2" }}
+                        </span>
+                        <ng-template #noArea>
+                            <span class="text-500 italic">-</span>
+                        </ng-template>
+                    </td>
+
+                    <td>
+                        <span class="text-sm">
+                            {{ building.createdAt | date : "short" }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <button
+                                pButton
+                                pRipple
+                                type="button"
+                                icon="pi pi-pencil"
+                                class="p-button-rounded p-button-text p-button-secondary"
+                                pTooltip="Edit Building"
+                                (click)="editBuilding(building)"
+                            ></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <!-- Empty State -->
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="12" class="text-center py-6">
+                        <div class="flex flex-column align-items-center">
+                            <i class="pi pi-home text-4xl text-300 mb-3"></i>
+                            <div class="text-lg font-semibold text-600 mb-2">
+                                <span *ngIf="dataCleaningFilter === 'all'"
+                                    >No Buildings Found</span
+                                >
+                                <span *ngIf="dataCleaningFilter === 'cleaned'"
+                                    >No Cleaned Buildings Found</span
+                                >
+                                <span *ngIf="dataCleaningFilter === 'uncleaned'"
+                                    >No Uncleaned Buildings Found</span
+                                >
+                            </div>
+                            <div class="text-600">
+                                <span *ngIf="dataCleaningFilter === 'all'">
+                                    No buildings are registered in
+                                    {{ selectedGewog?.name }} gewog.
+                                </span>
+                                <span *ngIf="dataCleaningFilter === 'cleaned'">
+                                    No cleaned buildings found in
+                                    {{ selectedGewog?.name }} gewog.
+                                </span>
+                                <span
+                                    *ngIf="dataCleaningFilter === 'uncleaned'"
+                                >
+                                    No uncleaned buildings found in
+                                    {{ selectedGewog?.name }} gewog.
+                                </span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
+</div>

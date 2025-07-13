@@ -1,0 +1,126 @@
+.admin-gewog-selector {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.building-id {
+  font-family: 'Courier New', monospace;
+}
+
+.font-mono {
+  font-family: 'Courier New', monospace;
+}
+
+/* Custom styles for PrimeNG components */
+::ng-deep .p-dropdown {
+  width: 100%;
+}
+
+::ng-deep .p-card .p-card-header {
+  background: white;
+  color: #2d3748;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+::ng-deep .p-card .p-card-body {
+  background: white;
+}
+
+::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background: #f7fafc;
+  color: #2d3748;
+  font-weight: 600;
+  border-color: #e2e8f0;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  background: #f7fafc;
+}
+
+::ng-deep .p-progressspinner .p-progressspinner-circle {
+  stroke: #667eea;
+}
+
+::ng-deep .p-tag.p-tag-warning {
+  background: #fed7b8;
+  color: #9c4221;
+}
+
+::ng-deep .p-tag.p-tag-success {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+::ng-deep .p-tag.p-tag-danger {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+::ng-deep .p-button {
+  border-radius: 8px;
+}
+
+::ng-deep .p-button:hover {
+  transform: none;
+}
+
+::ng-deep .p-button:focus {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-gewog-selector {
+    padding: 1rem;
+  }
+  
+  ::ng-deep .p-datatable .p-datatable-wrapper {
+    overflow-x: auto;
+  }
+}
+
+/* Simple fade-in animation */
+.fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Clean button styles */
+::ng-deep .p-button.p-button-rounded {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* Remove excessive shadows and gradients */
+::ng-deep .p-card {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+::ng-deep .p-dropdown:not(.p-disabled).p-focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+::ng-deep .p-datatable {
+  border: 1px solid #e2e8f0;
+}
+
+::ng-deep .p-paginator {
+  background: white;
+  border-top: 1px solid #e2e8f0;
+}

@@ -52,17 +52,20 @@ export const BuildingType = ['Traditional', 'Contemporary', 'Temporary'];
 
 export const BuildingAssociativePositions = ['Primary', 'Ancillary'];
 
-export const PrimaryUses = [
-    'Mixed Use',
-    'Residential',
-    'Commercial',
-    'Hotel',
-    'Institutional',
-    'Religious',
-    'Cultural',
-    'Health',
-    'Industrial',
-];
+export enum BuildingPrimaryUse {
+    RESIDENTIAL = 'Residential',
+    ResidentialSingleUse = 'Residential Single Use',
+    ResidentialCombinedUse = 'Residential Combined Use',
+    COMMERCIAL = 'Commercial',
+    HOSPITAL = 'Hospital',
+    INDUSTRIAL = 'Industrial',
+    EDUCATIONAL = 'Educational',
+    INSTITUTIONAL = 'Institutional',
+    OFFICE = 'Office',
+    RELIGIOUS_INSTITUTION = 'Religious Institution',
+    STORAGE = 'Storage',
+    ASSEMBLY = 'Assembly',
+}
 
 export const NumberedDropDownOptions = [
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,

@@ -3,7 +3,10 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { API_URL } from '../constants/constants';
-import { BuildingDTO } from '../models/buildings/building.dto';
+import {
+    BuildingDTO,
+    CreateBuildingsCleanedDto,
+} from '../models/buildings/building.dto';
 
 export interface PTSUNITDTO {
     unitId: number;
@@ -39,6 +42,12 @@ export interface BuildingImageDTO {
     id: number;
     buildingId: number;
     uri: string;
+}
+
+export interface MarkBuildingCleanedResponse {
+    success: boolean;
+    message: string;
+    buildingId: number;
 }
 @Injectable({
     providedIn: 'root',
@@ -104,6 +113,43 @@ export class BuildingDataService {
     ): Observable<BuildingImageDTO[]> {
         return this.http.get<BuildingImageDTO[]>(
             `${this.apiUrl}/building-image/bid/${buildingId}`
+        );
+    }
+
+    GetBuildingsByGewog(gewogId: number): Observable<BuildingDTO[]> {
+        return this.http.get<BuildingDTO[]>(
+            `${this.apiUrl}/administrative-zone/buildings/${gewogId}`
+        );
+    }
+
+    /**
+     * Mark building as cleaned with updated data
+     * @param buildingId Building ID
+     * @param userId User ID from decoded token
+     * @param data Building cleaned data
+     * @returns Observable of the mark cleaned response
+     */
+    markBuildingCleaned(
+        buildingId: number,
+        userId: number,
+        data: CreateBuildingsCleanedDto
+    ): Observable<MarkBuildingCleanedResponse> {
+        return this.http.patch<MarkBuildingCleanedResponse>(
+            `${this.apiUrl}/building/mark-cleaned/${buildingId}/${userId}`,
+            data
+        );
+    }
+
+    /**
+     * Fetch cleaned building data by building ID
+     * @param buildingId Building ID
+     * @returns Observable of cleaned building data
+     */
+    findCleanedBuildingByBuildingId(
+        buildingId: number
+    ): Observable<BuildingDTO> {
+        return this.http.get<BuildingDTO>(
+            `${this.apiUrl}/building/cleaned/building/${buildingId}`
         );
     }
 }

@@ -7,6 +7,7 @@ import {
     BuildingImageDTO,
 } from 'src/app/core/services/building.dataservice';
 import { GalleriaModule } from 'primeng/galleria';
+import { API_URL } from 'src/app/core/constants/constants';
 
 export interface BuildingDetails {
     id: string;
@@ -86,7 +87,7 @@ export class AdminBuildingInventoryViewDetailsComponent implements OnInit {
             'URI:',
             `https://www.zhichar.bt/app/images/building/${uri}`
         );
-        return `https://www.zhichar.bt/app/images/building/${uri}`;
+        return `${API_URL}/images/building/${uri}`;
     }
 
     viewImage(image: BuildingImageDTO) {
