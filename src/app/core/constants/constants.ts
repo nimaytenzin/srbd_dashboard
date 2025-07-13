@@ -14,6 +14,7 @@ export enum BuildingTypology {
     CONFINED_MASONRY = 'Confined Masonry',
     STONE_MASONRY_CEMENT_MUD = 'Stone masonry with cement and mud mortar',
     STONE_MASONRY_CEMENT = 'Stone masonry with cement mortar',
+    STONE_MASONRY_MUD = 'Stone masonry with mud mortar',
     RAMMED_EARTH = 'Rammed earth',
     BRICK_MASONRY = 'Brick masonry',
     ADOBE_BLOCKS = 'Adobe blocks',
