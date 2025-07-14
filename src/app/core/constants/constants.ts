@@ -12,6 +12,8 @@ export enum BuildingDataStatus {
 export enum BuildingTypology {
     ADOBE_BLOCKS = 'Adobe blocks',
     BRICK_MASONRY = 'Brick masonry',
+    REDBRICKS_WITH_REINFORCEMENT = 'Redbricks with Reinforcement',
+    REDBRICKS_WITHOUT_REINFORCEMENT = 'Redbricks without Reinforcement',
     CONCRETE_BLOCK_WITH_REINFORCEMENT = 'Concrete Block with Reinforcement',
     CONCRETE_BLOCK_WITHOUT_REINFORCEMENT = 'Concrete Block without Reinforcement',
     CONFINED_MASONRY = 'Confined Masonry',

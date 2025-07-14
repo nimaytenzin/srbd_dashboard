@@ -14,14 +14,11 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { MessageModule } from 'primeng/message';
 
-import { AdminGewogSelectorRoutingModule } from './admin-gewog-selector-routing.module';
-
 @NgModule({
     declarations: [],
     imports: [
         CommonModule,
         FormsModule,
-        AdminGewogSelectorRoutingModule,
         ButtonModule,
         CardModule,
         ProgressSpinnerModule,
