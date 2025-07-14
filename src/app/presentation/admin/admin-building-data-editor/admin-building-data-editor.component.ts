@@ -10,6 +10,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import {
     API_URL,
     BuildingDataStatus,
@@ -52,7 +54,9 @@ interface BuildingImageWithRotation extends BuildingImageDTO {
         ButtonModule,
         ProgressSpinnerModule,
         TagModule,
+        ToastModule,
     ],
+    providers: [MessageService],
 })
 export class AdminBuildingDataEditorComponent implements OnInit {
     buildingId: number;
@@ -105,7 +109,8 @@ export class AdminBuildingDataEditorComponent implements OnInit {
         private buildingService: BuildingDataService,
         private route: ActivatedRoute,
         private router: Router,
-        private authService: AuthService
+        private authService: AuthService,
+        private messageService: MessageService
     ) {
         this.route.params.subscribe((params) => {
             this.buildingId = Number(params['buildingId']);
@@ -328,9 +333,12 @@ export class AdminBuildingDataEditorComponent implements OnInit {
 
             console.log(userId);
             if (!userId) {
-                alert(
-                    'Error: User authentication failed. Please log in again.'
-                );
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Authentication Error',
+                    detail: 'User authentication failed. Please log in again.',
+                    life: 5000,
+                });
                 return;
             }
 
@@ -387,17 +395,24 @@ export class AdminBuildingDataEditorComponent implements OnInit {
                             };
                             this.hasCleanedData = true;
 
-                            alert(
-                                response.message ||
-                                    'Building data updated and marked as cleaned successfully!'
-                            );
+                            this.messageService.add({
+                                severity: 'success',
+                                summary: 'Success',
+                                detail:
+                                    response.message ||
+                                    'Building data updated and marked as cleaned successfully!',
+                                life: 5000,
+                            });
                         } else {
                             this.isSavingData = false;
-                            alert(
-                                'Error: ' +
-                                    (response.message ||
-                                        'Failed to mark building as cleaned')
-                            );
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'Update Failed',
+                                detail:
+                                    response.message ||
+                                    'Failed to mark building as cleaned',
+                                life: 5000,
+                            });
                         }
                     },
                     error: (error) => {
@@ -407,12 +422,23 @@ export class AdminBuildingDataEditorComponent implements OnInit {
                         const errorMessage =
                             error?.error?.message ||
                             'Failed to update building data';
-                        alert(`Error: ${errorMessage}`);
+
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Update Error',
+                            detail: errorMessage,
+                            life: 5000,
+                        });
                     },
                 });
         } catch (error) {
             console.error('Error preparing building data:', error);
-            alert('Error: Failed to prepare building data for update');
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Preparation Error',
+                detail: 'Failed to prepare building data for update',
+                life: 5000,
+            });
         }
     }
 
