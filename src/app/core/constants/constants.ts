@@ -10,18 +10,28 @@ export enum BuildingDataStatus {
 }
 
 export enum BuildingTypology {
-    REINFORCED_CONCRETE = 'Reinforced Concrete',
-    CONFINED_MASONRY = 'Confined Masonry',
-    STONE_MASONRY_CEMENT_MUD = 'Stone masonry with cement and mud mortar',
-    STONE_MASONRY_CEMENT = 'Stone masonry with cement mortar',
-    STONE_MASONRY_MUD = 'Stone masonry with mud mortar',
-    RAMMED_EARTH = 'Rammed earth',
-    BRICK_MASONRY = 'Brick masonry',
     ADOBE_BLOCKS = 'Adobe blocks',
-    TIMBER = 'Timber',
+    BRICK_MASONRY = 'Brick masonry',
+    CONCRETE_BLOCK_WITH_REINFORCEMENT = 'Concrete Block with Reinforcement',
+    CONCRETE_BLOCK_WITHOUT_REINFORCEMENT = 'Concrete Block without Reinforcement',
+    CONFINED_MASONRY = 'Confined Masonry',
+    CSEB = 'CSEB',
+    CUT_STONE_CEMENT_MORTAR = 'Cut Stone with Cement Mortar',
+    CUT_STONE_MUD_MORTAR = 'Cut Stone with Mud Mortar',
+    DRESSED_STONE_CEMENT_MORTAR = 'Dressed Stone with Cement Mortar',
+    DRESSED_STONE_MUD_MORTAR = 'Dressed Stone with Mud Mortar',
     IKRA = 'Ikra',
-    STEEL = 'Steel',
+    INFORMAL = 'Informal',
     OTHERS = 'Others',
+    RAMMED_EARTH = 'Rammed earth',
+    REINFORCED_CONCRETE = 'Reinforced Concrete',
+    RUBBLE_STONE_CEMENT_MORTAR = 'Rubble Stone with Cement Mortar',
+    RUBBLE_STONE_MUD_MORTAR = 'Rubble Stone with Mud Mortar',
+    STEEL = 'Steel',
+    STONE_MASONRY_CEMENT = 'Stone masonry with cement mortar',
+    STONE_MASONRY_CEMENT_MUD = 'Stone masonry with cement and mud mortar',
+    STONE_MASONRY_MUD = 'Stone masonry with mud mortar',
+    TIMBER = 'Timber',
 }
 
 export enum BuildingPrimaryUse {

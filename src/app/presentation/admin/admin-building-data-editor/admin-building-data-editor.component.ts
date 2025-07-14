@@ -12,6 +12,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { LeafletModule } from '@asymmetrik/ngx-leaflet';
+import * as L from 'leaflet';
 import {
     API_URL,
     BuildingDataStatus,
@@ -28,6 +30,7 @@ import {
     BuildingAssociativePositions,
     BuildingExistancyStatus,
     BuildingPrimaryUse,
+    BuildingType,
 } from 'src/app/core/constants';
 import { AuthService } from 'src/app/core/services/auth.data.service';
 import { CreateBuildingsCleanedDto } from 'src/app/core/models/buildings/building.dto';
@@ -55,6 +58,7 @@ interface BuildingImageWithRotation extends BuildingImageDTO {
         ProgressSpinnerModule,
         TagModule,
         ToastModule,
+        LeafletModule,
     ],
     providers: [MessageService],
 })
@@ -69,6 +73,7 @@ export class AdminBuildingDataEditorComponent implements OnInit {
 
     // Dropdown options
     existencyStatusOptions = Object.values(BuildingExistancyStatus);
+    typeOptions = Object.values(BuildingType);
     typologyOptions = Object.values(BuildingTypology);
     primaryUseOptions = Object.values(BuildingPrimaryUse);
     statusOptions = Object.values(BuildingDataStatus);
@@ -104,6 +109,24 @@ export class AdminBuildingDataEditorComponent implements OnInit {
     cleanedBuildingData: any = null; // Store cleaned building data
     hasCleanedData: boolean = false; // Track if cleaned data exists
     displayHistoryDialog: boolean = false; // Track history dialog visibility
+
+    // Map properties for building geometry display
+    map: L.Map | null = null;
+    mapOptions: L.MapOptions = {
+        layers: [
+            L.tileLayer(
+                'http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}',
+                {
+                    maxZoom: 20,
+                    attribution: '© OpenStreetMap contributors',
+                }
+            ),
+        ],
+        zoom: 18,
+        center: L.latLng(27.4728, 89.639), // Default to Thimphu coordinates
+    };
+    mapLayers: L.Layer[] = [];
+    buildingGeometryLayer: L.GeoJSON | null = null;
 
     constructor(
         private buildingService: BuildingDataService,
@@ -161,6 +184,8 @@ export class AdminBuildingDataEditorComponent implements OnInit {
                 } else {
                     // If not cleaned, use original data as current data
                     this.buildingDetails = res;
+                    // Update map with new geometry data
+                    setTimeout(() => this.updateMapGeometry(), 100);
                 }
 
                 this.isLoadingData = false;
@@ -214,6 +239,8 @@ export class AdminBuildingDataEditorComponent implements OnInit {
 
                     // Use cleaned data as current display data by default
                     this.buildingDetails = cleanedData;
+                    // Update map with new geometry data
+                    setTimeout(() => this.updateMapGeometry(), 100);
                     this.isLoadingData = false;
                 },
                 error: (error) => {
@@ -224,6 +251,8 @@ export class AdminBuildingDataEditorComponent implements OnInit {
                     // If cleaned data fails to load, fall back to original data
                     this.buildingDetails = this.originalBuildingData;
                     this.hasCleanedData = false;
+                    // Update map with fallback geometry data
+                    setTimeout(() => this.updateMapGeometry(), 100);
                 },
             });
     }
@@ -616,5 +645,102 @@ export class AdminBuildingDataEditorComponent implements OnInit {
      */
     navigateBackToGewogSelector(): void {
         this.router.navigate(['/admin/gewog-selector']);
+    }
+
+    /**
+     * Handle map ready event
+     */
+    onMapReady(map: L.Map): void {
+        this.map = map;
+        this.loadBuildingGeometry();
+
+        // Fix for Leaflet marker icons not showing properly
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+            iconRetinaUrl: 'assets/marker-icon-2x.png',
+            iconUrl: 'assets/marker-icon.png',
+            shadowUrl: 'assets/marker-shadow.png',
+        });
+    }
+
+    /**
+     * Load and display building geometry on the map
+     */
+    private loadBuildingGeometry(): void {
+        if (!this.map || !this.buildingDetails?.geom) {
+            return;
+        }
+
+        try {
+            let geojsonData: any;
+
+            // Parse the geometry data if it's a string
+            if (typeof this.buildingDetails.geom === 'string') {
+                geojsonData = JSON.parse(this.buildingDetails.geom);
+            } else {
+                geojsonData = this.buildingDetails.geom;
+            }
+
+            // Remove existing geometry layer if it exists
+            if (this.buildingGeometryLayer) {
+                this.map.removeLayer(this.buildingGeometryLayer);
+            }
+
+            // Create a GeoJSON layer with styling
+            this.buildingGeometryLayer = L.geoJSON(geojsonData, {
+                style: (feature) => ({
+                    fillColor: '#3498db',
+                    weight: 2,
+                    opacity: 1,
+                    color: '#2980b9',
+                    dashArray: '3',
+                    fillOpacity: 0.4,
+                }),
+                onEachFeature: (feature, layer) => {
+                    // Add popup with building information
+                    const popupContent = `
+                        <div>
+                            <strong>Building ID:</strong> ${this.getDisplayBuildingId()}<br>
+                            <strong>Name:</strong> ${
+                                this.buildingDetails.name || 'N/A'
+                            }<br>
+                            <strong>Status:</strong> ${
+                                this.buildingDetails.existencyStatus || 'N/A'
+                            }<br>
+                            <strong>Footprint Area:</strong> ${
+                                this.buildingDetails.footprintArea || 'N/A'
+                            } sq.m
+                        </div>
+                    `;
+                    layer.bindPopup(popupContent);
+                },
+            });
+
+            // Add the layer to the map
+            this.buildingGeometryLayer.addTo(this.map);
+
+            // Fit the map bounds to the geometry
+            const bounds = this.buildingGeometryLayer.getBounds();
+            if (bounds.isValid()) {
+                this.map.fitBounds(bounds, { padding: [20, 20] });
+            }
+        } catch (error) {
+            console.error('Error loading building geometry:', error);
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Map Warning',
+                detail: 'Could not load building geometry on map',
+                life: 3000,
+            });
+        }
+    }
+
+    /**
+     * Update the map when building data changes
+     */
+    private updateMapGeometry(): void {
+        if (this.map) {
+            this.loadBuildingGeometry();
+        }
     }
 }
