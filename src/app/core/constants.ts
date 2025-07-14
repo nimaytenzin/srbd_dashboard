@@ -44,6 +44,7 @@ export const BuildingExistancyStatus = [
     'Under Construction',
     'Demolished',
     'Non Existant',
+    'Non Existent',
     'Temporary',
     'Others',
 ];
