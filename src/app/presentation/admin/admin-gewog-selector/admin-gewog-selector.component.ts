@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { LocationDataService } from 'src/app/core/services/location.dataservice';
 import { BuildingDataService } from 'src/app/core/services/building.dataservice';
+import { AuthService } from 'src/app/core/services/auth.data.service';
 import { BuildingDTO } from 'src/app/core/models/buildings/building.dto';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +18,8 @@ import { TagModule } from 'primeng/tag';
 import { MessagesModule } from 'primeng/messages';
 import { MessageModule } from 'primeng/message';
 import { InputTextModule } from 'primeng/inputtext';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { PARSEBUILDINGFLOORS } from 'src/app/core/helper-function';
 
 export interface Dzongkhag {
@@ -61,7 +64,9 @@ export interface AdministrativeZone {
         MessagesModule,
         MessageModule,
         InputTextModule,
+        ToastModule,
     ],
+    providers: [MessageService],
 })
 export class AdminGewogSelectorComponent implements OnInit {
     dzongkhags: Dzongkhag[] = [];
@@ -91,6 +96,8 @@ export class AdminGewogSelectorComponent implements OnInit {
     constructor(
         private locationService: LocationDataService,
         private buildingService: BuildingDataService,
+        private authService: AuthService,
+        private messageService: MessageService,
         private router: Router
     ) {}
 
@@ -98,6 +105,43 @@ export class AdminGewogSelectorComponent implements OnInit {
         this.loadDzongkhags();
         // Try to restore previous selection from session storage
         this.restoreSelectionFromSession();
+
+        // Show welcome message after a small delay to ensure component is ready
+        setTimeout(() => {
+            this.showWelcomeMessage();
+        }, 500);
+    }
+
+    /**
+     * Show welcome message with user's name from decoded token
+     */
+    private showWelcomeMessage() {
+        try {
+            console.log('Attempting to show welcome message...');
+            const decodedToken = this.authService.decodeToken();
+            console.log('Decoded token:', decodedToken);
+
+            const userName = decodedToken?.fullName || 'User';
+            console.log('User name:', userName);
+
+            this.messageService.add({
+                severity: 'success',
+                summary: `Welcome, ${userName}!`,
+                detail: '..to the ELE Data cleaning workshop',
+                life: 5000,
+            });
+
+            console.log('Welcome message added successfully');
+        } catch (error) {
+            console.error('Error showing welcome message:', error);
+            // Fallback welcome message
+            this.messageService.add({
+                severity: 'info',
+                summary: 'Welcome!',
+                detail: 'You can now manage building data across dzongkhags and gewogs.',
+                life: 5000,
+            });
+        }
     }
 
     loadDzongkhags() {
