@@ -258,6 +258,17 @@ export class AdminBuildingDataEditorComponent implements OnInit {
         return this.hasCleanedData ? 'CLEANED' : 'UNCLEANED';
     }
 
+    /**
+     * Get the correct building ID to display
+     * If cleaned data exists, show cleaned buildingId, otherwise show original id
+     */
+    getDisplayBuildingId(): string | number {
+        if (this.hasCleanedData && this.cleanedBuildingData?.buildingId) {
+            return this.cleanedBuildingData.buildingId;
+        }
+        return this.buildingDetails?.id || this.buildingId;
+    }
+
     parseUri(uri: string) {
         return `${API_URL}/images/building/${uri}`;
     }

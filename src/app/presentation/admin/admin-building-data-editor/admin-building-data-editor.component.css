@@ -411,6 +411,20 @@
     background: #38a169 !important;
 }
 
+.cleaned-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
 .cancel-btn {
     background: #e2e8f0 !important;
     border: none !important;

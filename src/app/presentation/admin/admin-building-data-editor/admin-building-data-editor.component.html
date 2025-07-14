@@ -13,7 +13,7 @@
         <div class="header-content">
             <h1 class="page-title">
                 <i class="pi pi-building"></i>
-                Building ID: {{ buildingDetails?.id }}
+                Building ID: {{ getDisplayBuildingId() }}
             </h1>
             <p-tag
                 [value]="'Status: ' + getDataStatusText()"
@@ -324,14 +324,19 @@
                         }}
                     </button>
                     <button
+                        *ngIf="hasCleanedData && !isSavingData"
                         pButton
                         type="button"
-                        class="cancel-btn"
+                        [disabled]="true"
                         severity="secondary"
-                        (click)="cancelEdit()"
                     >
-                        <i class="pi pi-times"></i>
-                        Cancel
+                        <span
+                            *ngIf="hasCleanedData && !isSavingData"
+                            class="cleaned-badge"
+                        >
+                            <i class="pi pi-check-circle"></i>
+                            CLEANED
+                        </span>
                     </button>
                 </div>
             </div>
