@@ -353,6 +353,46 @@
                             CLEANED
                         </span>
                     </button>
+                    <button
+                        pButton
+                        (click)="navigateToPrevious()"
+                        [disabled]="!hasPreviousBuilding()"
+                        [title]="
+                            hasPreviousBuilding()
+                                ? 'Previous Building'
+                                : 'No previous building'
+                        "
+                    >
+                        <i
+                            class="pi"
+                            [ngClass]="
+                                isLoadingData
+                                    ? 'pi-spin pi-spinner'
+                                    : 'pi-chevron-left'
+                            "
+                        ></i>
+                        Previous
+                    </button>
+                    <button
+                        pButton
+                        (click)="navigateToNext()"
+                        [disabled]="!hasNextBuilding()"
+                        [title]="
+                            hasNextBuilding()
+                                ? 'Next Building'
+                                : 'No next building'
+                        "
+                    >
+                        Next
+                        <i
+                            class="pi"
+                            [ngClass]="
+                                isLoadingData
+                                    ? 'pi-spin pi-spinner'
+                                    : 'pi-chevron-right'
+                            "
+                        ></i>
+                    </button>
                 </div>
 
                 <!-- Building Geometry Map -->
