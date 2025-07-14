@@ -47,6 +47,7 @@ export const BuildingExistancyStatus = [
     'Non Existent',
     'Temporary',
     'Others',
+    'Abandoned',
 ];
 
 export const BuildingType = ['Traditional', 'Contemporary', 'Temporary'];
