@@ -134,6 +134,24 @@
                 class="images-grid"
                 *ngIf="buildingImages?.length > 0; else noImages"
             >
+                <div class="image-card" *ngIf="buildingDetails?.geom">
+                    <div class="geometry-map-container">
+                        <div
+                            id="buildingMap"
+                            class="building-map"
+                            leaflet
+                            [leafletOptions]="mapOptions"
+                            [leafletLayers]="mapLayers"
+                            (leafletMapReady)="onMapReady($event)"
+                        ></div>
+                        <div class="map-info">
+                            <small class="text-muted">
+                                <i class="pi pi-info-circle"></i>
+                                Building footprint from GeoJSON data
+                            </small>
+                        </div>
+                    </div>
+                </div>
                 <div
                     class="image-card"
                     *ngFor="let image of buildingImages; let i = index"
@@ -396,28 +414,6 @@
                 </div>
 
                 <!-- Building Geometry Map -->
-                <div
-                    class="form-group full-width"
-                    *ngIf="buildingDetails?.geom"
-                >
-                    <label>Building Footprint</label>
-                    <div class="geometry-map-container">
-                        <div
-                            id="buildingMap"
-                            class="building-map"
-                            leaflet
-                            [leafletOptions]="mapOptions"
-                            [leafletLayers]="mapLayers"
-                            (leafletMapReady)="onMapReady($event)"
-                        ></div>
-                        <div class="map-info">
-                            <small class="text-muted">
-                                <i class="pi pi-info-circle"></i>
-                                Building footprint from GeoJSON data
-                            </small>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
