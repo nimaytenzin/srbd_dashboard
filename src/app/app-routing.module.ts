@@ -34,11 +34,6 @@ import { AdminDataStatisticsComponent } from './presentation/admin/admin-data-st
                             loadComponent: () =>
                                 AdminBuildingDataEditorComponent,
                         },
-
-                        {
-                            path: 'stats',
-                            loadComponent: () => AdminDataStatisticsComponent,
-                        },
                     ],
                 },
 
@@ -47,6 +42,10 @@ import { AdminDataStatisticsComponent } from './presentation/admin/admin-data-st
                     path: '',
                     redirectTo: 'login',
                     pathMatch: 'full',
+                },
+                {
+                    path: 'stats',
+                    loadComponent: () => AdminDataStatisticsComponent,
                 },
 
                 {
