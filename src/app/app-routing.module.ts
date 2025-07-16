@@ -22,13 +22,13 @@ import { AdminDataStatisticsComponent } from './presentation/admin/admin-data-st
                             path: 'gewog-selector',
                             loadComponent: () => AdminGewogSelectorComponent,
                         },
-                        // {
-                        //     path: '',
-                        //     loadChildren: () =>
-                        //         import(
-                        //             './presentation/admin/admin-building-inventory/admin-building-inventory.module'
-                        //         ).then((m) => m.AdminBuildingInventoryModule),
-                        // },
+                        {
+                            path: 'map',
+                            loadChildren: () =>
+                                import(
+                                    './presentation/admin/admin-building-inventory/admin-building-inventory.module'
+                                ).then((m) => m.AdminBuildingInventoryModule),
+                        },
                         {
                             path: 'building-edit/:buildingId',
                             loadComponent: () =>

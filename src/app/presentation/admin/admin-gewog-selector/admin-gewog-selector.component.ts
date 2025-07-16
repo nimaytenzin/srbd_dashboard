@@ -144,6 +144,10 @@ export class AdminGewogSelectorComponent implements OnInit {
         }
     }
 
+    navigateToMap() {
+        this.router.navigate(['/admin/map']);
+    }
+
     loadDzongkhags() {
         this.loadingDzongkhags = true;
         this.errorMessage = '';
