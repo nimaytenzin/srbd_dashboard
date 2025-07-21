@@ -1,4 +1,7 @@
 <div class="w-full h-full relative">
+    <!-- Toast Messages -->
+    <p-toast></p-toast>
+
     <div
         id="map"
         class="w-full rounded absolute"
@@ -14,23 +17,30 @@
             <div class="flex flex-column">
                 <div class="flex gap-2 align-items-center">
                     <div
-                        style="
-                            border: 1px solid #fa0000;
-                            height: 1rem;
-                            width: 1rem;
-                        "
+                        style="border: 1px solid red; height: 1rem; width: 1rem"
                     ></div>
-                    <p>Plot Boundary</p>
+                    <p>Buildings No Photos</p>
                 </div>
                 <div class="flex gap-2 align-items-center">
                     <div
                         style="
-                            border: 1px solid #787473;
+                            border: 1px solid yellow;
                             height: 1rem;
                             width: 1rem;
                         "
                     ></div>
-                    <p>Buildings</p>
+                    <p>Buildings with Photos</p>
+                </div>
+                <div *ngIf="isFileLoaded" class="flex gap-2 align-items-center">
+                    <div
+                        style="
+                            background: #00ffff;
+                            border-radius: 50%;
+                            height: 0.8rem;
+                            width: 0.8rem;
+                        "
+                    ></div>
+                    <p>Survey Points Epicollect</p>
                 </div>
             </div>
         </div>
@@ -78,7 +88,6 @@
             [filter]="true"
             optionLabel="name"
             filterBy="name"
-            (ngModelChange)="onAdministrativeZoneChange($event)"
         >
             <ng-template pTemplate="selectedItem">
                 <div
@@ -94,31 +103,6 @@
                 </div>
             </ng-template>
         </p-dropdown>
-        <p>Select Sub Administrative Zone</p>
-        <p-dropdown
-            [options]="subadministrativeZones"
-            [(ngModel)]="selectedSubAdministrativeZone"
-            optionLabel="name"
-            [showClear]="false"
-            placeholder="Select a Sub Administrative Zone"
-            [filter]="true"
-            optionLabel="name"
-            filterBy="name"
-        >
-            <ng-template pTemplate="selectedItem">
-                <div
-                    class="flex align-items-center gap-2"
-                    *ngIf="selectedSubAdministrativeZone"
-                >
-                    <div>{{ selectedSubAdministrativeZone.name }}</div>
-                </div>
-            </ng-template>
-            <ng-template let-subadmzone pTemplate="item">
-                <div class="flex align-items-center gap-2">
-                    <div>{{ subadmzone.name }}</div>
-                </div>
-            </ng-template>
-        </p-dropdown>
 
         <p-divider type="dotted"></p-divider>
 
@@ -128,6 +112,150 @@
             pRipple
             (onClick)="loadPlotsAndBuildings()"
         ></p-button>
+
+        <p-divider type="dotted"></p-divider>
+
+        <!-- OAuth Credentials Section -->
+        <div>
+            <p><strong>EpiCollect OAuth Credentials</strong></p>
+
+            <label for="clientId">Client ID</label>
+            <input
+                id="clientId"
+                class="p-inputtext p-component w-full mb-2"
+                [(ngModel)]="oauthCredentials.clientId"
+                placeholder="Enter Client ID"
+                (ngModelChange)="onCredentialsChange()"
+            />
+
+            <label for="clientSecret">Client Secret</label>
+            <input
+                id="clientSecret"
+                type="password"
+                class="p-inputtext p-component w-full mb-2"
+                [(ngModel)]="oauthCredentials.clientSecret"
+                placeholder="Enter Client Secret"
+                (ngModelChange)="onCredentialsChange()"
+            />
+
+            <div class="flex gap-2 mb-2">
+                <p-button
+                    label="Refresh Token"
+                    size="small"
+                    severity="secondary"
+                    icon="pi pi-refresh"
+                    [loading]="isTokenRefreshing"
+                    (onClick)="manualRefreshToken()"
+                ></p-button>
+            </div>
+
+            <!-- Token Status Display -->
+            <div
+                *ngIf="oauthToken && !isTokenExpired()"
+                class="p-2 border-round mb-2"
+                [ngClass]="{
+                    'bg-green-50': !isTokenExpiringSoon(),
+                    'bg-yellow-50': isTokenExpiringSoon()
+                }"
+            >
+                <small
+                    [ngClass]="{
+                        'text-green-700': !isTokenExpiringSoon(),
+                        'text-yellow-700': isTokenExpiringSoon()
+                    }"
+                >
+                    <i
+                        class="pi"
+                        [ngClass]="{
+                            'pi-check-circle': !isTokenExpiringSoon(),
+                            'pi-exclamation-triangle': isTokenExpiringSoon()
+                        }"
+                    ></i>
+                    <strong>Token Active:</strong> {{ getTokenExpiryInfo() }}
+                </small>
+            </div>
+
+            <div
+                *ngIf="isTokenExpired()"
+                class="p-2 bg-red-50 border-round mb-2"
+            >
+                <small class="text-red-700">
+                    <i class="pi pi-times-circle"></i>
+                    <strong>Token Expired:</strong> {{ getTokenExpiryInfo() }}
+                </small>
+            </div>
+
+            <div
+                *ngIf="!oauthToken && !isTokenRefreshing"
+                class="p-2 bg-red-50 border-round mb-2"
+            >
+                <small class="text-red-700">
+                    <i class="pi pi-exclamation-triangle"></i>
+                    <strong>No active token</strong> - Please refresh to get
+                    access token
+                </small>
+            </div>
+        </div>
+
+        <p-divider type="dotted"></p-divider>
+
+        <!-- Legacy Auth Token Section (Optional) -->
+        <div>
+            <p><strong>Manual Auth Token (Optional)</strong></p>
+            <textarea
+                rows="3"
+                class="p-inputtext p-component w-full mb-2"
+                [(ngModel)]="epicollectConfig.authToken"
+                placeholder="Enter authentication token manually (overrides OAuth)"
+            ></textarea>
+
+            <label for="projectSlug">Project Slug</label>
+            <input
+                id="projectSlug"
+                class="p-inputtext p-component w-full"
+                [(ngModel)]="epicollectConfig.projectSlug"
+                placeholder="Enter project slug"
+            />
+        </div>
+
+        <!-- Survey Data File Upload Section -->
+        <div class="survey-data-section">
+            <p><strong>Load Survey Data</strong></p>
+
+            <p-fileUpload
+                mode="basic"
+                name="surveyFile"
+                accept=".json"
+                maxFileSize="1000000000"
+                chooseLabel="Upload JSON File"
+                (onSelect)="onFileSelect($event)"
+                [auto]="true"
+                chooseIcon="pi pi-upload"
+            ></p-fileUpload>
+
+            <div *ngIf="isFileLoaded" class="mt-2 flex gap-2 flex-column">
+                <small class="text-green-500">
+                    <i class="pi pi-check-circle"></i>
+                    {{ loadedSurveyData.length }} survey points loaded
+                </small>
+                <div class="flex gap-2">
+                    <p-button
+                        label="Clear Data"
+                        severity="secondary"
+                        size="small"
+                        icon="pi pi-times"
+                        (onClick)="clearSurveyData()"
+                    ></p-button>
+                    <p-button
+                        label="Export GeoJSON"
+                        severity="secondary"
+                        size="small"
+                        icon="pi pi-download"
+                        (onClick)="exportCurrentSurveyData()"
+                    ></p-button>
+                </div>
+            </div>
+        </div>
 
         <!-- <div class="mt-4 flex gap-2">
             <p-button [outlined]="true" severity="secondary" size="small">

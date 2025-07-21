@@ -32,6 +32,8 @@ export interface BuildingWithGeom {
     subAdministrativeZoneId: number;
     createdAt: string;
     updatedAt: string;
+
+    buildingImages: any[];
 }
 @Injectable({
     providedIn: 'root',

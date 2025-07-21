@@ -1,0 +1,26 @@
+ 
+            .mapping-info {
+            }
+
+            .detail-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.75rem;
+                padding: 0.5rem 0;
+            }
+
+            .detail-row:last-child {
+                margin-bottom: 0;
+            }
+
+            .detail-row strong {
+                color: #495057;
+                min-width: 120px;
+            }
+
+            .text-primary {
+                color: #007ad9;
+                font-family: monospace;
+                font-weight: 600;
+            }

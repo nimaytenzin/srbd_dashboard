@@ -26,6 +26,8 @@ export interface BuildingDTO {
     subAdministrativeZoneId: number;
     createdAt: string;
     updatedAt: string;
+
+    buildingImages: any[];
 }
 
 export interface CreateBuildingDto {}

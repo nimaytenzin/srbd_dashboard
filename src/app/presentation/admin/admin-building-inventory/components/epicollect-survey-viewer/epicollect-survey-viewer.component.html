@@ -1,0 +1,359 @@
+<div class="epicollect-survey-viewer">
+    <!-- Header -->
+    <div class="viewer-header">
+        <div class="header-content">
+            <div class="title-section">
+                <h2>{{ surveyDataReadable.title || "Building Survey" }}</h2>
+            </div>
+            <div class="header-actions">
+                <p-button
+                    icon="pi pi-download"
+                    severity="secondary"
+                    size="small"
+                    pTooltip="Export Survey Data"
+                    (onClick)="exportData()"
+                >
+                </p-button>
+                <p-button
+                    icon="pi pi-times"
+                    severity="secondary"
+                    size="small"
+                    pTooltip="Close"
+                    (onClick)="onClose()"
+                >
+                </p-button>
+            </div>
+        </div>
+        <div class="survey-meta">
+            <small>
+                <i class="pi pi-calendar mr-1"></i>
+                Created: {{ formatDate(surveyDataReadable.createdAt) }} |
+                <i class="pi pi-user ml-2 mr-1"></i>
+                By: {{ surveyDataReadable.createdBy || "Unknown" }}
+            </small>
+        </div>
+    </div>
+
+    <!-- Content Tabs -->
+    <p-tabView>
+        <!-- Overview Tab -->
+        <p-tabPanel header="Overview" leftIcon="pi pi-home">
+            <div class="tab-content">
+                <div class="info-grid">
+                    <!-- Owner Information -->
+                    <p-card header="Owner Information" styleClass="info-card">
+                        <div class="info-row">
+                            <span class="label">Owner Name:</span>
+                            <span class="value">{{
+                                surveyDataReadable.ownerName || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">CID Number:</span>
+                            <span class="value">{{
+                                surveyDataReadable.cidNumber || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Contact Number:</span>
+                            <span class="value">{{
+                                surveyDataReadable.contactNumber || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">House Number:</span>
+                            <span class="value">{{
+                                surveyDataReadable.houseNumber || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Tharm Number:</span>
+                            <span class="value">{{
+                                surveyDataReadable.tharmNumber || "N/A"
+                            }}</span>
+                        </div>
+                    </p-card>
+
+                    <!-- Location Information -->
+                    <p-card header="Location Details" styleClass="info-card">
+                        <div class="info-row">
+                            <span class="label">Gewog:</span>
+                            <span class="value">{{
+                                surveyDataReadable.gewog || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Chiwog:</span>
+                            <span class="value">{{
+                                surveyDataReadable.chiwog || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Village:</span>
+                            <span class="value">{{
+                                surveyDataReadable.village || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Coordinates:</span>
+                            <span class="value">{{ formatCoordinates() }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">UTM:</span>
+                            <span class="value">{{ formatUTM() }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">GPS Accuracy:</span>
+                            <span class="value"
+                                >{{
+                                    surveyDataReadable.location?.accuracy ||
+                                        "N/A"
+                                }}m</span
+                            >
+                        </div>
+                    </p-card>
+
+                    <!-- Construction Information -->
+                    <p-card
+                        header="Construction Details"
+                        styleClass="info-card"
+                    >
+                        <div class="info-row">
+                            <span class="label">Construction Status:</span>
+                            <span class="value">
+                                <p-tag
+                                    [value]="
+                                        surveyDataReadable.constructionCompletion ||
+                                        'Unknown'
+                                    "
+                                    [severity]="getConstructionStatusSeverity()"
+                                >
+                                </p-tag>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Number of Stories:</span>
+                            <span class="value">{{
+                                surveyDataReadable.numberOfStories || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Building Length:</span>
+                            <span class="value">{{
+                                surveyDataReadable.buildingLength || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Building Breadth:</span>
+                            <span class="value">{{
+                                surveyDataReadable.buildingBreadth || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Approximate Age:</span>
+                            <span class="value">{{
+                                getApproximateAgeString()
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Under Construction:</span>
+                            <span class="value">{{
+                                getUnderConstructionString()
+                            }}</span>
+                        </div>
+                    </p-card>
+
+                    <!-- Building Usage -->
+                    <p-card
+                        header="Building Usage & Type"
+                        styleClass="info-card"
+                    >
+                        <div class="info-row">
+                            <span class="label">Use Type:</span>
+                            <span class="value">{{ getUseTypeString() }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Use Type Remarks:</span>
+                            <span class="value">{{
+                                surveyDataReadable.useTypeRemarks || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Typology:</span>
+                            <span class="value">{{
+                                surveyDataReadable.typology || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Typology Remarks:</span>
+                            <span class="value">{{
+                                surveyDataReadable.typologyRemarks || "N/A"
+                            }}</span>
+                        </div>
+                    </p-card>
+
+                    <!-- Age & Gender Breakdown -->
+                    <p-card
+                        header="Age & Gender Breakdown"
+                        styleClass="info-card"
+                    >
+                        <div class="demographics-grid">
+                            <div class="demographics-list">
+                                <div class="demo-row">
+                                    <span class="demo-label"
+                                        >Male (13-60):</span
+                                    >
+                                    <span class="demo-count">{{
+                                        surveyDataReadable.maleAge13To60 || "0"
+                                    }}</span>
+                                </div>
+                                <div class="demo-row">
+                                    <span class="demo-label">Male (60+):</span>
+                                    <span class="demo-count">{{
+                                        surveyDataReadable.maleAgeAbove60 || "0"
+                                    }}</span>
+                                </div>
+                                <div class="demo-row">
+                                    <span class="demo-label"
+                                        >Female (13-60):</span
+                                    >
+                                    <span class="demo-count">{{
+                                        surveyDataReadable.femaleAge13To60 ||
+                                            "0"
+                                    }}</span>
+                                </div>
+                                <div class="demo-row">
+                                    <span class="demo-label"
+                                        >Female (60+):</span
+                                    >
+                                    <span class="demo-count">{{
+                                        surveyDataReadable.femaleAgeAbove60 ||
+                                            "0"
+                                    }}</span>
+                                </div>
+                                <div class="demo-row">
+                                    <span class="demo-label"
+                                        >Children (&lt;13):</span
+                                    >
+                                    <span class="demo-count">{{
+                                        surveyDataReadable.childrenAgeLess13 ||
+                                            "0"
+                                    }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </p-card>
+
+                    <!-- Utilities -->
+                    <p-card header="Utilities & Systems" styleClass="info-card">
+                        <div class="info-row">
+                            <span class="label">Electrical System:</span>
+                            <span class="value">{{
+                                surveyDataReadable.electricalSystem || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Water System:</span>
+                            <span class="value">{{
+                                surveyDataReadable.waterSystem || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Toilet System:</span>
+                            <span class="value">{{
+                                surveyDataReadable.toiletSystem || "N/A"
+                            }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Mobile Network:</span>
+                            <span class="value">{{
+                                surveyDataReadable.mobileNetwork || "N/A"
+                            }}</span>
+                        </div>
+                    </p-card>
+                </div>
+            </div>
+        </p-tabPanel>
+
+        <!-- Images Tab -->
+        <p-tabPanel header="Images" leftIcon="pi pi-images">
+            <div class="tab-content">
+                <div *ngIf="isLoadingImages" class="loading-state">
+                    <i class="pi pi-spinner pi-spin"></i>
+                    <p>Loading images...</p>
+                </div>
+
+                <div
+                    *ngIf="!isLoadingImages && images.length === 0"
+                    class="empty-state"
+                >
+                    <i class="pi pi-image"></i>
+                    <p>No images available for this survey</p>
+                </div>
+
+                <div
+                    *ngIf="!isLoadingImages && images.length > 0"
+                    class="images-gallery"
+                >
+                    <div class="gallery-grid">
+                        <div *ngFor="let image of images" class="gallery-item">
+                            <div class="image-container">
+                                <img
+                                    [src]="image.dataUrl"
+                                    [alt]="image.fieldName"
+                                />
+                            </div>
+                            <!-- Additional action buttons below image for better accessibility -->
+                            <div class="image-actions-bottom">
+                                <p-button
+                                    label="View"
+                                    icon="pi pi-eye"
+                                    size="small"
+                                    severity="secondary"
+                                    [outlined]="true"
+                                    (onClick)="viewImage(image)"
+                                >
+                                </p-button>
+                                <p-button
+                                    label="Download"
+                                    icon="pi pi-download"
+                                    size="small"
+                                    severity="secondary"
+                                    [outlined]="true"
+                                    (onClick)="downloadImage(image)"
+                                >
+                                </p-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </p-tabPanel>
+
+        <!-- Raw Data Tab -->
+        <p-tabPanel header="Raw Data" leftIcon="pi pi-code">
+            <div class="tab-content">
+                <p-card header="Survey UUID" styleClass="info-card">
+                    <div class="uuid-display">
+                        <code>{{ surveyData.ec5_uuid }}</code>
+                        <p-button
+                            icon="pi pi-copy"
+                            size="small"
+                            severity="secondary"
+                            pTooltip="Copy UUID"
+                            (onClick)="copyToClipboard(surveyData.ec5_uuid)"
+                        >
+                        </p-button>
+                    </div>
+                </p-card>
+
+                <p-card
+                    header="Raw Survey Data"
+                    styleClass="info-card full-width"
+                >
+                    <pre class="raw-data">{{ surveyData | json }}</pre>
+                </p-card>
+            </div>
+        </p-tabPanel>
+    </p-tabView>
+</div>

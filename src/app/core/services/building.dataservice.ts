@@ -1,12 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { API_URL } from '../constants/constants';
 import {
     BuildingDTO,
     CreateBuildingsCleanedDto,
 } from '../models/buildings/building.dto';
+import { BuildingWithGeom } from './geometry.dataservice';
 
 export interface PTSUNITDTO {
     unitId: number;
@@ -116,9 +117,17 @@ export class BuildingDataService {
         );
     }
 
-    GetBuildingsByGewog(gewogId: number): Observable<BuildingDTO[]> {
-        return this.http.get<BuildingDTO[]>(
+    GetBuildingsByGewog(gewogId: number): Observable<BuildingWithGeom[]> {
+        return this.http.get<BuildingWithGeom[]>(
             `${this.apiUrl}/administrative-zone/buildings/${gewogId}`
+        );
+    }
+
+    GetBuildingsWithoutImagesByGewog(
+        gewogId: number
+    ): Observable<BuildingWithGeom[]> {
+        return this.http.get<BuildingWithGeom[]>(
+            `${this.apiUrl}/administrative-zone/buildings/no-images/${gewogId}`
         );
     }
 
@@ -150,6 +159,19 @@ export class BuildingDataService {
     ): Observable<BuildingDTO> {
         return this.http.get<BuildingDTO>(
             `${this.apiUrl}/building/cleaned/building/${buildingId}`
+        );
+    }
+
+    uploadMovieMedia(file: File, buildingId: number) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('buildingId', buildingId.toString());
+
+        return this.http.post(`${this.apiUrl}/building-image`, formData).pipe(
+            catchError((error: any) => {
+                console.error('Error uploading movie media:', error);
+                return throwError(() => error);
+            })
         );
     }
 }
