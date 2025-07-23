@@ -17,19 +17,39 @@
             <div class="flex flex-column">
                 <div class="flex gap-2 align-items-center">
                     <div
-                        style="border: 1px solid red; height: 1rem; width: 1rem"
-                    ></div>
-                    <p>Buildings No Photos</p>
-                </div>
-                <div class="flex gap-2 align-items-center">
-                    <div
                         style="
-                            border: 1px solid yellow;
+                            border: 1px solid #008000;
                             height: 1rem;
                             width: 1rem;
                         "
                     ></div>
-                    <p>Buildings with Photos</p>
+                    <p>Cleaned Buildings</p>
+                </div>
+                <div class="flex gap-2 align-items-center">
+                    <div
+                        style="
+                            border: 1px solid #90ee90;
+                            height: 1rem;
+                            width: 1rem;
+                        "
+                    ></div>
+                    <p>Cleaned Buildings (with Photos)</p>
+                </div>
+                <div class="flex gap-2 align-items-center">
+                    <div
+                        style="border: 1px solid red; height: 1rem; width: 1rem"
+                    ></div>
+                    <p>Uncleaned Buildings</p>
+                </div>
+                <div class="flex gap-2 align-items-center">
+                    <div
+                        style="
+                            border: 1px solid #ffa500;
+                            height: 1rem;
+                            width: 1rem;
+                        "
+                    ></div>
+                    <p>Uncleaned Buildings (with Photos)</p>
                 </div>
                 <div *ngIf="isFileLoaded" class="flex gap-2 align-items-center">
                     <div
@@ -41,6 +61,17 @@
                         "
                     ></div>
                     <p>Survey Points Epicollect</p>
+                </div>
+                <div *ngIf="isCSVLoaded" class="flex gap-2 align-items-center">
+                    <div
+                        style="
+                            background: #ff7800;
+                            border-radius: 50%;
+                            height: 0.8rem;
+                            width: 0.8rem;
+                        "
+                    ></div>
+                    <p>CSV Building Survey Data</p>
                 </div>
             </div>
         </div>
@@ -78,36 +109,10 @@
             </ng-template>
         </p-dropdown>
 
-        <p>Select Administrative Zone</p>
-        <p-dropdown
-            [options]="administrativeZones"
-            [(ngModel)]="selectedAdministrativeZone"
-            optionLabel="name"
-            [showClear]="false"
-            placeholder="Select a Administrative Zone"
-            [filter]="true"
-            optionLabel="name"
-            filterBy="name"
-        >
-            <ng-template pTemplate="selectedItem">
-                <div
-                    class="flex align-items-center gap-2"
-                    *ngIf="selectedAdministrativeZone"
-                >
-                    <div>{{ selectedAdministrativeZone.name }}</div>
-                </div>
-            </ng-template>
-            <ng-template let-admzone pTemplate="item">
-                <div class="flex align-items-center gap-2">
-                    <div>{{ admzone.name }}</div>
-                </div>
-            </ng-template>
-        </p-dropdown>
-
         <p-divider type="dotted"></p-divider>
 
         <p-button
-            *ngIf="selectedAdministrativeZone?.id"
+            *ngIf="selectedDzongkhag?.id"
             label="Load Buildings"
             pRipple
             (onClick)="loadPlotsAndBuildings()"
@@ -115,112 +120,9 @@
 
         <p-divider type="dotted"></p-divider>
 
-        <!-- OAuth Credentials Section -->
-        <div>
-            <p><strong>EpiCollect OAuth Credentials</strong></p>
-
-            <label for="clientId">Client ID</label>
-            <input
-                id="clientId"
-                class="p-inputtext p-component w-full mb-2"
-                [(ngModel)]="oauthCredentials.clientId"
-                placeholder="Enter Client ID"
-                (ngModelChange)="onCredentialsChange()"
-            />
-
-            <label for="clientSecret">Client Secret</label>
-            <input
-                id="clientSecret"
-                type="password"
-                class="p-inputtext p-component w-full mb-2"
-                [(ngModel)]="oauthCredentials.clientSecret"
-                placeholder="Enter Client Secret"
-                (ngModelChange)="onCredentialsChange()"
-            />
-
-            <div class="flex gap-2 mb-2">
-                <p-button
-                    label="Refresh Token"
-                    size="small"
-                    severity="secondary"
-                    icon="pi pi-refresh"
-                    [loading]="isTokenRefreshing"
-                    (onClick)="manualRefreshToken()"
-                ></p-button>
-            </div>
-
-            <!-- Token Status Display -->
-            <div
-                *ngIf="oauthToken && !isTokenExpired()"
-                class="p-2 border-round mb-2"
-                [ngClass]="{
-                    'bg-green-50': !isTokenExpiringSoon(),
-                    'bg-yellow-50': isTokenExpiringSoon()
-                }"
-            >
-                <small
-                    [ngClass]="{
-                        'text-green-700': !isTokenExpiringSoon(),
-                        'text-yellow-700': isTokenExpiringSoon()
-                    }"
-                >
-                    <i
-                        class="pi"
-                        [ngClass]="{
-                            'pi-check-circle': !isTokenExpiringSoon(),
-                            'pi-exclamation-triangle': isTokenExpiringSoon()
-                        }"
-                    ></i>
-                    <strong>Token Active:</strong> {{ getTokenExpiryInfo() }}
-                </small>
-            </div>
-
-            <div
-                *ngIf="isTokenExpired()"
-                class="p-2 bg-red-50 border-round mb-2"
-            >
-                <small class="text-red-700">
-                    <i class="pi pi-times-circle"></i>
-                    <strong>Token Expired:</strong> {{ getTokenExpiryInfo() }}
-                </small>
-            </div>
-
-            <div
-                *ngIf="!oauthToken && !isTokenRefreshing"
-                class="p-2 bg-red-50 border-round mb-2"
-            >
-                <small class="text-red-700">
-                    <i class="pi pi-exclamation-triangle"></i>
-                    <strong>No active token</strong> - Please refresh to get
-                    access token
-                </small>
-            </div>
-        </div>
-
-        <p-divider type="dotted"></p-divider>
-
-        <!-- Legacy Auth Token Section (Optional) -->
-        <div>
-            <p><strong>Manual Auth Token (Optional)</strong></p>
-            <textarea
-                rows="3"
-                class="p-inputtext p-component w-full mb-2"
-                [(ngModel)]="epicollectConfig.authToken"
-                placeholder="Enter authentication token manually (overrides OAuth)"
-            ></textarea>
-
-            <label for="projectSlug">Project Slug</label>
-            <input
-                id="projectSlug"
-                class="p-inputtext p-component w-full"
-                [(ngModel)]="epicollectConfig.projectSlug"
-                placeholder="Enter project slug"
-            />
-        </div>
-
         <!-- Survey Data File Upload Section -->
         <div class="survey-data-section">
-            <p><strong>Load Survey Data</strong></p>
+            <p><strong>Load Excel Survey Data</strong></p>
 
             <p-fileUpload
                 mode="basic"
@@ -257,13 +159,126 @@
             </div>
         </div>
 
-        <!-- <div class="mt-4 flex gap-2">
-            <p-button [outlined]="true" severity="secondary" size="small">
-                Download Building footprint shapefile
-            </p-button>
-            <p-button [outlined]="true" severity="secondary" size="small">
-                Download Building data as csv
-            </p-button>
-        </div> -->
+        <!-- CSV Building Survey Data Upload Section -->
+        <div class="csv-data-section mt-3">
+            <p><strong>Load Building Survey CSV</strong></p>
+
+            <p-fileUpload
+                mode="basic"
+                name="csvFile"
+                accept=".csv"
+                maxFileSize="1000000000"
+                chooseLabel="Upload CSV File"
+                (onSelect)="onCSVFileSelect($event)"
+                [auto]="true"
+                chooseIcon="pi pi-upload"
+            ></p-fileUpload>
+
+            <div *ngIf="isCSVLoaded" class="mt-2 flex gap-2 flex-column">
+                <small class="text-green-500">
+                    <i class="pi pi-check-circle"></i>
+                    {{ loadedCSVData.length }} building survey points loaded
+                </small>
+                <div class="flex gap-2">
+                    <p-button
+                        label="Clear CSV Data"
+                        severity="secondary"
+                        size="small"
+                        icon="pi pi-times"
+                        (onClick)="clearCSVData()"
+                    ></p-button>
+                    <p-button
+                        label="Export CSV GeoJSON"
+                        severity="secondary"
+                        size="small"
+                        icon="pi pi-download"
+                        (onClick)="exportCSVAsGeoJSON()"
+                    ></p-button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 flex gap-2 flex-column">
+            <p><strong>Export Building Data</strong></p>
+            <div class="flex gap-2 flex-column">
+                <p-button
+                    [outlined]="true"
+                    severity="success"
+                    size="small"
+                    label="Download Cleaned Building Footprint"
+                    icon="pi pi-download"
+                    (onClick)="downloadCleanedBuildingFootprintGeoJSON()"
+                    [disabled]="
+                        !cleanedBuildingsLayer || cleanedBuildings.length === 0
+                    "
+                ></p-button>
+                <p-button
+                    [outlined]="true"
+                    severity="danger"
+                    size="small"
+                    label="Download Uncleaned Building Footprint"
+                    icon="pi pi-download"
+                    (onClick)="downloadUncleanedBuildingFootprintGeoJSON()"
+                    [disabled]="
+                        !uncleanedBuildingsLayer ||
+                        uncleanedBuildings.length === 0
+                    "
+                ></p-button>
+            </div>
+        </div>
+
+        <p-divider type="dotted"></p-divider>
+
+        <div class="mt-4 flex gap-2 flex-column">
+            <p><strong>Locate Features</strong></p>
+
+            <!-- Locate Survey Point by UUID -->
+            <div class="flex flex-column gap-2">
+                <label for="surveyUuid" class="text-sm font-medium"
+                    >Survey UUID</label
+                >
+                <div class="flex gap-2">
+                    <input
+                        id="surveyUuid"
+                        class="p-inputtext p-component flex-1"
+                        [(ngModel)]="locateUuid"
+                        placeholder="Enter survey UUID"
+                    />
+                    <p-button
+                        label="Locate"
+                        size="small"
+                        icon="pi pi-search"
+                        (onClick)="locateSurveyByUuid()"
+                        [disabled]="!locateUuid || !isFileLoaded"
+                    ></p-button>
+                </div>
+            </div>
+
+            <!-- Locate Building by ID -->
+            <div class="flex flex-column gap-2">
+                <label for="buildingId" class="text-sm font-medium"
+                    >Building ID</label
+                >
+                <div class="flex gap-2">
+                    <input
+                        id="buildingId"
+                        class="p-inputtext p-component flex-1"
+                        [(ngModel)]="locateBuildingId"
+                        placeholder="Enter building ID"
+                        type="number"
+                    />
+                    <p-button
+                        label="Locate"
+                        size="small"
+                        icon="pi pi-search"
+                        (onClick)="locateBuildingById()"
+                        [disabled]="
+                            !locateBuildingId ||
+                            (!cleanedBuildingsLayer && !uncleanedBuildingsLayer)
+                        "
+                    ></p-button>
+                </div>
+            </div>
+        </div>
     </p-card>
 </div>

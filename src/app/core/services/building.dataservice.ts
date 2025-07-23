@@ -131,6 +131,22 @@ export class BuildingDataService {
         );
     }
 
+    GetUncleanedBuildingsByDzongkhag(
+        dzongkhagId: number
+    ): Observable<BuildingWithGeom[]> {
+        return this.http.get<BuildingWithGeom[]>(
+            `${this.apiUrl}/dzongkhag/buildings/uncleaned/${dzongkhagId}`
+        );
+    }
+
+    GetCleanedBuildingsByDzongkhag(
+        dzongkhagId: number
+    ): Observable<BuildingWithGeom[]> {
+        return this.http.get<BuildingWithGeom[]>(
+            `${this.apiUrl}/dzongkhag/buildings/cleaned/${dzongkhagId}`
+        );
+    }
+
     /**
      * Mark building as cleaned with updated data
      * @param buildingId Building ID

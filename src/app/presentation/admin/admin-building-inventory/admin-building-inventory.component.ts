@@ -39,6 +39,7 @@ import {
     SurveyDataGeoJSONLoader,
     createSurveyDataLoaderWithImages,
 } from './data/survey-data.dto';
+import { BuildingSurveyCSVData } from './data/csv.data.dto';
 
 // OAuth Token Management Interface
 interface OAuthTokenData {
@@ -85,8 +86,14 @@ export class AdminBuildingInventoryComponent implements OnInit, OnDestroy {
     googleSatUrl = 'https://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}';
     map!: L.Map;
     buildingGeojson!: L.GeoJSON;
+    cleanedBuildingsLayer!: L.GeoJSON;
+    uncleanedBuildingsLayer!: L.GeoJSON;
     plotsGeojson!: L.GeoJSON;
     boundary = {} as L.GeoJSON;
+
+    // Building data storage
+    cleanedBuildings: BuildingWithGeom[] = [];
+    uncleanedBuildings: BuildingWithGeom[] = [];
 
     dzongkhags: any[] = [];
     administrativeZones: any[] = [];
@@ -119,6 +126,15 @@ export class AdminBuildingInventoryComponent implements OnInit, OnDestroy {
     isFileLoaded = false;
     loadedSurveyData: SurveyDataItem[] = [];
     surveyDataLayer!: L.GeoJSON;
+
+    // CSV Building Survey data properties
+    isCSVLoaded = false;
+    loadedCSVData: BuildingSurveyCSVData[] = [];
+    csvDataLayer!: L.GeoJSON;
+
+    // Locate feature properties
+    locateUuid: string = '';
+    locateBuildingId: number | null = null;
 
     // EpiCollect Helper
     epicollectHelper?: EpiCollectHelper;
@@ -202,71 +218,173 @@ export class AdminBuildingInventoryComponent implements OnInit, OnDestroy {
     }
 
     loadPlotsAndBuildings() {
-        // Check if we have selected administrative zone
-        if (!this.selectedAdministrativeZone?.id) {
-            console.warn('No administrative zone selected');
+        // Check if we have selected dzongkhag
+        if (!this.selectedDzongkhag?.id) {
+            console.warn('No Dzongkhag selected');
             return;
         }
 
-        // Load buildings by administrative zone (gewog)
-        this.buildingDataService
-            .GetBuildingsWithoutImagesByGewog(
-                this.selectedAdministrativeZone.id
-            )
-            .subscribe({
-                next: (buildings: BuildingWithGeom[]) => {
-                    console.log('Loaded buildings:', buildings);
+        // Clear existing building layers
+        this.clearBuildingLayers();
 
-                    const buildingsWithoutImageGeojson =
-                        this.convertBuildingsToGeoJSON(buildings);
+        // Load both cleaned and uncleaned buildings in parallel
+        const cleanedBuildings$ =
+            this.buildingDataService.GetCleanedBuildingsByDzongkhag(
+                this.selectedDzongkhag.id
+            );
 
-                    // Clear existing building layer if it exists
-                    if (this.buildingGeojson) {
-                        this.map.removeLayer(this.buildingGeojson);
-                    }
+        const uncleanedBuildings$ =
+            this.buildingDataService.GetUncleanedBuildingsByDzongkhag(
+                this.selectedDzongkhag.id
+            );
 
-                    console.log(
-                        'buidlign without image',
-                        buildingsWithoutImageGeojson
-                    );
-                    // Render buildings on map with red outline and transparent background
-                    this.buildingGeojson = L.geoJSON(
-                        buildingsWithoutImageGeojson,
-                        {
-                            style: function (feature) {
-                                const hasImages =
-                                    feature.properties.buildingImages &&
-                                    feature.properties.buildingImages.length >
-                                        0;
-                                return {
-                                    fillColor: 'transparent',
-                                    weight: 2,
-                                    opacity: 1,
-                                    color: hasImages ? 'yellow' : 'red',
-                                    fillOpacity: 0,
-                                };
-                            },
-                            onEachFeature: (feature, layer) => {
-                                layer.on({
-                                    click: (e: any) => {
-                                        this.showBuildingDetails(
-                                            feature.properties
-                                        );
-                                    },
-                                });
-                            },
-                        }
-                    ).addTo(this.map);
+        // Load cleaned buildings
+        cleanedBuildings$.subscribe({
+            next: (buildings: BuildingWithGeom[]) => {
+                console.log('Loaded cleaned buildings:', buildings.length);
+                this.cleanedBuildings = buildings;
+                this.renderCleanedBuildings(buildings);
+            },
+            error: (error) => {
+                console.error('Error loading cleaned buildings:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load cleaned buildings',
+                    life: 3000,
+                });
+            },
+        });
 
-                    // Fit map to building bounds if there are buildings
-                    if (buildings.length > 0) {
-                        this.fitMapBounds();
-                    }
-                },
-                error: (error) => {
-                    console.error('Error loading buildings:', error);
-                },
-            });
+        // Load uncleaned buildings
+        uncleanedBuildings$.subscribe({
+            next: (buildings: BuildingWithGeom[]) => {
+                console.log('Loaded uncleaned buildings:', buildings.length);
+                this.uncleanedBuildings = buildings;
+                this.renderUncleanedBuildings(buildings);
+
+                // Fit map to all buildings after loading uncleaned (assuming they load last)
+                this.fitMapToAllBuildings();
+            },
+            error: (error) => {
+                console.error('Error loading uncleaned buildings:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to load uncleaned buildings',
+                    life: 3000,
+                });
+            },
+        });
+    }
+
+    /**
+     * Clear all building layers from the map
+     */
+    clearBuildingLayers(): void {
+        if (this.buildingGeojson) {
+            this.map.removeLayer(this.buildingGeojson);
+        }
+        if (this.cleanedBuildingsLayer) {
+            this.map.removeLayer(this.cleanedBuildingsLayer);
+        }
+        if (this.uncleanedBuildingsLayer) {
+            this.map.removeLayer(this.uncleanedBuildingsLayer);
+        }
+    }
+
+    /**
+     * Render cleaned buildings with green color
+     */
+    renderCleanedBuildings(buildings: BuildingWithGeom[]): void {
+        if (buildings.length === 0) return;
+
+        const buildingsGeoJSON = this.convertBuildingsToGeoJSON(buildings);
+
+        this.cleanedBuildingsLayer = L.geoJSON(buildingsGeoJSON, {
+            style: function (feature) {
+                const hasImages =
+                    feature.properties.buildingImages &&
+                    feature.properties.buildingImages.length > 0;
+                return {
+                    fillColor: 'transparent',
+                    weight: 2,
+                    opacity: 1,
+                    color: hasImages ? '#90EE90' : '#008000', // Light green for with images, dark green for without
+                    fillOpacity: 0,
+                };
+            },
+            onEachFeature: (feature, layer) => {
+                layer.on({
+                    click: (e: any) => {
+                        this.showBuildingDetails(feature.properties);
+                    },
+                });
+            },
+        }).addTo(this.map);
+
+        console.log(`Rendered ${buildings.length} cleaned buildings in green`);
+    }
+
+    /**
+     * Render uncleaned buildings with red color
+     */
+    renderUncleanedBuildings(buildings: BuildingWithGeom[]): void {
+        if (buildings.length === 0) return;
+
+        const buildingsGeoJSON = this.convertBuildingsToGeoJSON(buildings);
+
+        this.uncleanedBuildingsLayer = L.geoJSON(buildingsGeoJSON, {
+            style: function (feature) {
+                const hasImages =
+                    feature.properties.buildingImages &&
+                    feature.properties.buildingImages.length > 0;
+                return {
+                    fillColor: 'transparent',
+                    weight: 2,
+                    opacity: 1,
+                    color: hasImages ? '#FFA500' : '#FF0000', // Orange for with images, red for without
+                    fillOpacity: 0,
+                };
+            },
+            onEachFeature: (feature, layer) => {
+                layer.on({
+                    click: (e: any) => {
+                        this.showBuildingDetails(feature.properties);
+                    },
+                });
+            },
+        }).addTo(this.map);
+
+        console.log(`Rendered ${buildings.length} uncleaned buildings in red`);
+    }
+
+    /**
+     * Fit map to show all building layers
+     */
+    fitMapToAllBuildings(): void {
+        const bounds = L.latLngBounds([]);
+        let hasBuildings = false;
+
+        if (
+            this.cleanedBuildingsLayer &&
+            this.cleanedBuildingsLayer.getBounds().isValid()
+        ) {
+            bounds.extend(this.cleanedBuildingsLayer.getBounds());
+            hasBuildings = true;
+        }
+
+        if (
+            this.uncleanedBuildingsLayer &&
+            this.uncleanedBuildingsLayer.getBounds().isValid()
+        ) {
+            bounds.extend(this.uncleanedBuildingsLayer.getBounds());
+            hasBuildings = true;
+        }
+
+        if (hasBuildings) {
+            this.map.fitBounds(bounds, { padding: [20, 20] });
+        }
     }
 
     convertBuildingsToGeoJSON(
@@ -284,103 +402,6 @@ export class AdminBuildingInventoryComponent implements OnInit, OnDestroy {
         };
     }
 
-    // loadPlotsAndBuildings() {
-    //     this.geometryDataService
-    //         .GetBuildingFootprintsBySubAdministrativeBoundary(
-    //             this.selectedSubAdministrativeZone.id
-    //         )
-    //         .subscribe((res: any) => {
-    //             this.buildingGeojson = L.geoJSON(res, {
-    //                 style: function (feature) {
-    //                     return {
-    //                         fillColor: 'transparent',
-    //                         weight: 3,
-    //                         opacity: 1,
-    //                         color: 'white',
-    //                     };
-    //                 },
-    //                 onEachFeature: (feature, layer) => {
-    //                     layer.on({
-    //                         click: (e: any) => {
-    //                             console.log('lskdjf;alksjdflkj', feature);
-    //                             this.showBuilding(
-    //                                 feature.properties.buildingid,
-    //                                 feature.properties.id_0
-    //                             );
-    //                         },
-    //                     });
-    //                 },
-    //             }).addTo(this.map);
-    //         });
-
-    //     // this.fitMapBounds();
-    //     // this.clearMapState();
-    //     // this.geometryDataService
-    //     //     .GetSubAdministrativeBoundary(this.selectedSubAdministrativeZone.id)
-    //     //     .subscribe((res: any) => {
-    //     //         this.boundary = L.geoJSON(res, {
-    //     //             style: function (feature) {
-    //     //                 return {
-    //     //                     fillColor: 'transparent',
-    //     //                     weight: 3,
-    //     //                     opacity: 1,
-    //     //                     color: 'yellow',
-    //     //                 };
-    //     //             },
-    //     //         });
-
-    //     //         this.geometryDataService
-    //     //             .GetPlotsGeomBySubAdministrativeBoundary(
-    //     //                 this.selectedSubAdministrativeZone.id
-    //     //             )
-    //     //             .subscribe((res: any) => {
-    //     //                 this.plotsGeojson = L.geoJSON(res, {
-    //     //                     style: function (feature) {
-    //     //                         return {
-    //     //                             fillColor: 'transparent',
-    //     //                             weight: 1,
-    //     //                             opacity: 1,
-    //     //                             color: 'red',
-    //     //                         };
-    //     //                     },
-    //     //                 }).addTo(this.map);
-
-    //     //                 this.geometryDataService
-    //     //                     .GetBuildingFootprintsBySubAdministrativeBoundary(
-    //     //                         this.selectedSubAdministrativeZone.id
-    //     //                     )
-    //     //                     .subscribe((res: any) => {
-    //     //                         this.buildingGeojson = L.geoJSON(res, {
-    //     //                             style: function (feature) {
-    //     //                                 return {
-    //     //                                     fillColor: 'transparent',
-    //     //                                     weight: 3,
-    //     //                                     opacity: 1,
-    //     //                                     color: 'white',
-    //     //                                 };
-    //     //                             },
-    //     //                             onEachFeature: (feature, layer) => {
-    //     //                                 layer.on({
-    //     //                                     click: (e: any) => {
-    //     //                                         console.log(
-    //     //                                             'lskdjf;alksjdflkj',
-    //     //                                             feature
-    //     //                                         );
-    //     //                                         this.showBuilding(
-    //     //                                             feature.properties
-    //     //                                                 .buildingid,
-    //     //                                             feature.properties.id_0
-    //     //                                         );
-    //     //                                     },
-    //     //                                 });
-    //     //                             },
-    //     //                         }).addTo(this.map);
-    //     //                     });
-
-    //     //                 this.fitMapBounds();
-    //     //             });
-    //     //     });
-    // }
     showBuilding(properties: any) {
         console.log('showBuilding', properties);
         this.ref = this.dialogService.open(
@@ -404,6 +425,12 @@ export class AdminBuildingInventoryComponent implements OnInit, OnDestroy {
         }
         if (this.buildingGeojson) {
             this.map.removeLayer(this.buildingGeojson);
+        }
+        if (this.cleanedBuildingsLayer) {
+            this.map.removeLayer(this.cleanedBuildingsLayer);
+        }
+        if (this.uncleanedBuildingsLayer) {
+            this.map.removeLayer(this.uncleanedBuildingsLayer);
         }
     }
 
@@ -1069,6 +1096,411 @@ export class AdminBuildingInventoryComponent implements OnInit, OnDestroy {
         this.isFileLoaded = false;
     }
 
+    /**
+     * Handle CSV file selection for building survey data
+     */
+    onCSVFileSelect(event: any): void {
+        const file = event.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const csvText = e.target?.result as string;
+                    const parsedData = this.parseCSVData(csvText);
+
+                    this.loadedCSVData = parsedData;
+                    this.isCSVLoaded = true;
+
+                    console.log(
+                        'CSV data loaded:',
+                        this.loadedCSVData.length,
+                        'items'
+                    );
+                    console.log('First CSV item:', this.loadedCSVData[0]);
+
+                    // Render CSV data on map
+                    this.renderCSVDataOnMap();
+
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'CSV Data Loaded',
+                        detail: `Successfully loaded ${this.loadedCSVData.length} building survey points`,
+                        life: 3000,
+                    });
+                } catch (error: any) {
+                    console.error('Error parsing CSV data:', error);
+                    this.isCSVLoaded = false;
+
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'CSV Loading Error',
+                        detail: `Error loading CSV data: ${error.message}`,
+                        life: 5000,
+                    });
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
+
+    /**
+     * Parse CSV data into BuildingSurveyCSVData format
+     */
+    private parseCSVData(csvText: string): BuildingSurveyCSVData[] {
+        const lines = csvText.split('\n').filter((line) => line.trim());
+        if (lines.length < 2) {
+            throw new Error(
+                'CSV file must have at least a header and one data row'
+            );
+        }
+
+        // Parse headers
+        const headers = lines[0]
+            .split(',')
+            .map((h) => h.trim().replace(/"/g, ''));
+        const data: BuildingSurveyCSVData[] = [];
+
+        // Parse data rows
+        for (let i = 1; i < lines.length; i++) {
+            const values = this.parseCSVLine(lines[i]);
+            if (values.length !== headers.length) {
+                console.warn(
+                    `Row ${i + 1} has ${values.length} values but expected ${
+                        headers.length
+                    }`
+                );
+                continue;
+            }
+
+            const rowData: any = {};
+            headers.forEach((header, index) => {
+                rowData[header] = values[index];
+            });
+
+            // Convert to BuildingSurveyCSVData format
+            const buildingData: BuildingSurveyCSVData = {
+                slNo: parseInt(rowData['Sl. No.']) || 0,
+                uuid: rowData['uuid'] || '',
+                createdBy: rowData['createdBy'] || '',
+                ownerName: this.parseOptionalString(rowData['ownerName']),
+                houseNumber: this.parseOptionalString(rowData['houseNumber']),
+                thramNumber: this.parseOptionalString(rowData['thramNumber']),
+                contact: this.parseOptionalString(rowData['contact']),
+                lat: parseFloat(rowData['lat']) || 0,
+                long: parseFloat(rowData['long']) || 0,
+                gewog: this.parseOptionalString(rowData['gewog']),
+                chiwog: this.parseOptionalString(rowData['chiwog']),
+                village: this.parseOptionalString(rowData['village']),
+                yearCompleted: this.parseOptionalString(
+                    rowData['yearCompleted']
+                ),
+                constructionYear: this.parseOptionalString(
+                    rowData['constructionYear']
+                ),
+                constructionStatus: this.parseOptionalString(
+                    rowData['constructionStatus']
+                ),
+                use: this.parseOptionalString(rowData['use']),
+                remarks: this.parseOptionalString(rowData['remarks']),
+                typology: this.parseOptionalString(rowData['typology']),
+                remarksTypology: this.parseOptionalString(
+                    rowData['remarksTypology']
+                ),
+                numberOfFloors: this.parseOptionalNumber(
+                    rowData['numberOfFloors']
+                ),
+                storeyHeight: this.parseOptionalNumber(rowData['storeyHeight']),
+                length: this.parseOptionalNumber(rowData['length']),
+                breadth: this.parseOptionalNumber(rowData['breadth']),
+                areaM2: this.parseOptionalNumber(rowData['areaM2']),
+                photo1: this.parseOptionalString(rowData['photo1']),
+                photo2: this.parseOptionalString(rowData['photo2']),
+                photo3: this.parseOptionalString(rowData['photo3']),
+                photo4: this.parseOptionalString(rowData['photo4']),
+                photo5: this.parseOptionalString(rowData['photo5']),
+                photo6: this.parseOptionalString(rowData['photo6']),
+                total: this.parseOptionalString(rowData['Total']),
+                exteriorFinishes: this.parseOptionalString(
+                    rowData['Exterior Finishes']
+                ),
+                electricalSystem: this.parseOptionalString(
+                    rowData['Electrical System']
+                ),
+                waterSystem: this.parseOptionalString(rowData['Water System']),
+                toiletSystem: this.parseOptionalString(
+                    rowData['Toilet System']
+                ),
+                mobileNetwork: this.parseOptionalString(
+                    rowData['Mobile Network']
+                ),
+                floorType: this.parseOptionalString(rowData['Floor Type']),
+                othersRemarks: this.parseOptionalString(
+                    rowData['Others/Remarks']
+                ),
+            };
+
+            data.push(buildingData);
+        }
+
+        return data;
+    }
+
+    /**
+     * Parse a CSV line handling quoted values
+     */
+    private parseCSVLine(line: string): string[] {
+        const result: string[] = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+
+            if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                    // Escaped quote
+                    current += '"';
+                    i++; // Skip next quote
+                } else {
+                    // Toggle quote state
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                // End of field
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+
+        // Add last field
+        result.push(current.trim());
+        return result;
+    }
+
+    /**
+     * Helper to parse optional string fields
+     */
+    private parseOptionalString(value: string): string | undefined {
+        if (!value || value.trim() === '' || value.toUpperCase() === 'NA') {
+            return undefined;
+        }
+        return value.trim();
+    }
+
+    /**
+     * Helper to parse optional number fields
+     */
+    private parseOptionalNumber(value: string): number | undefined {
+        if (!value || value.trim() === '' || value.toUpperCase() === 'NA') {
+            return undefined;
+        }
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? undefined : parsed;
+    }
+
+    /**
+     * Render CSV data as points on the map
+     */
+    renderCSVDataOnMap(): void {
+        // Clear existing CSV data layer
+        if (this.csvDataLayer) {
+            this.map.removeLayer(this.csvDataLayer);
+        }
+
+        if (!this.loadedCSVData || this.loadedCSVData.length === 0) {
+            return;
+        }
+
+        try {
+            // Convert CSV data to GeoJSON
+            const geoJsonData = this.convertCSVToGeoJSON(this.loadedCSVData);
+
+            // Create layer with custom styling
+            this.csvDataLayer = L.geoJSON(geoJsonData, {
+                pointToLayer: (feature, latlng) => {
+                    const marker = L.circleMarker(latlng, {
+                        radius: 8,
+                        fillColor: '#ff7800',
+                        color: '#000',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8,
+                    });
+
+                    // Add label with uuid
+
+                    return marker;
+                },
+                onEachFeature: (feature, layer) => {
+                    // Create popup content
+                    const props = feature.properties;
+                    const popupContent = this.createCSVPopupContent(props);
+                    layer.bindPopup(popupContent, { maxWidth: 400 });
+                },
+            });
+
+            // Add layer to map
+            this.csvDataLayer.addTo(this.map);
+
+            // Fit map to show all CSV points
+            if (this.csvDataLayer.getBounds().isValid()) {
+                this.map.fitBounds(this.csvDataLayer.getBounds(), {
+                    padding: [20, 20],
+                });
+            }
+        } catch (error) {
+            console.error('Error rendering CSV data on map:', error);
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Map Rendering Error',
+                detail: 'Failed to display CSV data on map',
+                life: 3000,
+            });
+        }
+    }
+
+    /**
+     * Convert CSV data to GeoJSON format
+     */
+    private convertCSVToGeoJSON(csvData: BuildingSurveyCSVData[]): any {
+        return {
+            type: 'FeatureCollection',
+            features: csvData.map((item) => ({
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [item.long, item.lat],
+                },
+                properties: item,
+            })),
+        };
+    }
+
+    /**
+     * Create popup content for CSV data points
+     */
+    private createCSVPopupContent(props: BuildingSurveyCSVData): string {
+        const getPhotos = () => {
+            const photos = [
+                props.photo1,
+                props.photo2,
+                props.photo3,
+                props.photo4,
+                props.photo5,
+                props.photo6,
+            ]
+                .filter((p) => p && p.trim())
+                .map(
+                    (p) =>
+                        `<img src="${p}" style="width: 80px; height: 60px; object-fit: cover; margin: 2px;" />`
+                );
+            return photos.length > 0
+                ? `<div style="margin-top: 10px;"><strong>Photos:</strong><br/>${photos.join(
+                      ''
+                  )}</div>`
+                : '';
+        };
+
+        return `
+            <div style="max-width: 350px;">
+                <h4 style="margin: 0 0 10px 0; color: #2563eb;">Building Survey Data</h4>
+                
+                <div style="margin-bottom: 8px;"><strong>UUID:</strong> ${
+                    props.uuid
+                }</div>
+                <div style="margin-bottom: 8px;"><strong>Owner:</strong> ${
+                    props.ownerName || 'N/A'
+                }</div>
+                <div style="margin-bottom: 8px;"><strong>Location:</strong> ${
+                    props.village || 'N/A'
+                }, ${props.gewog || 'N/A'}</div>
+                <div style="margin-bottom: 8px;"><strong>Use:</strong> ${
+                    props.use || 'N/A'
+                }</div>
+                <div style="margin-bottom: 8px;"><strong>Typology:</strong> ${
+                    props.typology || 'N/A'
+                }</div>
+                <div style="margin-bottom: 8px;"><strong>Floors:</strong> ${
+                    props.numberOfFloors || 'N/A'
+                }</div>
+                <div style="margin-bottom: 8px;"><strong>Area:</strong> ${
+                    props.areaM2 ? props.areaM2 + ' m²' : 'N/A'
+                }</div>
+                <div style="margin-bottom: 8px;"><strong>Construction Year:</strong> ${
+                    props.constructionYear || 'N/A'
+                }</div>
+                <div style="margin-bottom: 8px;"><strong>Contact:</strong> ${
+                    props.contact || 'N/A'
+                }</div>
+                
+                ${getPhotos()}
+                
+                <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                    <strong>Coordinates:</strong> ${props.lat.toFixed(
+                        6
+                    )}, ${props.long.toFixed(6)}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Clear CSV data from map
+     */
+    clearCSVData(): void {
+        if (this.csvDataLayer) {
+            this.map.removeLayer(this.csvDataLayer);
+        }
+        this.loadedCSVData = [];
+        this.isCSVLoaded = false;
+
+        this.messageService.add({
+            severity: 'info',
+            summary: 'CSV Data Cleared',
+            detail: 'Building survey data has been removed from the map',
+            life: 3000,
+        });
+    }
+
+    /**
+     * Export CSV data as GeoJSON
+     */
+    exportCSVAsGeoJSON(): void {
+        if (!this.loadedCSVData || this.loadedCSVData.length === 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'No Data',
+                detail: 'No CSV data to export',
+                life: 3000,
+            });
+            return;
+        }
+
+        const geoJsonData = this.convertCSVToGeoJSON(this.loadedCSVData);
+        const dataStr = JSON.stringify(geoJsonData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `building-survey-data-${new Date()
+            .toISOString()
+            .slice(0, 10)}.geojson`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Export Complete',
+            detail: 'Building survey data exported as GeoJSON',
+            life: 3000,
+        });
+    }
+
     exportCurrentSurveyData(): void {
         if (!this.loadedSurveyData || this.loadedSurveyData.length === 0) {
             console.warn('No survey data to export');
@@ -1396,5 +1828,385 @@ export class AdminBuildingInventoryComponent implements OnInit, OnDestroy {
             // Handle any actions if needed when dialog closes
             console.log('Building details dialog closed');
         });
+    }
+
+    /**
+     * Download cleaned building footprint as GeoJSON
+     */
+    downloadCleanedBuildingFootprintGeoJSON(): void {
+        if (!this.cleanedBuildingsLayer || this.cleanedBuildings.length === 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'No Data',
+                detail: 'No cleaned building footprints available to download.',
+            });
+            return;
+        }
+
+        try {
+            // Convert cleaned buildings to GeoJSON
+            const geojsonData = this.convertBuildingsToGeoJSON(
+                this.cleanedBuildings
+            );
+
+            // Create filename with timestamp
+            const timestamp = new Date()
+                .toISOString()
+                .slice(0, 19)
+                .replace(/[:.]/g, '-');
+            const filename = `cleaned-building-footprints-${
+                this.selectedDzongkhag?.name || 'data'
+            }-${timestamp}.geojson`;
+
+            // Convert to JSON string and download
+            const dataStr = JSON.stringify(geojsonData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Download Complete',
+                detail: `${this.cleanedBuildings.length} cleaned building footprints downloaded as ${filename}`,
+            });
+        } catch (error) {
+            console.error(
+                'Error downloading cleaned building footprints:',
+                error
+            );
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Download Failed',
+                detail: 'Failed to download cleaned building footprints.',
+            });
+        }
+    }
+
+    /**
+     * Download uncleaned building footprint as GeoJSON
+     */
+    downloadUncleanedBuildingFootprintGeoJSON(): void {
+        if (
+            !this.uncleanedBuildingsLayer ||
+            this.uncleanedBuildings.length === 0
+        ) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'No Data',
+                detail: 'No uncleaned building footprints available to download.',
+            });
+            return;
+        }
+
+        try {
+            // Convert uncleaned buildings to GeoJSON
+            const geojsonData = this.convertBuildingsToGeoJSON(
+                this.uncleanedBuildings
+            );
+
+            // Create filename with timestamp
+            const timestamp = new Date()
+                .toISOString()
+                .slice(0, 19)
+                .replace(/[:.]/g, '-');
+            const filename = `uncleaned-building-footprints-${
+                this.selectedDzongkhag?.name || 'data'
+            }-${timestamp}.geojson`;
+
+            // Convert to JSON string and download
+            const dataStr = JSON.stringify(geojsonData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Download Complete',
+                detail: `${this.uncleanedBuildings.length} uncleaned building footprints downloaded as ${filename}`,
+            });
+        } catch (error) {
+            console.error(
+                'Error downloading uncleaned building footprints:',
+                error
+            );
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Download Failed',
+                detail: 'Failed to download uncleaned building footprints.',
+            });
+        }
+    }
+
+    /**
+     * Legacy method - Download building footprint as GeoJSON (backward compatibility)
+     * This method combines both cleaned and uncleaned buildings
+     */
+    downloadBuildingFootprintGeoJSON(): void {
+        if (
+            (!this.cleanedBuildingsLayer ||
+                this.cleanedBuildings.length === 0) &&
+            (!this.uncleanedBuildingsLayer ||
+                this.uncleanedBuildings.length === 0)
+        ) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'No Data',
+                detail: 'No building footprints available to download.',
+            });
+            return;
+        }
+
+        try {
+            // Combine both cleaned and uncleaned buildings
+            const allBuildings = [
+                ...this.cleanedBuildings,
+                ...this.uncleanedBuildings,
+            ];
+            const geojsonData = this.convertBuildingsToGeoJSON(allBuildings);
+
+            // Create filename with timestamp
+            const timestamp = new Date()
+                .toISOString()
+                .slice(0, 19)
+                .replace(/[:.]/g, '-');
+            const filename = `all-building-footprints-${
+                this.selectedDzongkhag?.name || 'data'
+            }-${timestamp}.geojson`;
+
+            // Convert to JSON string and download
+            const dataStr = JSON.stringify(geojsonData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Download Complete',
+                detail: `${allBuildings.length} building footprints downloaded as ${filename}`,
+            });
+        } catch (error) {
+            console.error('Error downloading building footprints:', error);
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Download Failed',
+                detail: 'Failed to download building footprints.',
+            });
+        }
+    }
+
+    /**
+     * Locate and fly to a survey point by UUID
+     */
+    locateSurveyByUuid(): void {
+        if (!this.locateUuid || !this.isFileLoaded || !this.surveyDataLayer) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Invalid Input',
+                detail: 'Please enter a valid UUID and ensure survey data is loaded.',
+            });
+            return;
+        }
+
+        const uuid = this.locateUuid.trim();
+        let foundFeature: any = null;
+        let foundLayer: any = null;
+
+        // Search through survey data layer
+        this.surveyDataLayer.eachLayer((layer: any) => {
+            const feature = layer.feature;
+            if (feature && feature.properties) {
+                const props = feature.properties;
+                if (
+                    props.ec5_uuid === uuid ||
+                    props.id === uuid ||
+                    props.uuid === uuid
+                ) {
+                    foundFeature = feature;
+                    foundLayer = layer;
+                    return;
+                }
+            }
+        });
+
+        if (foundFeature && foundLayer) {
+            // Get coordinates
+            const coords = foundFeature.geometry.coordinates;
+            const latLng = L.latLng(coords[1], coords[0]); // GeoJSON is [lng, lat]
+
+            // Fly to the location
+            this.map.flyTo(latLng, 18, {
+                duration: 2,
+                easeLinearity: 0.5,
+            });
+
+            // Highlight the point temporarily
+            if (foundLayer.setStyle) {
+                const originalStyle = foundLayer.options;
+                foundLayer.setStyle({
+                    color: '#ff0000',
+                    fillColor: '#ff0000',
+                    radius: 12,
+                    weight: 3,
+                });
+
+                // Reset style after 3 seconds
+                setTimeout(() => {
+                    foundLayer.setStyle(originalStyle);
+                }, 3000);
+            }
+
+            // Open popup if it exists
+            if (foundLayer.getPopup()) {
+                foundLayer.openPopup();
+            }
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Survey Point Found',
+                detail: `Located survey point: ${uuid}`,
+            });
+
+            // Clear the input
+            this.locateUuid = '';
+        } else {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Not Found',
+                detail: `Survey point with UUID "${uuid}" not found in loaded data.`,
+            });
+        }
+    }
+
+    /**
+     * Locate and fly to a building by ID
+     */
+    locateBuildingById(): void {
+        if (!this.locateBuildingId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Invalid Input',
+                detail: 'Please enter a valid building ID.',
+            });
+            return;
+        }
+
+        if (!this.cleanedBuildingsLayer && !this.uncleanedBuildingsLayer) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'No Data',
+                detail: 'Please load building data first.',
+            });
+            return;
+        }
+
+        const buildingId = this.locateBuildingId;
+        let foundFeature: any = null;
+        let foundLayer: any = null;
+        let buildingType: string = '';
+
+        // Search through cleaned buildings first
+        if (this.cleanedBuildingsLayer) {
+            this.cleanedBuildingsLayer.eachLayer((layer: any) => {
+                const feature = layer.feature;
+                if (feature && feature.properties) {
+                    const props = feature.properties;
+                    if (
+                        props.id === buildingId ||
+                        props.building_id === buildingId ||
+                        props.buildingId === buildingId ||
+                        parseInt(props.id) === buildingId
+                    ) {
+                        foundFeature = feature;
+                        foundLayer = layer;
+                        buildingType = 'cleaned';
+                        return;
+                    }
+                }
+            });
+        }
+
+        // If not found in cleaned buildings, search uncleaned buildings
+        if (!foundFeature && this.uncleanedBuildingsLayer) {
+            this.uncleanedBuildingsLayer.eachLayer((layer: any) => {
+                const feature = layer.feature;
+                if (feature && feature.properties) {
+                    const props = feature.properties;
+                    if (
+                        props.id === buildingId ||
+                        props.building_id === buildingId ||
+                        props.buildingId === buildingId ||
+                        parseInt(props.id) === buildingId
+                    ) {
+                        foundFeature = feature;
+                        foundLayer = layer;
+                        buildingType = 'uncleaned';
+                        return;
+                    }
+                }
+            });
+        }
+
+        if (foundFeature && foundLayer) {
+            // Get bounds of the building polygon
+            const bounds = foundLayer.getBounds();
+
+            // Fly to the building
+            this.map.flyToBounds(bounds, {
+                padding: [50, 50],
+                maxZoom: 18,
+                duration: 2,
+            });
+
+            // Highlight the building with cyan color
+            if (foundLayer.setStyle) {
+                const originalStyle = foundLayer.options;
+                foundLayer.setStyle({
+                    color: '#00FFFF', // Cyan color
+                    weight: 4,
+                    fillColor: '#00FFFF', // Cyan fill
+                    fillOpacity: 0.4,
+                });
+
+                // Reset style after 5 seconds
+                setTimeout(() => {
+                    foundLayer.setStyle(originalStyle);
+                }, 5000);
+            }
+
+            // Open popup if it exists
+            if (foundLayer.getPopup()) {
+                foundLayer.openPopup();
+            }
+
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Building Found',
+                detail: `Located ${buildingType} building ID: ${buildingId}`,
+            });
+
+            // Clear the input
+            this.locateBuildingId = null;
+        } else {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Not Found',
+                detail: `Building with ID "${buildingId}" not found in loaded data.`,
+            });
+        }
     }
 }
